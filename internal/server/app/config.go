@@ -1,17 +1,17 @@
 package app
 
 type config struct {
-	server  serverConfig
-	storage storageConfig
-	logger  loggerConfig
-	crypto  cryptoConfig
+	server     serverConfig
+	repository repositoryConfig
+	logger     loggerConfig
+	crypto     cryptoConfig
 }
 
 type serverConfig struct {
 	Addr string
 }
 
-type storageConfig struct {
+type repositoryConfig struct {
 	DatabaseURI string
 }
 
@@ -29,7 +29,7 @@ func newConfig() (*config, error) {
 		serverConfig{
 			Addr: "",
 		},
-		storageConfig{
+		repositoryConfig{
 			DatabaseURI: "",
 		},
 		loggerConfig{},

@@ -1,8 +1,7 @@
 package app
 
 import (
-	"fmt"
-
+	"github.com/golovanevvs/confidant/internal/server/repository"
 	"go.uber.org/zap"
 )
 
@@ -17,5 +16,10 @@ func RunApp() {
 	if err != nil {
 		lg.Fatalf("application configuration initialization error: %s", err.Error())
 	}
-	fmt.Println()
+
+	// initializing the repository
+	rp, err := repository.New(cfg.repository.DatabaseURI)
+	if err != nil {
+		lg.Fatalf("postgres DB initialization error: %s", err.Error())
+	}
 }
