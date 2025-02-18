@@ -19,18 +19,18 @@ type IYourRepository interface {
 	CrashIt(ctx context.Context) (int, error)
 }
 
-type repository struct {
+type Repository struct {
 	IUserRepository
 	IMyRepository
 	IYourRepository
 }
 
-func New(databaseURI string) (*repository, error) {
+func New(databaseURI string) (*Repository, error) {
 	db, err := postgres.New(databaseURI)
 	if err != nil {
 		return nil, fmt.Errorf("postgres DB initialization error: %s", err.Error())
 	}
-	return &repository{
+	return &Repository{
 		IUserRepository: postgres.NewUserPostgres(db),
 		IMyRepository:   postgres.NewMyPostgres(db),
 		IYourRepository: postgres.NewYourPostgres(db),

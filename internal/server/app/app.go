@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/golovanevvs/confidant/internal/server/repository"
+	"github.com/golovanevvs/confidant/internal/server/service"
 	"go.uber.org/zap"
 )
 
@@ -22,4 +23,7 @@ func RunApp() {
 	if err != nil {
 		lg.Fatalf("postgres DB initialization error: %s", err.Error())
 	}
+
+	// initializing the service
+	sv := service.New(rp)
 }
