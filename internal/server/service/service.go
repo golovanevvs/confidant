@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/golovanevvs/confidant/internal/server/repository"
+	"github.com/golovanevvs/confidant/internal/server/service/accountservice"
 )
 
 type IAuthService interface {
@@ -18,15 +19,15 @@ type IYourService interface {
 	YourTask(ctx context.Context) (int, error)
 }
 
-type service struct {
+type Service struct {
 	IAuthService
 	IMyService
 	IYourService
 }
 
-func New(rp *repository.Repository) *service {
-	return &service{
-		IAuthService: newAuthService(rp.IUserRepository),
+func New(rp *repository.Repository) *Service {
+	return &Service{
+		IAuthService: accountservice.NewAccountService(rp.IAccountRepository),
 		IMyService:   newMyService(rp.IMyRepository),
 		IYourService: newYourService(rp.IYourRepository),
 	}

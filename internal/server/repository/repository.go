@@ -7,8 +7,13 @@ import (
 	"github.com/golovanevvs/confidant/internal/server/repository/postgres"
 )
 
-type IUserRepository interface {
-	SaveUser(ctx context.Context) (int, error)
+type IManageRepository interface {
+	CloseDB() error
+}
+
+type IAccountRepository interface {
+	SaveAccount(ctx context.Context) (int, error)
+	LoadAccountID(ctx context.Context, login, passwordHash string) (int, error)
 }
 
 type IMyRepository interface {
@@ -20,7 +25,8 @@ type IYourRepository interface {
 }
 
 type Repository struct {
-	IUserRepository
+	IManageRepository
+	IAccountRepository
 	IMyRepository
 	IYourRepository
 }
@@ -31,8 +37,9 @@ func New(databaseURI string) (*Repository, error) {
 		return nil, fmt.Errorf("postgres DB initialization error: %s", err.Error())
 	}
 	return &Repository{
-		IUserRepository: postgres.NewUserPostgres(db),
-		IMyRepository:   postgres.NewMyPostgres(db),
-		IYourRepository: postgres.NewYourPostgres(db),
+		IManageRepository:  postgres.NewManagePostgres(db),
+		IAccountRepository: postgres.NewAccountPostgres(db),
+		IMyRepository:      postgres.NewMyPostgres(db),
+		IYourRepository:    postgres.NewYourPostgres(db),
 	}, nil
 }
