@@ -1,0 +1,2 @@
+migrate -path PATH_TO_YOUR_MIGRATIONS -database YOUR_DATABASE_URL force VERSION
+
