@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,29 +17,61 @@ import (
 
 func RunApp() {
 	// initializing the logger
-	logger, _ := zap.NewProduction()
+	rawJSON := []byte(`{
+		"level": "debug",
+		"outputPaths": ["stdout"],
+		"errorOutputPaths": ["stderr"],
+		"encoding": "json",
+		"encoderConfig": {
+			"messageKey": "message",
+			"levelKey": "level",
+			"levelEncoder": "lowercase"
+		}
+	}`)
+	var cfgZap zap.Config
+	if err := json.Unmarshal(rawJSON, &cfgZap); err != nil {
+		panic(err)
+	}
+	logger := zap.Must(cfgZap.Build())
 	defer logger.Sync() // flushes buffer, if any
 	lg := logger.Sugar()
+
 	// initializing the config
-	cfg, err := newConfig()
+	_, err := newConfig()
 	if err != nil {
 		lg.Fatalf("application configuration initialization error: %s", err.Error())
 	}
+
 	// initializing the repository
-	rp, err := repository.New(cfg.repository.DatabaseURI)
-	if err != nil {
-		lg.Fatalf("postgres DB initialization error: %s", err.Error())
+	var rp *repository.Repository
+	for i := 5430; i <= 5440; i++ {
+		databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
+		lg.Debugf("Connecting to DB: port %d...", i)
+		rp, err = repository.New(databaseURI)
+		if err != nil {
+			if i == 5440 {
+				lg.Fatalf("postgres DB initialization error: %s", err.Error())
+			}
+			lg.Debugf("Connect to DB: error: %s", err.Error())
+			lg.Debugf("Repeating...")
+		} else {
+			lg.Infof("Connecting to DB: success")
+			break
+		}
 	}
+
 	// initializing the service
 	sv := service.New(rp)
+
 	//initializing the handler
 	hd := handler.New(sv, lg)
+
 	// initializing the server
 	srv := newServer()
 
 	// starting the server
 	go func() {
-		lg.Infof("The \"confidant\" server is running")
+		lg.Infof("The 'confidant' server is running")
 		if err := srv.RunServer(":8080", hd.InitRoutes(lg)); err != nil {
 			lg.Fatalf("server startup error: %s", err.Error())
 		}
