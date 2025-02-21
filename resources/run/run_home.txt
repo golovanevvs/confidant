@@ -1,2 +1,8 @@
+migrate create -ext sql -dir resources/migration -seq tables
+
 migrate -path PATH_TO_YOUR_MIGRATIONS -database YOUR_DATABASE_URL force VERSION
+
+migrate -path resources/migration -database "postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password" up
+
+migrate -path ./internal/migrations -database "postgres://localhost:5433/revelio?sslmode=disable&user=postgres&password=password" down
 
