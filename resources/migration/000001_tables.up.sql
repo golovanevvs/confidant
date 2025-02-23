@@ -1,4 +1,4 @@
-begin;
+BEGIN;
 
 CREATE TABLE account(
     id SERIAL PRIMARY KEY,
@@ -13,4 +13,4 @@ CREATE TABLE groups(
     FOREIGN KEY (account_id) REFERENCES account (id)
 );
 
-commit;
+COMMIT;
