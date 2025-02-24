@@ -1,0 +1,8 @@
+migrate create -ext sql -dir /c/Golovanev/dev/projects/yapracticum/confidant/resources/migration -seq tables
+
+migrate -path /c/Golovanev/dev/projects/yapracticum/confidant/resources/migration -database YOUR_DATABASE_URL force VERSION
+
+migrate -path /c/Golovanev/dev/projects/yapracticum/confidant/resources/migration -database "postgres://localhost:5432/confidant?sslmode=disable&user=postgres&password=password" up
+
+migrate -path /c/Golovanev/dev/projects/yapracticum/confidant/resources/migration -database "postgres://localhost:5432/revelio?sslmode=disable&user=postgres&password=password" down
+
