@@ -11,7 +11,7 @@ import (
 
 	"github.com/golovanevvs/confidant/internal/server/repository"
 	"github.com/golovanevvs/confidant/internal/server/service"
-	handler "github.com/golovanevvs/confidant/internal/server/transport/http"
+	"github.com/golovanevvs/confidant/internal/server/transport/http/handler"
 	"go.uber.org/zap"
 )
 

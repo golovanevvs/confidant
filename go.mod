@@ -22,6 +22,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.7.1
 	github.com/go-chi/chi v1.5.5
 	github.com/golang-jwt/jwt/v4 v4.5.1
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/rivo/tview v0.0.0-20241227133733-17b7edb88c57

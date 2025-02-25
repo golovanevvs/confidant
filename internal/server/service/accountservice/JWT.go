@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
@@ -25,7 +25,7 @@ type claims struct {
 // BuildJWTString creates a token and returns it as a string
 func (sv *accountService) BuildJWTString(ctx context.Context, login, password string) (string, error) {
 	// getting the account ID from the database
-	accountID, err := sv.accountRp.LoadAccountID(ctx, login, sv.genPasswordHash(password))
+	accountID, err := sv.rp.LoadAccountID(ctx, login, sv.genPasswordHash(password))
 	if err != nil {
 		// if the login/password pair is incorrect
 		if strings.Contains(err.Error(), "no rows in result set") {

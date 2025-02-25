@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/golovanevvs/confidant/internal/server/model"
 	"github.com/golovanevvs/confidant/internal/server/repository/postgres"
 )
 
@@ -12,7 +13,7 @@ type IManageRepository interface {
 }
 
 type IAccountRepository interface {
-	SaveAccount(ctx context.Context) (int, error)
+	SaveAccount(ctx context.Context, account model.Account) (int, error)
 	LoadAccountID(ctx context.Context, login, passwordHash string) (int, error)
 }
 

@@ -1,5 +1,7 @@
 package customerrors
 
+import "errors"
+
 const (
 	OrderAlredyUploadedThisUser200  = "номер заказа уже был загружен этим пользователем"
 	EmptyOrder204                   = "нет данных для ответа"
@@ -13,11 +15,9 @@ const (
 	JWTInvalidToken401              = "невалидный токен"
 	NotEnoughPoints402              = "на счету недостаточно средств"
 	OrderAlredyUploadedOtherUser409 = "номер заказа уже был загружен другим пользователем"
-	DBBusyLogin409                  = "ошибка БД: логин уже занят"
 	InvalidOrderNumber422           = "Неверный формат номера заказа"
 	InvalidOrderNumberNotInt422     = "Неверный формат номера заказа: не соответствует типу int"
 	ASTooManyRequests429            = "превышено количество запросов к сервису"
-	DBError500                      = "ошибка БД"
 	InternalServerError500          = "внутренняя ошибка сервера"
 	DecodeJSONError500              = "ошибка десериализации JSON"
 	EncodeJSONError500              = "ошибка сериализации JSON"
@@ -25,4 +25,14 @@ const (
 	AtoiError500                    = "ошибка преобразования строки в число"
 	ClientError500                  = "ошибка при отправке запроса"
 	ASError                         = "сервис по взаимодействию с системой расчёта начислений баллов"
+)
+
+const (
+	DBErr             = "DB error"
+	AccountServiceErr = "account service error"
+)
+
+var (
+	ErrDBBusyEmail409     = errors.New("e-mail is already busy")
+	ErrDBInternalError500 = errors.New("DB internal error")
 )

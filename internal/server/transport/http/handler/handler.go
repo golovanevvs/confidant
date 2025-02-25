@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/go-chi/chi"
 	"github.com/golovanevvs/confidant/internal/server/service"
+	"github.com/golovanevvs/confidant/internal/server/transport/http/logger"
 	"go.uber.org/zap"
 )
 
@@ -26,11 +27,13 @@ func (hd *handler) InitRoutes(lg *zap.SugaredLogger) *chi.Mux {
 
 	// using middleware
 	// logging
-	// rt.Use(logger.WithLogging(lg))
+	rt.Use(logger.WithLogging(lg))
 
 	// routes
+	rt.Post("/api/register", hd.accountRegisterPost)
+
 	// rt.Route("/api/user", func(r chi.Router) {
-	// 	r.Post("/register", hd.userRegister)
+	// r.Post("/register", hd.accountRegister)
 	// 	r.Post("/login", hd.userLogin)
 	// 	r.With(hd.authByJWT).Post("/orders", hd.userUploadOrder)
 	// 	r.With(hd.authByJWT).Get("/orders", hd.getOrders)

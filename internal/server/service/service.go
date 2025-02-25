@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 
+	"github.com/golovanevvs/confidant/internal/server/model"
 	"github.com/golovanevvs/confidant/internal/server/repository"
 	"github.com/golovanevvs/confidant/internal/server/service/accountservice"
 )
 
-type IAuthService interface {
-	CreateUser(ctx context.Context) (int, error)
+type IAccountService interface {
+	CreateAccount(ctx context.Context, account model.Account) (int, error)
+	BuildJWTString(ctx context.Context, login, password string) (string, error)
 }
 
 type IMyService interface {
@@ -20,15 +22,15 @@ type IYourService interface {
 }
 
 type Service struct {
-	IAuthService
+	IAccountService
 	IMyService
 	IYourService
 }
 
 func New(rp *repository.Repository) *Service {
 	return &Service{
-		IAuthService: accountservice.NewAccountService(rp.IAccountRepository),
-		IMyService:   newMyService(rp.IMyRepository),
-		IYourService: newYourService(rp.IYourRepository),
+		IAccountService: accountservice.NewAccountService(rp.IAccountRepository),
+		IMyService:      newMyService(rp.IMyRepository),
+		IYourService:    newYourService(rp.IYourRepository),
 	}
 }
