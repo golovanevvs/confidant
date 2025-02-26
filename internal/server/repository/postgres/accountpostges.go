@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -24,11 +25,13 @@ func (rp *accountPostgres) SaveAccount(ctx context.Context, account model.Accoun
 	action := "save account"
 
 	row := rp.db.QueryRowContext(ctx, `
+
 		INSERT INTO account
 			(email, password_hash)
 		VALUES
 			($1, $2)
 		RETURNING id;
+
 	`, account.Email, account.PasswordHash)
 
 	var accountID int
@@ -44,20 +47,43 @@ func (rp *accountPostgres) SaveAccount(ctx context.Context, account model.Accoun
 	return accountID, nil
 }
 
-func (rp *accountPostgres) LoadAccountID(ctx context.Context, login, passwordHash string) (int, error) {
+func (rp *accountPostgres) LoadAccountID(ctx context.Context, email, passwordHash string) (int, error) {
+	action := "load account ID"
+
 	row := rp.db.QueryRowContext(ctx, `
 
-	SELECT account_id FROM account
-	WHERE login=$1 AND password_hash=$2;
+	SELECT id FROM account
+	WHERE email=$1;
 
-	`, login, passwordHash)
+	`, email)
 
-	var result int
+	var accountID int
 
-	err := row.Scan(&result)
-	if err != nil {
-		return -1, err
+	if err := row.Scan(&accountID); err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBEmailNotFound401, err)
+		default:
+			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+		}
 	}
 
-	return result, nil
+	row = rp.db.QueryRowContext(ctx, `
+
+	SELECT password_hash FROM account
+	WHERE id = $1;
+
+	`, accountID)
+
+	var dbPasswordHash string
+
+	if err := row.Scan(&dbPasswordHash); err != nil {
+		return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+	}
+
+	if dbPasswordHash != passwordHash {
+		return -1, fmt.Errorf("%s: %s: %w", customerrors.DBErr, action, customerrors.ErrDBWrongPassword401)
+	}
+
+	return accountID, nil
 }

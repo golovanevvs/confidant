@@ -14,7 +14,7 @@ type IManageRepository interface {
 
 type IAccountRepository interface {
 	SaveAccount(ctx context.Context, account model.Account) (int, error)
-	LoadAccountID(ctx context.Context, login, passwordHash string) (int, error)
+	LoadAccountID(ctx context.Context, email, passwordHash string) (int, error)
 }
 
 type IMyRepository interface {

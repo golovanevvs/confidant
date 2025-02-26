@@ -10,7 +10,7 @@ import (
 
 type IAccountService interface {
 	CreateAccount(ctx context.Context, account model.Account) (int, error)
-	BuildJWTString(ctx context.Context, login, password string) (string, error)
+	BuildJWTString(ctx context.Context, accountID int) (string, error)
 }
 
 type IMyService interface {

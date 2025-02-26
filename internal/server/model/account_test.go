@@ -21,12 +21,12 @@ func TestAccountValidateEmail(t *testing.T) {
 		{
 			name:  "invalid email: without @",
 			email: "testtest.com",
-			want:  customerrors.ErrAccountValidateEmail,
+			want:  customerrors.ErrAccountValidateEmail422,
 		},
 		{
 			name:  "invalid email: without .",
 			email: "test@testcom",
-			want:  customerrors.ErrAccountValidateEmail,
+			want:  customerrors.ErrAccountValidateEmail422,
 		},
 	}
 
@@ -55,32 +55,32 @@ func TestAccountValidatePassword(t *testing.T) {
 		{
 			name:     "invalid password: len < 8",
 			password: "FgF.sd2",
-			want:     customerrors.ErrAccountValidatePassword,
+			want:     customerrors.ErrAccountValidatePassword422,
 		},
 		{
 			name:     "invalid password: not latin",
 			password: "Fgф.sd23",
-			want:     customerrors.ErrAccountValidatePassword,
+			want:     customerrors.ErrAccountValidatePassword422,
 		},
 		{
 			name:     "invalid password: without upper",
 			password: "fgf.sd23",
-			want:     customerrors.ErrAccountValidatePassword,
+			want:     customerrors.ErrAccountValidatePassword422,
 		},
 		{
 			name:     "invalid password: without lower",
 			password: "FGF.SD23",
-			want:     customerrors.ErrAccountValidatePassword,
+			want:     customerrors.ErrAccountValidatePassword422,
 		},
 		{
 			name:     "invalid password: without digit",
 			password: "FgF.sdpp",
-			want:     customerrors.ErrAccountValidatePassword,
+			want:     customerrors.ErrAccountValidatePassword422,
 		},
 		{
 			name:     "invalid password: without symbol",
 			password: "FgF1sd23",
-			want:     customerrors.ErrAccountValidatePassword,
+			want:     customerrors.ErrAccountValidatePassword422,
 		},
 	}
 

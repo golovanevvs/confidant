@@ -22,11 +22,6 @@ func NewAccountService(accountRp repository.IAccountRepository) *accountService 
 func (sv *accountService) CreateAccount(ctx context.Context, account model.Account) (int, error) {
 	action := "create account"
 
-	// e-mail validation
-	// if !model.Account. (account.Email) {
-	// 	return -1, errors.New("e-mail validation error")
-	// }
-
 	// password hashing
 	account.PasswordHash = sv.genPasswordHash(account.Password)
 

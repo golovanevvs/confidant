@@ -11,40 +11,53 @@ import (
 )
 
 func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
+	action := fmt.Sprintf("account register, url: %s, method: %s", r.URL.String(), r.Method)
+
 	// checking the Content-Type
 	contentType := r.Header.Get("Content-Type")
-	switch contentType {
-	case "application/json":
-	default:
-		http.Error(w, string(customerrors.InvalidContentType400), http.StatusBadRequest)
+	if contentType != "application/json" {
+		resErr := fmt.Errorf("%s: %s:%w", customerrors.HandlerErr, action, customerrors.ErrContentType400)
+		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// deserializing JSON in Account
+	// deserializing JSON in account
 	var account model.Account
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
-		http.Error(w, string(customerrors.DecodeJSONError500), http.StatusInternalServerError)
+		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrDecodeJSON400, err)
+		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// e-mail validation
-	// if !model.Account. (account.Email) {
-	// 	return -1, errors.New("e-mail validation error")
-	// }
+	if err := account.ValidateEmail(); err != nil {
+		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		http.Error(w, resErr.Error(), http.StatusUnprocessableEntity)
+		return
+	}
 
-	// launching the createUser service,
-	// obtaining the account ID of a new user for subsequent authorization,
+	// password validation
+	if err := account.ValidatePassword(); err != nil {
+		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		http.Error(w, resErr.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	// launching the createAccount service,
+	// obtaining the account ID of a new account for subsequent authorization,
 	// error checking
 	accountID, err := hd.sv.IAccountService.CreateAccount(r.Context(), account)
 	if err != nil {
 		switch {
 		case errors.Is(err, customerrors.ErrDBBusyEmail409):
 			// if the email already exists in the DB
-			http.Error(w, err.Error(), http.StatusConflict)
+			resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+			http.Error(w, resErr.Error(), http.StatusConflict)
 			return
 			// other errors
 		case errors.Is(err, customerrors.ErrDBInternalError500):
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+			http.Error(w, resErr.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -54,27 +67,29 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	// authorization
 	// getting a token string
-	tokenString, err := hd.sv.IAccountService.BuildJWTString(r.Context(), account.Email, account.Password)
+	tokenString, err := hd.sv.IAccountService.BuildJWTString(r.Context(), account.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// forming a response
-	resMap := make(map[string]interface{})
+	// creating a response
+	resMap := make(map[string]any)
 	resMap["email"] = account.Email
 	resMap["accountID"] = account.ID
 	resMap["token"] = tokenString
 
 	res, err := json.MarshalIndent(resMap, "", " ")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrEncodeJSON500, err)
+		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// writing the headers and response
 	w.Header().Add("Authorization", fmt.Sprint("Bearer ", tokenString))
-	w.Header().Add("Content-Type", "text/plain")
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(res))
 }

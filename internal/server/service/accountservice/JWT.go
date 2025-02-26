@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,18 +22,8 @@ type claims struct {
 }
 
 // BuildJWTString creates a token and returns it as a string
-func (sv *accountService) BuildJWTString(ctx context.Context, login, password string) (string, error) {
-	// getting the account ID from the database
-	accountID, err := sv.rp.LoadAccountID(ctx, login, sv.genPasswordHash(password))
-	if err != nil {
-		// if the login/password pair is incorrect
-		if strings.Contains(err.Error(), "no rows in result set") {
-			return "", fmt.Errorf("%s: %s", customerrors.DBInvalidLoginPassword401, err.Error())
-		}
-		// if there is another error
-		return "", fmt.Errorf("%s: %s", customerrors.InternalServerError500, err.Error())
-	}
-
+func (sv *accountService) BuildJWTString(ctx context.Context, accountID int) (string, error) {
+	action := "build JWT string"
 	// creating a token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -46,7 +35,7 @@ func (sv *accountService) BuildJWTString(ctx context.Context, login, password st
 	// creating a token string
 	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", fmt.Errorf("%s: %s", customerrors.InternalServerError500, err.Error())
+		return "", fmt.Errorf("%s: %s: %w: %w", customerrors.AccountServiceErr, action, customerrors.ErrTokenSignedString, err)
 	}
 
 	return tokenString, nil

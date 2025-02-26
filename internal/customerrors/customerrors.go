@@ -1,6 +1,8 @@
 package customerrors
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	OrderAlredyUploadedThisUser200  = "номер заказа уже был загружен этим пользователем"
@@ -8,8 +10,6 @@ const (
 	EmptyWithdrawals204             = "нет ни одного списания"
 	ASOrderNotRegistered204         = "заказ не зарегистрирован в системе расчёта"
 	InvalidRequest400               = "неверный формат запроса"
-	InvalidContentType400           = "неверный Content-Type"
-	DBInvalidLoginPassword401       = "неверная пара логин/пароль"
 	JWTWrongSingingMethod401        = "неверный метод подписи"
 	JWTParseError401                = "ошибка при чтении JWT"
 	JWTInvalidToken401              = "невалидный токен"
@@ -28,14 +28,22 @@ const (
 )
 
 const (
-	AccountErr        = "account"
-	DBErr             = "DB error"
-	AccountServiceErr = "account service error"
+	AccountErr        = "account model"
+	HandlerErr        = "handler"
+	AccountServiceErr = "account service"
+	DBErr             = "DB"
 )
 
 var (
-	ErrDBBusyEmail409          = errors.New("e-mail is already busy")
-	ErrDBInternalError500      = errors.New("DB internal error")
-	ErrAccountValidateEmail    = errors.New("incorrect e-mail")
-	ErrAccountValidatePassword = errors.New("incorrect password")
+	ErrDBBusyEmail409             = errors.New("e-mail is already busy")
+	ErrDBEmailNotFound401         = errors.New("there is no account with this email address")
+	ErrDBWrongPassword401         = errors.New("wrong password")
+	ErrDBInternalError500         = errors.New("DB internal error")
+	ErrAccountValidateEmail422    = errors.New("invalid e-mail")
+	ErrAccountValidatePassword422 = errors.New("invalid password")
+	ErrContentType400             = errors.New("invalid Content-Type")
+	ErrDecodeJSON400              = errors.New("deserializing JSON error")
+	ErrEncodeJSON500              = errors.New("JSON serialization error")
+	ErrInternalServerError500     = errors.New("internal server error")
+	ErrTokenSignedString          = errors.New("signed string token error")
 )

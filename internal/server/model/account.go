@@ -21,7 +21,7 @@ func (m *Account) ValidateEmail() error {
 	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	regex := regexp.MustCompile(emailPattern)
 	if !regex.MatchString(m.Email) {
-		return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidateEmail)
+		return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidateEmail422)
 	}
 
 	return nil
@@ -38,9 +38,9 @@ func (m *Account) ValidatePassword() error {
 	hasSpecial := false
 	switch {
 	case len(m.Password) < 8:
-		return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidatePassword)
+		return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidatePassword422)
 	case !regex.MatchString(m.Password):
-		return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidatePassword)
+		return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidatePassword422)
 	default:
 		for _, char := range m.Password {
 			switch {
@@ -55,7 +55,7 @@ func (m *Account) ValidatePassword() error {
 			}
 		}
 		if !hasUpper || !hasLower || !hasDigit || !hasSpecial {
-			return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidatePassword)
+			return fmt.Errorf("%s: %s: %w", customerrors.AccountErr, action, customerrors.ErrAccountValidatePassword422)
 		}
 	}
 
