@@ -27,6 +27,11 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// e-mail validation
+	// if !model.Account. (account.Email) {
+	// 	return -1, errors.New("e-mail validation error")
+	// }
+
 	// launching the createUser service,
 	// obtaining the account ID of a new user for subsequent authorization,
 	// error checking

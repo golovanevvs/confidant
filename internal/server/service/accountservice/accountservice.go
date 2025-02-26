@@ -2,7 +2,6 @@ package accountservice
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/golovanevvs/confidant/internal/customerrors"
@@ -21,10 +20,12 @@ func NewAccountService(accountRp repository.IAccountRepository) *accountService 
 }
 
 func (sv *accountService) CreateAccount(ctx context.Context, account model.Account) (int, error) {
+	action := "create account"
+
 	// e-mail validation
-	if !sv.validateEmail(account.Email) {
-		return -1, errors.New("e-mail validation error")
-	}
+	// if !model.Account. (account.Email) {
+	// 	return -1, errors.New("e-mail validation error")
+	// }
 
 	// password hashing
 	account.PasswordHash = sv.genPasswordHash(account.Password)
@@ -32,7 +33,6 @@ func (sv *accountService) CreateAccount(ctx context.Context, account model.Accou
 	// DB: saving a new account
 	accountID, err := sv.rp.SaveAccount(ctx, account)
 	if err != nil {
-		action := "create account"
 		return -1, fmt.Errorf("%s: %s: %w", customerrors.AccountServiceErr, action, err)
 	}
 

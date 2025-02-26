@@ -28,11 +28,14 @@ const (
 )
 
 const (
+	AccountErr        = "account"
 	DBErr             = "DB error"
 	AccountServiceErr = "account service error"
 )
 
 var (
-	ErrDBBusyEmail409     = errors.New("e-mail is already busy")
-	ErrDBInternalError500 = errors.New("DB internal error")
+	ErrDBBusyEmail409          = errors.New("e-mail is already busy")
+	ErrDBInternalError500      = errors.New("DB internal error")
+	ErrAccountValidateEmail    = errors.New("incorrect e-mail")
+	ErrAccountValidatePassword = errors.New("incorrect password")
 )

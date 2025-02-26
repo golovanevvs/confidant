@@ -21,6 +21,8 @@ func NewAccountPostgres(db *sqlx.DB) *accountPostgres {
 }
 
 func (rp *accountPostgres) SaveAccount(ctx context.Context, account model.Account) (int, error) {
+	action := "save account"
+
 	row := rp.db.QueryRowContext(ctx, `
 		INSERT INTO account
 			(email, password_hash)
@@ -31,7 +33,6 @@ func (rp *accountPostgres) SaveAccount(ctx context.Context, account model.Accoun
 
 	var accountID int
 	if err := row.Scan(&accountID); err != nil {
-		action := "save account"
 		switch {
 		case strings.Contains(err.Error(), " 23505"):
 			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBBusyEmail409, err)

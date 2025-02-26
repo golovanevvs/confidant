@@ -2,13 +2,6 @@ package model
 
 import "time"
 
-type Account struct {
-	ID           int    `json:"-"`
-	Email        string `json:"email"`
-	Password     string `json:"password"`
-	PasswordHash string `json:"-"`
-}
-
 type Order struct {
 	ID           int       `json:"-"`
 	Number       int       `json:"-"`
