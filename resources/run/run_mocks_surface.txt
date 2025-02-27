@@ -1,0 +1,3 @@
+mockgen -destination=internal/server/repository/mocks/mock_iaccountrepository.go -package=mocks github.com/golovanevvs/confidant/internal/server/repository IAccountRepository
+
+mockgen -destination=internal/server/repository/mocks/mock_imanagerepository.go -package=mocks github.com/golovanevvs/confidant/internal/server/repository IManageRepository

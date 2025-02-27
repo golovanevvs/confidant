@@ -24,7 +24,7 @@ type cryptoConfig struct {
 	PrivateKeyPath string
 }
 
-func newConfig() (*config, error) {
+func NewConfig() (*config, error) {
 	return &config{
 		serverConfig{
 			Addr: "",

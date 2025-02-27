@@ -10,8 +10,10 @@ import (
 	"time"
 
 	"github.com/golovanevvs/confidant/internal/server/repository"
+	"github.com/golovanevvs/confidant/internal/server/repository/postgres"
 	"github.com/golovanevvs/confidant/internal/server/service"
 	"github.com/golovanevvs/confidant/internal/server/transport/http/handler"
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
 
@@ -37,17 +39,17 @@ func RunApp() {
 	lg := logger.Sugar()
 
 	// initializing the config
-	_, err := newConfig()
+	_, err := NewConfig()
 	if err != nil {
 		lg.Fatalf("application configuration initialization error: %s", err.Error())
 	}
 
-	// initializing the repository
-	var rp *repository.Repository
+	// initializing the postgres DB
+	var db *sqlx.DB
 	for i := 5430; i <= 5440; i++ {
 		databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
 		lg.Debugf("Connecting to DB: port %d...", i)
-		rp, err = repository.New(databaseURI)
+		db, err = postgres.New(databaseURI)
 		if err != nil {
 			if i == 5440 {
 				lg.Fatalf("postgres DB initialization error: %s", err.Error())
@@ -59,6 +61,12 @@ func RunApp() {
 			break
 		}
 	}
+	// initializing the repository
+	accountRp := postgres.NewAccountPostgres(db)
+	manageRp := postgres.NewManagePostgres(db)
+	// myRp := postgres.NewMyPostgres(db)
+	// yourRp := postgres.NewYourPostgres(db)
+	rp := repository.New(manageRp, accountRp)
 
 	// initializing the service
 	sv := service.New(rp)
@@ -72,7 +80,7 @@ func RunApp() {
 	// starting the server
 	go func() {
 		lg.Infof("The 'confidant' server is running")
-		if err := srv.RunServer(":8080", hd.InitRoutes(lg)); err != nil {
+		if err := srv.RunServer(":8080", hd.InitRoutes()); err != nil {
 			lg.Fatalf("server startup error: %s", err.Error())
 		}
 	}()

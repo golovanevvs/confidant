@@ -10,9 +10,7 @@ const (
 	EmptyWithdrawals204             = "нет ни одного списания"
 	ASOrderNotRegistered204         = "заказ не зарегистрирован в системе расчёта"
 	InvalidRequest400               = "неверный формат запроса"
-	JWTWrongSingingMethod401        = "неверный метод подписи"
 	JWTParseError401                = "ошибка при чтении JWT"
-	JWTInvalidToken401              = "невалидный токен"
 	NotEnoughPoints402              = "на счету недостаточно средств"
 	OrderAlredyUploadedOtherUser409 = "номер заказа уже был загружен другим пользователем"
 	InvalidOrderNumber422           = "Неверный формат номера заказа"
@@ -46,4 +44,6 @@ var (
 	ErrEncodeJSON500              = errors.New("JSON serialization error")
 	ErrInternalServerError500     = errors.New("internal server error")
 	ErrTokenSignedString          = errors.New("signed string token error")
+	ErrJWTWrongSingingMethod401   = errors.New("invalid signature method")
+	ErrJWTInvalidToken401         = errors.New("invalid token")
 )

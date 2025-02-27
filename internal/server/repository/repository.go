@@ -2,10 +2,8 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/golovanevvs/confidant/internal/server/model"
-	"github.com/golovanevvs/confidant/internal/server/repository/postgres"
 )
 
 type IManageRepository interface {
@@ -17,30 +15,32 @@ type IAccountRepository interface {
 	LoadAccountID(ctx context.Context, email, passwordHash string) (int, error)
 }
 
-type IMyRepository interface {
-	DoIt(ctx context.Context) (int, error)
-}
+// type IMyRepository interface {
+// 	DoIt(ctx context.Context) (int, error)
+// }
 
-type IYourRepository interface {
-	CrashIt(ctx context.Context) (int, error)
-}
+// type IYourRepository interface {
+// 	CrashIt(ctx context.Context) (int, error)
+// }
 
 type Repository struct {
 	IManageRepository
 	IAccountRepository
-	IMyRepository
-	IYourRepository
+	// IMyRepository
+	// IYourRepository
 }
 
-func New(databaseURI string) (*Repository, error) {
-	db, err := postgres.New(databaseURI)
-	if err != nil {
-		return nil, fmt.Errorf("postgres DB initialization error: %s", err.Error())
-	}
+func New(
+	IManageRepository IManageRepository,
+	IAccountRepository IAccountRepository,
+	// IMyRepository IMyRepository,
+	// IYourRepository IYourRepository,
+) *Repository {
+
 	return &Repository{
-		IManageRepository:  postgres.NewManagePostgres(db),
-		IAccountRepository: postgres.NewAccountPostgres(db),
-		IMyRepository:      postgres.NewMyPostgres(db),
-		IYourRepository:    postgres.NewYourPostgres(db),
-	}, nil
+		IManageRepository:  IManageRepository,
+		IAccountRepository: IAccountRepository,
+		// IMyRepository:      IMyRepository,
+		// IYourRepository:    IYourRepository,
+	}
 }

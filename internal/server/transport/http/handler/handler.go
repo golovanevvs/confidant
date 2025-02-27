@@ -21,13 +21,13 @@ func New(sv *service.Service, lg *zap.SugaredLogger) *handler {
 }
 
 // InitRoutes - request routing, used as http.Handler when starting the server
-func (hd *handler) InitRoutes(lg *zap.SugaredLogger) *chi.Mux {
+func (hd *handler) InitRoutes() *chi.Mux {
 	// creating a router instance
 	rt := chi.NewRouter()
 
 	// using middleware
 	// logging
-	rt.Use(logger.WithLogging(lg))
+	rt.Use(logger.WithLogging(hd.lg))
 
 	// routes
 	rt.Post("/api/register", hd.accountRegisterPost)
