@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/golovanevvs/confidant/internal/server/model"
@@ -17,6 +19,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		resErr := fmt.Errorf("%s: %s:%w", customerrors.HandlerErr, action, customerrors.ErrContentType400)
+		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
 	}
@@ -25,6 +28,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	var account model.Account
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
 		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrDecodeJSON400, err)
+		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
 	}
@@ -32,6 +36,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// e-mail validation
 	if err := account.ValidateEmail(); err != nil {
 		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusUnprocessableEntity)
 		return
 	}
@@ -39,6 +44,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// password validation
 	if err := account.ValidatePassword(); err != nil {
 		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusUnprocessableEntity)
 		return
 	}
@@ -46,17 +52,19 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// launching the createAccount service,
 	// obtaining the account ID of a new account for subsequent authorization,
 	// error checking
-	accountID, err := hd.sv.IAccountService.CreateAccount(r.Context(), account)
+	accountID, err := hd.sv.IAccountService.CreateAccount(context.Background(), account)
 	if err != nil {
 		switch {
 		case errors.Is(err, customerrors.ErrDBBusyEmail409):
 			// if the email already exists in the DB
 			resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+			hd.lg.Errorf(resErr.Error())
 			http.Error(w, resErr.Error(), http.StatusConflict)
 			return
 			// other errors
 		case errors.Is(err, customerrors.ErrDBInternalError500):
 			resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+			hd.lg.Errorf(resErr.Error())
 			http.Error(w, resErr.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -70,6 +78,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := hd.sv.IAccountService.BuildJWTString(r.Context(), account.ID)
 	if err != nil {
 		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -77,12 +86,13 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// creating a response
 	resMap := make(map[string]any)
 	resMap["email"] = account.Email
-	resMap["accountID"] = account.ID
+	resMap["accountID"] = strconv.Itoa(account.ID)
 	resMap["token"] = tokenString
 
 	res, err := json.MarshalIndent(resMap, "", " ")
 	if err != nil {
 		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrEncodeJSON500, err)
+		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return
 	}

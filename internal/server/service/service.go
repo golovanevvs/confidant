@@ -13,24 +13,24 @@ type IAccountService interface {
 	BuildJWTString(ctx context.Context, accountID int) (string, error)
 }
 
-type IMyService interface {
-	MyTask(ctx context.Context) (int, error)
-}
+// type IMyService interface {
+// 	MyTask(ctx context.Context) (int, error)
+// }
 
-type IYourService interface {
-	YourTask(ctx context.Context) (int, error)
-}
+// type IYourService interface {
+// 	YourTask(ctx context.Context) (int, error)
+// }
 
 type Service struct {
 	IAccountService
-	IMyService
-	IYourService
+	//IMyService
+	//IYourService
 }
 
 func New(rp *repository.Repository) *Service {
 	return &Service{
 		IAccountService: accountservice.NewAccountService(rp.IAccountRepository),
-		IMyService:      newMyService(rp.IMyRepository),
-		IYourService:    newYourService(rp.IYourRepository),
+		// IMyService:      newMyService(rp.),
+		// IYourService:    newYourService(rp.IYourRepository),
 	}
 }

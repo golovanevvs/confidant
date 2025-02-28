@@ -9,7 +9,7 @@ const (
 	hashKey = "asd52v04fgt2"
 )
 
-// genPasswordHash generates a hash of the password
+// GenPasswordHash generates a hash of the password
 func (as *accountService) genPasswordHash(password string) string {
 	hash := sha256.New()
 	hash.Write([]byte(password))
