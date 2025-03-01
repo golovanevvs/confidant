@@ -1,19 +1,33 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/go-chi/chi"
-	"github.com/golovanevvs/confidant/internal/server/service"
+	"github.com/golovanevvs/confidant/internal/server/model"
 	"github.com/golovanevvs/confidant/internal/server/transport/http/logger"
 	"go.uber.org/zap"
 )
 
+type IAccountService interface {
+	CreateAccount(ctx context.Context, account model.Account) (int, error)
+	BuildJWTString(ctx context.Context, accountID int) (string, error)
+}
+
+type Service struct {
+	IAccountService
+	// IAccountService
+	//IMyService
+	//IYourService
+}
+
 type handler struct {
-	sv *service.Service
+	sv *Service
 	lg *zap.SugaredLogger
 }
 
 // New - the handler constructor
-func New(sv *service.Service, lg *zap.SugaredLogger) *handler {
+func New(sv *Service, lg *zap.SugaredLogger) *handler {
 	return &handler{
 		sv: sv,
 		lg: lg,
