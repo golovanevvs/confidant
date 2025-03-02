@@ -2,34 +2,21 @@ package accountservice
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/golovanevvs/confidant/internal/server/model"
-	"github.com/golovanevvs/confidant/internal/server/repository"
 )
 
-type accountService struct {
-	rp repository.IAccountRepository
+type IAccountRepository interface {
+	SaveAccount(ctx context.Context, account model.Account) (int, error)
+	LoadAccountID(ctx context.Context, email, passwordHash string) (int, error)
 }
 
-func NewAccountService(accountRp repository.IAccountRepository) *accountService {
-	return &accountService{
-		rp: accountRp,
-	}
+type AccountService struct {
+	Rp IAccountRepository
 }
 
-func (sv *accountService) CreateAccount(ctx context.Context, account model.Account) (int, error) {
-	action := "create account"
-
-	// password hashing
-	account.PasswordHash = sv.genPasswordHash(account.Password)
-
-	// DB: saving a new account
-	accountID, err := sv.rp.SaveAccount(ctx, account)
-	if err != nil {
-		return -1, fmt.Errorf("%s: %s: %w", customerrors.AccountServiceErr, action, err)
+func New(accountRp IAccountRepository) *AccountService {
+	return &AccountService{
+		Rp: accountRp,
 	}
-
-	return accountID, nil
 }

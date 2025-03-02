@@ -7,18 +7,24 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// The postgres constructor.
-func New(databaseURI string) (*sqlx.DB, error) {
+type Postgres struct {
+	*ManagePostgres
+	*AccountPostgres
+}
+
+func New(databaseURI string) (*Postgres, error) {
 	db, err := sqlx.Open("pgx", databaseURI)
 	if err != nil {
 		return nil, err
 	}
 
-	// DB pinging
 	err = db.Ping()
 	if err != nil {
 		return nil, fmt.Errorf("DB ping error: %s", err.Error())
 	}
 
-	return db, nil
+	return &Postgres{
+		NewManagePostgres(db),
+		NewAccountPostgres(db),
+	}, nil
 }

@@ -11,17 +11,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type accountPostgres struct {
+type AccountPostgres struct {
 	db *sqlx.DB
 }
 
-func NewAccountPostgres(db *sqlx.DB) *accountPostgres {
-	return &accountPostgres{
+func NewAccountPostgres(db *sqlx.DB) *AccountPostgres {
+	return &AccountPostgres{
 		db: db,
 	}
 }
 
-func (rp *accountPostgres) SaveAccount(ctx context.Context, account model.Account) (int, error) {
+func (rp *AccountPostgres) SaveAccount(ctx context.Context, account model.Account) (int, error) {
 	action := "save account"
 
 	row := rp.db.QueryRowContext(ctx, `
@@ -47,7 +47,7 @@ func (rp *accountPostgres) SaveAccount(ctx context.Context, account model.Accoun
 	return accountID, nil
 }
 
-func (rp *accountPostgres) LoadAccountID(ctx context.Context, email, passwordHash string) (int, error) {
+func (rp *AccountPostgres) LoadAccountID(ctx context.Context, email, passwordHash string) (int, error) {
 	action := "load account ID"
 
 	row := rp.db.QueryRowContext(ctx, `

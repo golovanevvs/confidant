@@ -10,7 +10,7 @@ const (
 )
 
 // GenPasswordHash generates a hash of the password
-func (as *accountService) genPasswordHash(password string) string {
+func (as *AccountService) genPasswordHash(password string) string {
 	hash := sha256.New()
 	hash.Write([]byte(password))
 	hash.Write([]byte(hashKey))

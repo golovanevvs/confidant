@@ -1,33 +1,21 @@
 package handler
 
 import (
-	"context"
+	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/golovanevvs/confidant/internal/server/model"
+	"github.com/golovanevvs/confidant/internal/server/transport"
 	"github.com/golovanevvs/confidant/internal/server/transport/http/logger"
 	"go.uber.org/zap"
 )
 
-type IAccountService interface {
-	CreateAccount(ctx context.Context, account model.Account) (int, error)
-	BuildJWTString(ctx context.Context, accountID int) (string, error)
-}
-
-type Service struct {
-	IAccountService
-	// IAccountService
-	//IMyService
-	//IYourService
-}
-
 type handler struct {
-	sv *Service
+	sv transport.IService
 	lg *zap.SugaredLogger
 }
 
 // New - the handler constructor
-func New(sv *Service, lg *zap.SugaredLogger) *handler {
+func New(sv transport.IService, lg *zap.SugaredLogger) *handler {
 	return &handler{
 		sv: sv,
 		lg: lg,
@@ -35,7 +23,7 @@ func New(sv *Service, lg *zap.SugaredLogger) *handler {
 }
 
 // InitRoutes - request routing, used as http.Handler when starting the server
-func (hd *handler) InitRoutes() *chi.Mux {
+func (hd *handler) InitRoutes() http.Handler {
 	// creating a router instance
 	rt := chi.NewRouter()
 

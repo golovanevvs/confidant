@@ -3,19 +3,21 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/golovanevvs/confidant/internal/server/repository"
-	"github.com/golovanevvs/confidant/internal/server/repository/postgres"
 	"github.com/golovanevvs/confidant/internal/server/service"
 	"github.com/golovanevvs/confidant/internal/server/transport/http/handler"
-	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
+
+type IHandler interface {
+	InitRoutes() http.Handler
+}
 
 func RunApp() {
 	// initializing the logger
@@ -45,30 +47,34 @@ func RunApp() {
 	}
 
 	// initializing the postgres DB
-	var db *sqlx.DB
-	for i := 5430; i <= 5440; i++ {
-		databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
-		lg.Debugf("Connecting to DB: port %d...", i)
-		db, err = postgres.New(databaseURI)
-		if err != nil {
-			if i == 5440 {
-				lg.Fatalf("postgres DB initialization error: %s", err.Error())
-			}
-			lg.Debugf("Connect to DB: error: %s", err.Error())
-			lg.Debugf("Repeating...")
-		} else {
-			lg.Infof("Connecting to DB: success")
-			break
-		}
-	}
+	// var db *sqlx.DB
+	// for i := 5430; i <= 5440; i++ {
+	// 	databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
+	// 	lg.Debugf("Connecting to DB: port %d...", i)
+	// 	db, err = postgres.New(databaseURI)
+	// 	if err != nil {
+	// 		if i == 5440 {
+	// 			lg.Fatalf("postgres DB initialization error: %s", err.Error())
+	// 		}
+	// 		lg.Debugf("Connect to DB: error: %s", err.Error())
+	// 		lg.Debugf("Repeating...")
+	// 	} else {
+	// 		lg.Infof("Connecting to DB: success")
+	// 		break
+	// 	}
+	// }
 	// initializing the repository
-	accountRp := postgres.NewAccountPostgres(db)
-	manageRp := postgres.NewManagePostgres(db)
-	// myRp := postgres.NewMyPostgres(db)
-	// yourRp := postgres.NewYourPostgres(db)
-	rp := repository.New(manageRp, accountRp)
+	// accountRp := postgres.NewAccountPostgres(db)
+	// manageRp := postgres.NewManagePostgres(db)
+	// rp := repository.New(manageRp, accountRp)
+	rp, err := repository.New("w")
+	if err != nil {
+		return
+	}
 
 	// initializing the service
+	// accountSv := accountservice.New(rp.IAccountRepository)
+	// sv := transport.NewService(accountSv)
 	sv := service.New(rp)
 
 	//initializing the handler
@@ -96,7 +102,7 @@ func RunApp() {
 		lg.Errorf("error when shutting down the server: %s", err.Error())
 	}
 
-	if err := rp.IManageRepository.CloseDB(); err != nil {
+	if err := rp.CloseDB(); err != nil {
 		lg.Errorf("error when shutting down the DB: %v", err.Error())
 	}
 

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -52,7 +51,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// launching the createAccount service,
 	// obtaining the account ID of a new account for subsequent authorization,
 	// error checking
-	accountID, err := hd.sv.IAccountService.CreateAccount(context.Background(), account)
+	accountID, err := hd.sv.CreateAccount(r.Context(), account)
 	if err != nil {
 		switch {
 		case errors.Is(err, customerrors.ErrDBBusyEmail409):
@@ -75,7 +74,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	// authorization
 	// getting a token string
-	tokenString, err := hd.sv.IAccountService.BuildJWTString(r.Context(), account.ID)
+	tokenString, err := hd.sv.BuildJWTString(r.Context(), account.ID)
 	if err != nil {
 		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
 		hd.lg.Errorf(resErr.Error())
