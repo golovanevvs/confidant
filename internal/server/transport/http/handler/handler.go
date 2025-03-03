@@ -32,7 +32,7 @@ func (hd *handler) InitRoutes() http.Handler {
 	rt.Use(logger.WithLogging(hd.lg))
 
 	// routes
-	rt.Post("/api/register", hd.accountRegisterPost)
+	rt.Post("/register", hd.accountRegisterPost)
 
 	// rt.Route("/api/user", func(r chi.Router) {
 	// r.Post("/register", hd.accountRegister)

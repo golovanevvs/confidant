@@ -26,6 +26,14 @@ const (
 )
 
 const (
+	AppViewErr = "application view"
+)
+
+var (
+	ErrRunAppView = errors.New("application view error")
+)
+
+const (
 	AccountErr        = "account model"
 	HandlerErr        = "handler"
 	AccountServiceErr = "account service"

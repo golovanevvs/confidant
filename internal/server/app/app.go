@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -46,30 +47,22 @@ func RunApp() {
 		lg.Fatalf("application configuration initialization error: %s", err.Error())
 	}
 
-	// initializing the postgres DB
-	// var db *sqlx.DB
-	// for i := 5430; i <= 5440; i++ {
-	// 	databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
-	// 	lg.Debugf("Connecting to DB: port %d...", i)
-	// 	db, err = postgres.New(databaseURI)
-	// 	if err != nil {
-	// 		if i == 5440 {
-	// 			lg.Fatalf("postgres DB initialization error: %s", err.Error())
-	// 		}
-	// 		lg.Debugf("Connect to DB: error: %s", err.Error())
-	// 		lg.Debugf("Repeating...")
-	// 	} else {
-	// 		lg.Infof("Connecting to DB: success")
-	// 		break
-	// 	}
-	// }
-	// initializing the repository
-	// accountRp := postgres.NewAccountPostgres(db)
-	// manageRp := postgres.NewManagePostgres(db)
-	// rp := repository.New(manageRp, accountRp)
-	rp, err := repository.New("w")
-	if err != nil {
-		return
+	//initializing the repository
+	var rp *repository.Repository
+	for i := 5430; i <= 5440; i++ {
+		databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
+		lg.Debugf("Connecting to DB: port %d...", i)
+		rp, err = repository.New(databaseURI)
+		if err != nil {
+			if i == 5440 {
+				lg.Fatalf("postgres DB initialization error: %s", err.Error())
+			}
+			lg.Debugf("Connect to DB: error: %s", err.Error())
+			lg.Debugf("Repeating...")
+		} else {
+			lg.Infof("Connecting to DB: success")
+			break
+		}
 	}
 
 	// initializing the service
