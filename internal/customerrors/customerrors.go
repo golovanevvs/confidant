@@ -26,18 +26,23 @@ const (
 )
 
 const (
-	AppViewErr = "application view"
+	ClientAppViewErr = "CLIENT: application view"
+	ClientHTTPErr    = "CLIENT: transport HTTP"
+	ClientServiceErr = "CLIENT: service"
 )
 
 var (
-	ErrRunAppView = errors.New("application view error")
+	ErrRunAppView       = errors.New("application view error")
+	ErrCreateRequest    = errors.New("creating request error")
+	ErrSendRequest      = errors.New("sending request error")
+	ErrReadResponseBody = errors.New("error reading response body")
 )
 
 const (
-	AccountErr        = "account model"
-	HandlerErr        = "handler"
-	AccountServiceErr = "account service"
-	DBErr             = "DB"
+	AccountErr        = "SERVER: account model"
+	HandlerErr        = "SERVER: transport HTTP"
+	AccountServiceErr = "SERVER: account service"
+	DBErr             = "SERVER: DB"
 )
 
 var (

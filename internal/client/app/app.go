@@ -5,6 +5,7 @@ import (
 
 	"github.com/golovanevvs/confidant/internal/client/app/appview"
 	"github.com/golovanevvs/confidant/internal/client/service"
+	trhttp "github.com/golovanevvs/confidant/internal/client/transport/http"
 	"go.uber.org/zap"
 )
 
@@ -29,8 +30,11 @@ func RunApp() {
 	defer logger.Sync() // flushes buffer, if any
 	lg := logger.Sugar()
 
+	// initializing the transport
+	trHTTP := trhttp.New(":8080")
+
 	// initializing the service
-	sv := service.New()
+	sv := service.New(trHTTP)
 
 	av := appview.New(sv, lg)
 

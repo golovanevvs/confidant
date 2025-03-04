@@ -1,11 +1,12 @@
 package appview
 
 import (
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"go.uber.org/zap"
 )
 
 type IAccountService interface {
-	Register(email, password string) (accountID int, err error)
+	RegisterAccount(email, password string) (result model.RegisterAccount, err error)
 	// Login(email, password string) (accountID int, err error)
 	// ChangePassword(email, password, newPassword string) error
 	//GetUser(login string) (string, error)

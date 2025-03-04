@@ -9,3 +9,5 @@ migrate -path ./internal/migrations -database "postgres://localhost:5434/revelio
 go build ./cmd/confidant_server && start confidant_server
 
 go build ./cmd/confidant_client && start confidant_client
+
+go build ./cmd/confidant_server && start confidant_server && go build ./cmd/confidant_client && start confidant_client

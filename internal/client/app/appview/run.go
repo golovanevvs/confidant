@@ -2,10 +2,9 @@ package appview
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/golovanevvs/confidant/internal/client/model"
-	trhttp "github.com/golovanevvs/confidant/internal/client/transport/http"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/rivo/tview"
 )
@@ -19,32 +18,56 @@ func (av *AppView) Run() error {
 	// page container
 	pages := tview.NewPages()
 
-	//message box
-	messageBox := tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignLeft).
-		SetText("Сообщения, ошибки и прочее").
-		SetBorder(true).
-		SetBorderColor(tcell.ColorRed).
-		SetTitle(" Сообщения ")
+	// left message box
+	messageBoxL := tview.NewTextView()
+	messageBoxL.SetDynamicColors(true)
+	messageBoxL.SetTextAlign(tview.AlignLeft)
+	messageBoxL.SetText("[green]Добро пожаловать в систему хранения конфиденциальной информации [white]CON[blue]FID[red]ANT")
+	messageBoxL.SetBorder(true)
+	messageBoxL.SetBorderColor(tcell.ColorRed)
+	messageBoxL.SetTitle(" Сообщения ")
 
+	// right message box
+	messageBoxR := tview.NewTextView()
+	messageBoxR.SetDynamicColors(true)
+	messageBoxR.SetTextAlign(tview.AlignLeft)
+	messageBoxR.SetBorder(true)
+	messageBoxR.SetBorderColor(tcell.ColorRed)
+	messageBoxR.SetTitle(" Дополнительная информация ")
+
+	// main grid
 	mainGrid := tview.NewGrid()
 	mainGrid.SetBorder(true).
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(" Клиент [blue]системы [red]confidant ")
-	mainGrid.SetRows(0, 6)
-	mainGrid.AddItem(pages, 0, 0, 1, 1, 0, 0, true)
-	mainGrid.AddItem(messageBox, 1, 0, 1, 1, 0, 0, true)
+	mainGrid.SetRows(0, 8)
+	mainGrid.AddItem(pages, 0, 0, 1, 2, 0, 0, true)
+	mainGrid.AddItem(messageBoxL, 1, 0, 1, 1, 0, 0, true)
+	mainGrid.AddItem(messageBoxR, 1, 1, 1, 1, 0, 0, true)
+
+	var formRegisterPage, formLoginPage *tview.Form
+	var inputCaptureLoginPage, inputCaptureRegisterPage func(event *tcell.EventKey) *tcell.EventKey
 
 	//! LOGIN PAGE
-	formLoginPage := tview.NewForm()
+	formLoginPage = tview.NewForm()
 	formLoginPage.SetHorizontal(false)
 	formLoginPage.AddInputField("E-mail:", "", 0, nil, nil)
 	formLoginPage.AddPasswordField("Пароль:", "", 0, '*', nil)
+	//! Войти
 	buttonLoginLoginPage := tview.NewButton("Войти")
+	//! Зарегистрироваться
 	buttonRegisterLoginPage := tview.NewButton("Зарегистрироваться").SetSelectedFunc(func() {
 		pages.SwitchToPage("register_page")
+		app.SetInputCapture(inputCaptureRegisterPage)
+		app.SetFocus(formRegisterPage.GetFormItem(0))
+		for i := 0; i < 3; i++ {
+			if inputField, ok := formRegisterPage.GetFormItem(i).(*tview.InputField); ok {
+				inputField.SetText("")
+			}
+		}
+		messageBoxL.SetText("Введите e-mail и пароль. Повторите ввод пароля. Нажмите кнопку [blue]\"Зарегистрироваться\".\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 	})
+	//! Выход
 	buttonExitLoginPage := tview.NewButton("Выход").SetSelectedFunc(func() {
 		app.Stop()
 	})
@@ -63,7 +86,7 @@ func (av *AppView) Run() error {
 		SetColumns(0, 40, 0).
 		AddItem(gridLoginPage, 1, 1, 1, 1, 0, 0, true)
 
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	inputCaptureLoginPage = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := app.GetFocus()
 			switch currentFocus {
@@ -81,19 +104,19 @@ func (av *AppView) Run() error {
 			return nil
 		}
 
-		if event.Key() == tcell.KeyEnter {
-			currentFocus := app.GetFocus()
-			switch currentFocus {
-			case formLoginPage.GetFormItem(1):
-				app.SetFocus(buttonLoginLoginPage)
-			}
-		}
+		// if event.Key() == tcell.KeyEnter {
+		// 	currentFocus := app.GetFocus()
+		// 	switch currentFocus {
+		// 	case formLoginPage.GetFormItem(1):
+		// 		app.SetFocus(buttonLoginLoginPage)
+		// 	}
+		// }
 
 		return event
-	})
+	}
 
 	//! REGISTER PAGE
-	formRegisterPage := tview.NewForm()
+	formRegisterPage = tview.NewForm()
 	formRegisterPage.SetHorizontal(false)
 	formRegisterPage.AddInputField("E-mail:", "", 0, nil, nil)
 	formRegisterPage.AddPasswordField("Пароль:", "", 0, '*', nil)
@@ -105,26 +128,58 @@ func (av *AppView) Run() error {
 			pass1 := formRegisterPage.GetFormItem(1).(*tview.InputField).GetText()
 			pass2 := formRegisterPage.GetFormItem(2).(*tview.InputField).GetText()
 			if pass1 != pass2 {
-				modal := tview.NewModal().
-					SetText("Пароли не совпадают! Повторите ввод").
-					AddButtons([]string{"Закрыть"}).
-					SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-						if buttonLabel == "Закрыть" {
-							pages.SwitchToPage("register_page")
-						}
-					})
-				pages.AddPage("register_page_modal", modal, true, true)
-			} else {
-				account := model.Account{
-					Email:    formRegisterPage.GetFormItem(0).(*tview.InputField).GetText(),
-					Password: formRegisterPage.GetFormItem(1).(*tview.InputField).GetText(),
+				messageBoxL.SetText("[red]Пароли не совпадают! Повторите ввод.\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+				messageBoxR.Clear()
+				if inputField, ok := formRegisterPage.GetFormItem(1).(*tview.InputField); ok {
+					inputField.SetText("")
+					app.SetFocus(inputField)
 				}
-				tr := trhttp.New()
-				tr.RegisterAccount(account)
+				if inputField, ok := formRegisterPage.GetFormItem(2).(*tview.InputField); ok {
+					inputField.SetText("")
+				}
+			} else {
+				email := formRegisterPage.GetFormItem(0).(*tview.InputField).GetText()
+				password := formRegisterPage.GetFormItem(1).(*tview.InputField).GetText()
+				accountID, err := av.sv.RegisterAccount(email, password)
+				if err != nil {
+					messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+					switch {
+					case strings.Contains(err.Error(), customerrors.ErrAccountValidateEmail422.Error()):
+						messageBoxL.SetText("[red]Неверно введён e-mail!")
+						if inputField, ok := formRegisterPage.GetFormItem(0).(*tview.InputField); ok {
+							app.SetFocus(inputField)
+						}
+					case strings.Contains(err.Error(), customerrors.ErrAccountValidatePassword422.Error()):
+						messageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
+						if inputField, ok := formRegisterPage.GetFormItem(1).(*tview.InputField); ok {
+							inputField.SetText("")
+							app.SetFocus(inputField)
+						}
+						if inputField, ok := formRegisterPage.GetFormItem(2).(*tview.InputField); ok {
+							inputField.SetText("")
+						}
+					case strings.Contains(err.Error(), customerrors.ErrDBBusyEmail409.Error()):
+						messageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
+						if inputField, ok := formRegisterPage.GetFormItem(0).(*tview.InputField); ok {
+							app.SetFocus(inputField)
+						}
+					default:
+						messageBoxL.SetText("[red]Возникла ошибка.")
+					}
+				} else {
+					messageBoxL.Clear()
+					messageBoxR.Clear()
+					messageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %d\n[white]Войдите в систему, используя свой e-mail и пароль.", accountID))
+				}
 			}
 		})
+		//! Назад
 	buttonExitRegisterPage := tview.NewButton("Назад").SetSelectedFunc(func() {
 		pages.AddAndSwitchToPage("login_page", mainGridLoginPage, true)
+		app.SetInputCapture(inputCaptureLoginPage)
+		app.SetFocus(formLoginPage.GetFormItem(0))
+		messageBoxL.SetText("[green]Добро пожаловать в систему хранения конфиденциальной информации [white]CON[blue]FID[red]ANT")
+		messageBoxR.Clear()
 	})
 
 	formGrid := tview.NewGrid().
@@ -140,45 +195,47 @@ func (av *AppView) Run() error {
 		SetColumns(0, 40, 0).
 		AddItem(formGrid, 1, 1, 1, 1, 0, 0, true)
 
-	// app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-	// 	if event.Key() == tcell.KeyTAB {
-	// 		currentFocus := app.GetFocus()
-	// 		switch currentFocus {
-	// 		case formRegisterPage.GetFormItem(0):
-	// 			app.SetFocus(formRegisterPage.GetFormItem(1))
-	// 		case formRegisterPage.GetFormItem(1):
-	// 			app.SetFocus(formRegisterPage.GetFormItem(2))
-	// 		case formRegisterPage.GetFormItem(2):
-	// 			app.SetFocus(buttonRegisterRegisterPage)
-	// 		case buttonRegisterRegisterPage:
-	// 			app.SetFocus(buttonExitRegisterPage)
-	// 		case buttonExitRegisterPage:
-	// 			app.SetFocus(formRegisterPage.GetFormItem(0))
-	// 		}
-	// 		return nil
-	// 	}
+	inputCaptureRegisterPage = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := app.GetFocus()
+			switch currentFocus {
+			case formRegisterPage.GetFormItem(0):
+				app.SetFocus(formRegisterPage.GetFormItem(1))
+			case formRegisterPage.GetFormItem(1):
+				app.SetFocus(formRegisterPage.GetFormItem(2))
+			case formRegisterPage.GetFormItem(2):
+				app.SetFocus(buttonRegisterRegisterPage)
+			case buttonRegisterRegisterPage:
+				app.SetFocus(buttonExitRegisterPage)
+			case buttonExitRegisterPage:
+				app.SetFocus(formRegisterPage.GetFormItem(0))
+			}
+			return nil
+		}
 
-	// 	if event.Key() == tcell.KeyEnter {
-	// 		currentFocus := app.GetFocus()
-	// 		switch currentFocus {
-	// 		case formRegisterPage.GetFormItem(2):
-	// 			app.SetFocus(buttonRegisterRegisterPage)
-	// 		}
-	// 	}
+		// if event.Key() == tcell.KeyEnter {
+		// 	currentFocus := app.GetFocus()
+		// 	switch currentFocus {
+		// 	case formRegisterPage.GetFormItem(2):
+		// 		app.SetFocus(buttonRegisterRegisterPage)
+		// 	}
+		// }
 
-	// 	return event
-	// })
+		return event
+	}
 
 	//! Adding Pages
 
 	pages.AddPage("register_page", mainGridRegisterPage, true, true)
 	pages.AddAndSwitchToPage("login_page", mainGridLoginPage, true)
+	app.SetInputCapture(inputCaptureLoginPage)
+	app.SetFocus(formLoginPage.GetFormItem(0))
 
 	//! Launching the app
 	app.SetRoot(mainGrid, true)
 
 	if err := app.Run(); err != nil {
-		return fmt.Errorf("%s: %s: %w: %w", customerrors.AppViewErr, action, customerrors.ErrRunAppView, err)
+		return fmt.Errorf("%s: %s: %w: %w", customerrors.ClientAppViewErr, action, customerrors.ErrRunAppView, err)
 	}
 
 	return nil

@@ -84,7 +84,6 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	// creating a response
 	resMap := make(map[string]any)
-	resMap["email"] = account.Email
 	resMap["accountID"] = strconv.Itoa(account.ID)
 	resMap["token"] = tokenString
 

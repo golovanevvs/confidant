@@ -1,8 +1,17 @@
 package service
 
-type Service struct {
+import "net/http"
+
+type ITransport interface {
+	RegisterAccount(email, password string) (response *http.Response, err error)
 }
 
-func New() *Service {
-	return &Service{}
+type Service struct {
+	tr ITransport
+}
+
+func New(tr ITransport) *Service {
+	return &Service{
+		tr: tr,
+	}
 }

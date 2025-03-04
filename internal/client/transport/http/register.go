@@ -7,56 +7,36 @@ import (
 	"net/http"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
+	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-type trHTTP struct {
-	addr string
-}
+func (tr *trHTTP) RegisterAccount(email, password string) (response *http.Response, err error) {
+	action := "register account"
 
-func New() *trHTTP {
-	return &trHTTP{}
-}
+	endpoint := fmt.Sprintf("http://%s/register", tr.addr)
 
-func (t *trHTTP) RegisterAccount(account model.Account) {
-	endpoint := fmt.Sprintf("http://:8080/register")
+	account := model.Account{
+		Email:    email,
+		Password: password,
+	}
 
 	accountJSON, err := json.Marshal(account)
 	if err != nil {
-		fmt.Printf("Ошибка кодирования в JSON: %s\n", err.Error())
-		return
+		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrEncodeJSON500, err)
 	}
 
 	request, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(accountJSON))
 	if err != nil {
-		fmt.Printf("Ошибка формирования запроса: %s\n", err.Error())
-		return
+		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrCreateRequest, err)
 	}
 
 	request.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-
-	response, err := client.Do(request)
+	response, err = tr.cl.Do(request)
 	if err != nil {
-		fmt.Printf("Ошибка отправки запроса: %s\n", err.Error())
-		return
+		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrSendRequest, err)
 	}
 	defer response.Body.Close()
 
-	respBody := response.Body
-
-	dec := json.NewDecoder(respBody)
-	var responseData struct {
-		Email     string `json:"email"`
-		AccountID string `json:"accountid"`
-		Token     string `json:"token"`
-	}
-
-	err = dec.Decode(&responseData)
-	if err != nil {
-		fmt.Printf("Ошибка декодирования JSON: %s\n", err.Error())
-		return
-	}
-
-	fmt.Printf("Response: %v\n", responseData)
+	return response, nil
 }
