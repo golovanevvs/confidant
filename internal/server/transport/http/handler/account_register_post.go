@@ -83,11 +83,11 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// creating a response
-	resMap := make(map[string]any)
-	resMap["accountID"] = strconv.Itoa(account.ID)
-	resMap["token"] = tokenString
+	response := model.AccountRegisterResp{
+		AccountID: strconv.Itoa(account.ID),
+	}
 
-	res, err := json.MarshalIndent(resMap, "", " ")
+	responseJSON, err := json.MarshalIndent(response, "", " ")
 	if err != nil {
 		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrEncodeJSON500, err)
 		hd.lg.Errorf(resErr.Error())
@@ -99,5 +99,5 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Authorization", fmt.Sprint("Bearer ", tokenString))
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(res))
+	w.Write([]byte(responseJSON))
 }

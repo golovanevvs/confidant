@@ -14,11 +14,6 @@ type Account struct {
 	Password string `json:"password"`
 }
 
-type RegisterAccount struct {
-	ID         int
-	httpStatus int
-}
-
 func (m *Account) ValidateEmail() error {
 	action := "validate e-mail"
 

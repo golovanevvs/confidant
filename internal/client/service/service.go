@@ -1,9 +1,11 @@
 package service
 
-import "net/http"
+import (
+	"github.com/golovanevvs/confidant/internal/client/model"
+)
 
 type ITransport interface {
-	RegisterAccount(email, password string) (response *http.Response, err error)
+	RegisterAccount(email, password string) (trResponse *model.TrResponse, err error)
 }
 
 type Service struct {

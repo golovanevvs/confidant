@@ -48,15 +48,20 @@ func (av *AppView) Run() error {
 	var formRegisterPage, formLoginPage *tview.Form
 	var inputCaptureLoginPage, inputCaptureRegisterPage func(event *tcell.EventKey) *tcell.EventKey
 
+	var inputEmailLoginPage, inputPasswordLoginPage *tview.InputField
+	var buttonLoginLoginPage, buttonRegisterLoginPage, buttonExitLoginPage *tview.Button
+
 	//! LOGIN PAGE
 	formLoginPage = tview.NewForm()
 	formLoginPage.SetHorizontal(false)
 	formLoginPage.AddInputField("E-mail:", "", 0, nil, nil)
+	inputEmailLoginPage = formLoginPage.GetFormItem(0).(*tview.InputField)
 	formLoginPage.AddPasswordField("Пароль:", "", 0, '*', nil)
+	inputPasswordLoginPage = formLoginPage.GetFormItem(1).(*tview.InputField)
 	//! Войти
-	buttonLoginLoginPage := tview.NewButton("Войти")
+	buttonLoginLoginPage = tview.NewButton("Войти")
 	//! Зарегистрироваться
-	buttonRegisterLoginPage := tview.NewButton("Зарегистрироваться").SetSelectedFunc(func() {
+	buttonRegisterLoginPage = tview.NewButton("Зарегистрироваться").SetSelectedFunc(func() {
 		pages.SwitchToPage("register_page")
 		app.SetInputCapture(inputCaptureRegisterPage)
 		app.SetFocus(formRegisterPage.GetFormItem(0))
@@ -68,7 +73,7 @@ func (av *AppView) Run() error {
 		messageBoxL.SetText("Введите e-mail и пароль. Повторите ввод пароля. Нажмите кнопку [blue]\"Зарегистрироваться\".\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 	})
 	//! Выход
-	buttonExitLoginPage := tview.NewButton("Выход").SetSelectedFunc(func() {
+	buttonExitLoginPage = tview.NewButton("Выход").SetSelectedFunc(func() {
 		app.Stop()
 	})
 

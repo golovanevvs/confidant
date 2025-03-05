@@ -6,7 +6,7 @@ import (
 )
 
 type IAccountService interface {
-	RegisterAccount(email, password string) (result model.RegisterAccount, err error)
+	RegisterAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error)
 	// Login(email, password string) (accountID int, err error)
 	// ChangePassword(email, password, newPassword string) error
 	//GetUser(login string) (string, error)

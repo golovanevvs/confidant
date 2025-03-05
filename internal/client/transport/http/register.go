@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) RegisterAccount(email, password string) (response *http.Response, err error) {
+func (tr *trHTTP) RegisterAccount(email, password string) (trResponse *model.TrResponse, err error) {
+	//! Request
 	action := "register account"
 
 	endpoint := fmt.Sprintf("http://%s/register", tr.addr)
@@ -32,11 +34,24 @@ func (tr *trHTTP) RegisterAccount(email, password string) (response *http.Respon
 
 	request.Header.Set("Content-Type", "application/json")
 
-	response, err = tr.cl.Do(request)
+	//! Response
+	response, err := tr.cl.Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrSendRequest, err)
 	}
 	defer response.Body.Close()
 
-	return response, nil
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrReadResponseBody, err)
+	}
+
+	//! Result
+	trResponse = &model.TrResponse{
+		HTTPStatusCode: response.StatusCode,
+		HTTPStatus:     response.Status,
+		ResponseBody:   responseBody,
+	}
+
+	return trResponse, nil
 }

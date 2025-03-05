@@ -3,37 +3,39 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *Service) RegisterAccount(email, password string) (result model.RegisterAccount, err error) {
-	response, err := sv.tr.RegisterAccount(email, password)
+func (sv *Service) RegisterAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
+	action := "register account"
 
-	if response.StatusCode == http.StatusOK {
+	trResponse, err := sv.tr.RegisterAccount(email, password)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s: %w", customerrors.ClientHTTPErr, action, err)
+	}
 
-		respBody := response.Body
-
-		var responseData struct {
-			AccountID string `json:"accountid"`
-			Token     string `json:"token"`
-		}
-		dec := json.NewDecoder(respBody)
-		err = dec.Decode(&responseData)
+	if trResponse.HTTPStatusCode == 200 {
+		var accountRegisterResp model.AccountRegisterResp
+		err = json.Unmarshal(trResponse.ResponseBody, &accountRegisterResp)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrDecodeJSON400, err)
 		}
-
-		return accountID, nil
-	} else {
-		responseError, err := io.ReadAll(response.Body)
-		if err != nil {
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrReadResponseBody, err)
+		registerAccountResp = &model.RegisterAccountResp{
+			HTTPStatusCode: trResponse.HTTPStatusCode,
+			HTTPStatus:     trResponse.HTTPStatus,
+			AccountID:      accountRegisterResp.AccountID,
+			ServerError:    "",
 		}
-		return -1, fmt.Errorf("%s: %s: %s[yellow]status: %d", customerrors.ClientHTTPErr, action, string(responseError), response.StatusCode)
+		return registerAccountResp, nil
+	} else {
+		registerAccountResp = &model.RegisterAccountResp{
+			HTTPStatusCode: trResponse.HTTPStatusCode,
+			HTTPStatus:     trResponse.HTTPStatus,
+			AccountID:      "",
+			ServerError:    string(trResponse.ResponseBody),
+		}
+		return registerAccountResp, nil
 	}
-	return accountID, err
 }
