@@ -26,9 +26,13 @@ const (
 )
 
 const (
-	ClientAppViewErr = "CLIENT: application view"
-	ClientHTTPErr    = "CLIENT: transport HTTP"
-	ClientServiceErr = "CLIENT: service"
+	ClientMsg = "CLIENT"
+)
+
+const (
+	ClientAppViewErr = "application view"
+	ClientHTTPErr    = "transport HTTP"
+	ClientServiceErr = "service"
 )
 
 var (
@@ -39,10 +43,14 @@ var (
 )
 
 const (
-	AccountErr        = "SERVER: account model"
-	HandlerErr        = "SERVER: transport HTTP"
-	AccountServiceErr = "SERVER: account service"
-	DBErr             = "SERVER: DB"
+	ServerMsg = "SERVER"
+)
+
+const (
+	AccountErr        = "account model"
+	HandlerErr        = "transport HTTP"
+	AccountServiceErr = "account service"
+	DBErr             = "DB"
 )
 
 var (

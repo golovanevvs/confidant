@@ -17,7 +17,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// checking the Content-Type
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		resErr := fmt.Errorf("%s: %s:%w", customerrors.HandlerErr, action, customerrors.ErrContentType400)
+		resErr := fmt.Errorf("%s: %s: %s:%w", customerrors.ServerMsg, customerrors.HandlerErr, action, customerrors.ErrContentType400)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
@@ -26,7 +26,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// deserializing JSON in account
 	var account model.Account
 	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
-		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrDecodeJSON400, err)
+		resErr := fmt.Errorf("%s: %s: %s: %w: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, customerrors.ErrDecodeJSON400, err)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
@@ -34,7 +34,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	// e-mail validation
 	if err := account.ValidateEmail(); err != nil {
-		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusUnprocessableEntity)
 		return
@@ -42,7 +42,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	// password validation
 	if err := account.ValidatePassword(); err != nil {
-		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusUnprocessableEntity)
 		return
@@ -56,13 +56,13 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, customerrors.ErrDBBusyEmail409):
 			// if the email already exists in the DB
-			resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+			resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 			hd.lg.Errorf(resErr.Error())
 			http.Error(w, resErr.Error(), http.StatusConflict)
 			return
 			// other errors
 		case errors.Is(err, customerrors.ErrDBInternalError500):
-			resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+			resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 			hd.lg.Errorf(resErr.Error())
 			http.Error(w, resErr.Error(), http.StatusInternalServerError)
 			return
@@ -76,7 +76,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// getting a token string
 	tokenString, err := hd.sv.BuildJWTString(r.Context(), account.ID)
 	if err != nil {
-		resErr := fmt.Errorf("%s: %s: %w", customerrors.HandlerErr, action, err)
+		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return
@@ -89,7 +89,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	responseJSON, err := json.MarshalIndent(response, "", " ")
 	if err != nil {
-		resErr := fmt.Errorf("%s: %s: %w: %w", customerrors.HandlerErr, action, customerrors.ErrEncodeJSON500, err)
+		resErr := fmt.Errorf("%s: %s: %s: %w: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, customerrors.ErrEncodeJSON500, err)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return

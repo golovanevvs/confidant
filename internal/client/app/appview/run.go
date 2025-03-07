@@ -150,29 +150,33 @@ func (av *AppView) Run() error {
 				registerAccountResp, err := av.sv.RegisterAccount(email, password)
 				if err != nil {
 					messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
-					switch {
-					// invalid e-mail
-					case strings.Contains(err.Error(), customerrors.ErrAccountValidateEmail422.Error()):
-						messageBoxL.SetText("[red]Неверно введён e-mail!")
-						app.SetFocus(inputEmailRegisterPage)
-					// invalid password
-					case strings.Contains(err.Error(), customerrors.ErrAccountValidatePassword422.Error()):
-						messageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
-						inputPasswordRegisterPage.SetText("")
-						inputRPasswordRegisterPage.SetText("")
-						app.SetFocus(inputPasswordRegisterPage)
-					// e-mail is already busy
-					case strings.Contains(err.Error(), customerrors.ErrDBBusyEmail409.Error()):
-						messageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
-						app.SetFocus(inputEmailRegisterPage)
-					// other errors
-					default:
-						messageBoxL.SetText("[red]Возникла ошибка.")
-					}
+					messageBoxL.SetText("[red]Возникла критическая ошибка.")
 				} else {
-					messageBoxL.Clear()
-					messageBoxR.Clear()
-					messageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %s\n[white]Войдите в систему, используя свой e-mail и пароль.", registerAccountResp.AccountID))
+					if registerAccountResp.HTTPStatusCode != 200 {
+						messageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.ServerError))
+						switch {
+						// invalid e-mail
+						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidateEmail422.Error()):
+							messageBoxL.SetText("[red]Неверно введён e-mail!")
+							app.SetFocus(inputEmailRegisterPage)
+						// invalid password
+						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidatePassword422.Error()):
+							messageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
+							inputPasswordRegisterPage.SetText("")
+							inputRPasswordRegisterPage.SetText("")
+							app.SetFocus(inputPasswordRegisterPage)
+						// e-mail is already busy
+						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrDBBusyEmail409.Error()):
+							messageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
+							app.SetFocus(inputEmailRegisterPage)
+						// other errors
+						default:
+							messageBoxL.SetText("[red]Возникла ошибка.")
+						}
+					} else {
+						messageBoxR.Clear()
+						messageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %s\n[white]Войдите в систему, используя свой e-mail и пароль.", registerAccountResp.AccountID))
+					}
 				}
 			} else {
 				messageBoxL.Clear()

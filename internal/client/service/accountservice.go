@@ -13,7 +13,7 @@ func (sv *Service) RegisterAccount(email, password string) (registerAccountResp 
 
 	trResponse, err := sv.tr.RegisterAccount(email, password)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s: %w", customerrors.ClientHTTPErr, action, err)
+		return nil, fmt.Errorf("%s: %s: %s: %w", customerrors.ClientMsg, customerrors.ClientHTTPErr, action, err)
 	}
 
 	if trResponse.HTTPStatusCode == 200 {
@@ -34,7 +34,7 @@ func (sv *Service) RegisterAccount(email, password string) (registerAccountResp 
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
 			AccountID:      "",
-			ServerError:    string(trResponse.ResponseBody),
+			ServerError:    fmt.Sprintf("%s: %s: %s: %s", customerrors.ClientMsg, customerrors.ClientHTTPErr, action, string(trResponse.ResponseBody)),
 		}
 		return registerAccountResp, nil
 	}
