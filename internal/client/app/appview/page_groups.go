@@ -6,9 +6,10 @@ import (
 )
 
 type GroupsPage struct {
-	GroupsTable  *tview.Table
+	GroupsList   *tview.List
 	ButtonSelect *tview.Button
 	ButtonNew    *tview.Button
+	ButtonDelete *tview.Button
 	ButtonLogout *tview.Button
 	ButtonExit   *tview.Button
 	Grid         *tview.Grid

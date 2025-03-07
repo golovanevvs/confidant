@@ -62,9 +62,7 @@ func (av *AppView) Run() error {
 	loginPage.ButtonLogin = tview.NewButton("Войти").SetSelectedFunc(func() {
 		// switch
 		pages.SwitchToPage("groups_page")
-		app.SetInputCapture(nil)
-		app.SetFocus(groupsPage.GroupsTable)
-		groupsPage.GroupsTable.Select(0, 0)
+		app.SetInputCapture(groupsPage.InputCapture)
 	})
 	//! Зарегистрироваться
 	loginPage.ButtonRegister = tview.NewButton("Зарегистрироваться").SetSelectedFunc(func() {
@@ -248,15 +246,15 @@ func (av *AppView) Run() error {
 
 	//! GROUPS PAGE
 
-	//! Group table
-	groupsPage.GroupsTable = tview.NewTable().SetBorders(true)
-	groupsPage.GroupsTable.SetCell(0, 0, tview.NewTableCell("Ячейка 0").SetAlign(tview.AlignLeft))
-	groupsPage.GroupsTable.SetCell(1, 0, tview.NewTableCell("Ячейка 1").SetAlign(tview.AlignLeft))
-	groupsPage.GroupsTable.SetCell(2, 0, tview.NewTableCell("Ячейка 2").SetAlign(tview.AlignLeft))
+	//! Groups List
+	groupsPage.GroupsList = tview.NewList()
+	groupsPage.GroupsList.SetBorder(true)
+	for i := 0; i < 10; i++ {
+		groupsPage.GroupsList.AddItem(fmt.Sprintf("Group %d", i), "", 0, nil)
+	}
 
-	groupsPage.GroupsTable.SetSelectedFunc(func(row, column int) {
-		cell := groupsPage.GroupsTable.GetCell(row, column)
-		messageBoxL.SetText(cell.Text)
+	groupsPage.GroupsList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		messageBoxL.SetText(mainText + secondaryText + string(shortcut))
 	})
 
 	//! Выбрать группу
@@ -264,6 +262,9 @@ func (av *AppView) Run() error {
 
 	//! Создать группу
 	groupsPage.ButtonNew = tview.NewButton("Создать группу")
+
+	//! Удалить группу
+	groupsPage.ButtonDelete = tview.NewButton("Удалить группу")
 
 	//! Выйти из аккаунта
 	groupsPage.ButtonLogout = tview.NewButton("Выйти из аккаунта")
@@ -273,39 +274,45 @@ func (av *AppView) Run() error {
 
 	//! Grid
 	groupsPage.Grid = tview.NewGrid().
-		SetRows(8, 3, 3, 3, 3).
+		SetRows(1, 1, 1, 1, 1, 1).
 		SetColumns(50).
 		SetGap(1, 0).
-		AddItem(groupsPage.GroupsTable, 0, 0, 1, 1, 0, 0, true).
 		AddItem(groupsPage.ButtonSelect, 1, 0, 1, 1, 0, 0, true).
 		AddItem(groupsPage.ButtonNew, 2, 0, 1, 1, 0, 0, true).
-		AddItem(groupsPage.ButtonLogout, 3, 0, 1, 1, 0, 0, true).
-		AddItem(groupsPage.ButtonExit, 4, 0, 1, 1, 0, 0, true)
+		AddItem(groupsPage.ButtonDelete, 3, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.ButtonLogout, 4, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.ButtonExit, 5, 0, 1, 1, 0, 0, true)
 
 	//! Main grid
 	groupsPage.MainGrid = tview.NewGrid().
-		SetRows(0, 20, 0).
-		SetColumns(0, 40, 0).
-		AddItem(groupsPage.Grid, 1, 1, 1, 1, 0, 0, true)
+		SetRows(0).
+		SetColumns(40, 40, 0).
+		SetGap(1, 1).
+		AddItem(groupsPage.GroupsList, 0, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.Grid, 0, 1, 1, 1, 0, 0, true)
 
 	//! InputCapture
-	// groupsPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
-	// 	if event.Key() == tcell.KeyTAB {
-	// 		currentFocus := app.GetFocus()
-	// 		switch currentFocus {
-	// 		case registerPage.Form.InputEmail:
-	// 			app.SetFocus(registerPage.Form.InputPassword)
-	// 		case registerPage.Form.InputPassword:
-	// 			app.SetFocus(registerPage.Form.InputRPassword)
-	// 		case registerPage.Form.InputRPassword:
-	// 			app.SetFocus(registerPage.ButtonRegister)
-	// 		case registerPage.ButtonRegister:
-	// 			app.SetFocus(registerPage.ButtonExit)
-	// 		case registerPage.ButtonExit:
-	// 			app.SetFocus(registerPage.Form.InputEmail)
-	// 		}
-	// 		return nil
-	// 	}
+	groupsPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := app.GetFocus()
+			switch currentFocus {
+			case groupsPage.GroupsList:
+				app.SetFocus(groupsPage.ButtonSelect)
+			case groupsPage.ButtonSelect:
+				app.SetFocus(groupsPage.ButtonNew)
+			case groupsPage.ButtonNew:
+				app.SetFocus(groupsPage.ButtonDelete)
+			case groupsPage.ButtonDelete:
+				app.SetFocus(groupsPage.ButtonLogout)
+			case groupsPage.ButtonLogout:
+				app.SetFocus(groupsPage.ButtonExit)
+			case groupsPage.ButtonExit:
+				app.SetFocus(groupsPage.GroupsList)
+			}
+			return nil
+		}
+		return event
+	}
 
 	//! Adding Pages
 
