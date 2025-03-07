@@ -14,6 +14,7 @@ func (av *AppView) Run() error {
 	action := "new"
 	// app
 	app := tview.NewApplication()
+	app.EnableMouse(true)
 
 	// page container
 	pages := tview.NewPages()
@@ -47,6 +48,7 @@ func (av *AppView) Run() error {
 
 	loginPage := LoginPage{}
 	registerPage := RegisterPage{}
+	groupsPage := GroupsPage{}
 
 	//! LOGIN PAGE
 
@@ -57,7 +59,13 @@ func (av *AppView) Run() error {
 	loginPage.Form.Form.AddPasswordField("Пароль:", "", 0, '*', nil)
 	loginPage.Form.InputPassword = loginPage.Form.Form.GetFormItem(1).(*tview.InputField)
 	//! Войти
-	loginPage.ButtonLogin = tview.NewButton("Войти")
+	loginPage.ButtonLogin = tview.NewButton("Войти").SetSelectedFunc(func() {
+		// switch
+		pages.SwitchToPage("groups_page")
+		app.SetInputCapture(nil)
+		app.SetFocus(groupsPage.GroupsTable)
+		groupsPage.GroupsTable.Select(0, 0)
+	})
 	//! Зарегистрироваться
 	loginPage.ButtonRegister = tview.NewButton("Зарегистрироваться").SetSelectedFunc(func() {
 		// switch
@@ -122,6 +130,7 @@ func (av *AppView) Run() error {
 
 	//! REGISTER PAGE
 
+	//! Form
 	registerPage.Form.Form = tview.NewForm()
 	registerPage.Form.Form.SetHorizontal(false)
 	registerPage.Form.Form.AddInputField("E-mail:", "", 0, nil, nil)
@@ -179,7 +188,7 @@ func (av *AppView) Run() error {
 				app.SetFocus(registerPage.Form.InputPassword)
 			}
 		})
-		//! Назад
+	//! Назад
 	registerPage.ButtonExit = tview.NewButton("Назад").SetSelectedFunc(func() {
 		// switch
 		// pages.AddAndSwitchToPage("login_page", mainGridLoginPage, true)
@@ -192,6 +201,7 @@ func (av *AppView) Run() error {
 		messageBoxR.Clear()
 	})
 
+	//! Grid
 	registerPage.Grid = tview.NewGrid().
 		SetRows(8, 3, 3).
 		SetColumns(50).
@@ -200,11 +210,13 @@ func (av *AppView) Run() error {
 		AddItem(registerPage.ButtonRegister, 1, 0, 1, 1, 0, 0, true).
 		AddItem(registerPage.ButtonExit, 2, 0, 1, 1, 0, 0, true)
 
+	//! MainGrid
 	registerPage.MainGrid = tview.NewGrid().
 		SetRows(0, 20, 0).
 		SetColumns(0, 40, 0).
 		AddItem(registerPage.Grid, 1, 1, 1, 1, 0, 0, true)
 
+	//! InputCapture
 	registerPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := app.GetFocus()
@@ -234,8 +246,70 @@ func (av *AppView) Run() error {
 		return event
 	}
 
+	//! GROUPS PAGE
+
+	//! Group table
+	groupsPage.GroupsTable = tview.NewTable().SetBorders(true)
+	groupsPage.GroupsTable.SetCell(0, 0, tview.NewTableCell("Ячейка 0").SetAlign(tview.AlignLeft))
+	groupsPage.GroupsTable.SetCell(1, 0, tview.NewTableCell("Ячейка 1").SetAlign(tview.AlignLeft))
+	groupsPage.GroupsTable.SetCell(2, 0, tview.NewTableCell("Ячейка 2").SetAlign(tview.AlignLeft))
+
+	groupsPage.GroupsTable.SetSelectedFunc(func(row, column int) {
+		cell := groupsPage.GroupsTable.GetCell(row, column)
+		messageBoxL.SetText(cell.Text)
+	})
+
+	//! Выбрать группу
+	groupsPage.ButtonSelect = tview.NewButton("Выбрать группу")
+
+	//! Создать группу
+	groupsPage.ButtonNew = tview.NewButton("Создать группу")
+
+	//! Выйти из аккаунта
+	groupsPage.ButtonLogout = tview.NewButton("Выйти из аккаунта")
+
+	//! Выход
+	groupsPage.ButtonExit = tview.NewButton("Выход")
+
+	//! Grid
+	groupsPage.Grid = tview.NewGrid().
+		SetRows(8, 3, 3, 3, 3).
+		SetColumns(50).
+		SetGap(1, 0).
+		AddItem(groupsPage.GroupsTable, 0, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.ButtonSelect, 1, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.ButtonNew, 2, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.ButtonLogout, 3, 0, 1, 1, 0, 0, true).
+		AddItem(groupsPage.ButtonExit, 4, 0, 1, 1, 0, 0, true)
+
+	//! Main grid
+	groupsPage.MainGrid = tview.NewGrid().
+		SetRows(0, 20, 0).
+		SetColumns(0, 40, 0).
+		AddItem(groupsPage.Grid, 1, 1, 1, 1, 0, 0, true)
+
+	//! InputCapture
+	// groupsPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+	// 	if event.Key() == tcell.KeyTAB {
+	// 		currentFocus := app.GetFocus()
+	// 		switch currentFocus {
+	// 		case registerPage.Form.InputEmail:
+	// 			app.SetFocus(registerPage.Form.InputPassword)
+	// 		case registerPage.Form.InputPassword:
+	// 			app.SetFocus(registerPage.Form.InputRPassword)
+	// 		case registerPage.Form.InputRPassword:
+	// 			app.SetFocus(registerPage.ButtonRegister)
+	// 		case registerPage.ButtonRegister:
+	// 			app.SetFocus(registerPage.ButtonExit)
+	// 		case registerPage.ButtonExit:
+	// 			app.SetFocus(registerPage.Form.InputEmail)
+	// 		}
+	// 		return nil
+	// 	}
+
 	//! Adding Pages
 
+	pages.AddPage("groups_page", groupsPage.MainGrid, true, true)
 	pages.AddPage("register_page", registerPage.MainGrid, true, true)
 	pages.AddAndSwitchToPage("login_page", loginPage.MainGrid, true)
 	app.SetInputCapture(loginPage.InputCapture)
