@@ -14,7 +14,7 @@ func (av *AppView) Run() error {
 	action := "new"
 	// app
 	app := tview.NewApplication()
-	app.EnableMouse(true)
+	// app.EnableMouse(true)
 
 	// page container
 	pages := tview.NewPages()
@@ -64,8 +64,9 @@ func (av *AppView) Run() error {
 	loginPage.ButtonLogin = tview.NewButton("Войти").SetSelectedFunc(func() {
 		// switch
 		pages.SwitchToPage("groups_page")
-		// app.SetInputCapture(groupsPage.PageSelect.InputCapture)
-		// groupsPage.PagesSelEd.SwitchToPage("select_page")
+		groupsPage.PagesSelEd.SwitchToPage("select_page")
+		app.SetInputCapture(groupsPage.PageSelect.InputCapture)
+		app.SetFocus(groupsPage.ListGroups)
 	})
 
 	//? Зарегистрироваться
@@ -261,7 +262,7 @@ func (av *AppView) Run() error {
 	groupsPage.ListGroups = tview.NewList()
 	groupsPage.ListGroups.SetBorder(true)
 	groupsPage.ListGroups.SetHighlightFullLine(true)
-	groupsPage.ListGroups.SetTitle("Список групп")
+	groupsPage.ListGroups.SetTitle(" Список групп ")
 	for i := 0; i < 10; i++ {
 		groupsPage.ListGroups.AddItem(fmt.Sprintf("Group %d", i), "", 0, nil)
 	}
@@ -279,7 +280,12 @@ func (av *AppView) Run() error {
 	groupsPage.PageSelect.ButtonNew = tview.NewButton("Создать группу")
 
 	//? Настроить группу
-	groupsPage.PageSelect.ButtonSettings = tview.NewButton("Настроить группу")
+	groupsPage.PageSelect.ButtonSettings = tview.NewButton("Настроить группу").SetSelectedFunc(func() {
+		groupsPage.PagesSelEd.SwitchToPage("edit_page")
+		app.SetInputCapture(groupsPage.PageEdit.InputCapture)
+		app.SetFocus(groupsPage.ListEmails)
+		groupsPage.PageEdit.FormAddEmail.InputEmail.SetText("")
+	})
 
 	//? Удалить группу
 	groupsPage.PageSelect.ButtonDelete = tview.NewButton("Удалить группу")
@@ -313,6 +319,31 @@ func (av *AppView) Run() error {
 		AddItem(groupsPage.PageSelect.ButtonLogout, 5, 0, 1, 1, 0, 0, true).
 		AddItem(groupsPage.PageSelect.ButtonExit, 6, 0, 1, 1, 0, 0, true)
 
+	//? InputCapture select page
+	groupsPage.PageSelect.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := app.GetFocus()
+			switch currentFocus {
+			case groupsPage.ListGroups:
+				app.SetFocus(groupsPage.PageSelect.ButtonSelect)
+			case groupsPage.PageSelect.ButtonSelect:
+				app.SetFocus(groupsPage.PageSelect.ButtonNew)
+			case groupsPage.PageSelect.ButtonNew:
+				app.SetFocus(groupsPage.PageSelect.ButtonSettings)
+			case groupsPage.PageSelect.ButtonSettings:
+				app.SetFocus(groupsPage.PageSelect.ButtonDelete)
+			case groupsPage.PageSelect.ButtonDelete:
+				app.SetFocus(groupsPage.PageSelect.ButtonLogout)
+			case groupsPage.PageSelect.ButtonLogout:
+				app.SetFocus(groupsPage.PageSelect.ButtonExit)
+			case groupsPage.PageSelect.ButtonExit:
+				app.SetFocus(groupsPage.ListGroups)
+			}
+			return nil
+		}
+		return event
+	}
+
 	//? "edit_page"
 
 	//? add form
@@ -328,7 +359,11 @@ func (av *AppView) Run() error {
 	groupsPage.PageEdit.ButtonDeleteEmail = tview.NewButton("Удалить e-mail")
 
 	//? Назад
-	groupsPage.PageEdit.ButtonEditExit = tview.NewButton("Назад")
+	groupsPage.PageEdit.ButtonEditExit = tview.NewButton("Назад").SetSelectedFunc(func() {
+		groupsPage.PagesSelEd.SwitchToPage("select_page")
+		app.SetInputCapture(groupsPage.PageSelect.InputCapture)
+		app.SetFocus(groupsPage.ListGroups)
+	})
 
 	//? EditButtonsGrid
 	groupsPage.PageEdit.Grid = tview.NewGrid().
@@ -346,6 +381,27 @@ func (av *AppView) Run() error {
 	groupsPage.ListEmails.SetHighlightFullLine(true)
 	groupsPage.ListEmails.SetTitle(" Список допущенных e-mail ")
 
+	//? InputCapture edit page
+	groupsPage.PageEdit.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := app.GetFocus()
+			switch currentFocus {
+			case groupsPage.ListEmails:
+				app.SetFocus(groupsPage.PageEdit.FormAddEmail.InputEmail)
+			case groupsPage.PageEdit.FormAddEmail.InputEmail:
+				app.SetFocus(groupsPage.PageEdit.ButtonAddEmail)
+			case groupsPage.PageEdit.ButtonAddEmail:
+				app.SetFocus(groupsPage.PageEdit.ButtonDeleteEmail)
+			case groupsPage.PageEdit.ButtonDeleteEmail:
+				app.SetFocus(groupsPage.PageEdit.ButtonEditExit)
+			case groupsPage.PageEdit.ButtonEditExit:
+				app.SetFocus(groupsPage.ListEmails)
+			}
+			return nil
+		}
+		return event
+	}
+
 	//? Main grid
 	groupsPage.GridMain = tview.NewGrid().
 		SetRows(0).
@@ -354,31 +410,6 @@ func (av *AppView) Run() error {
 		AddItem(groupsPage.ListGroups, 0, 1, 1, 1, 0, 0, true).
 		AddItem(groupsPage.PagesSelEd, 0, 2, 1, 1, 0, 0, true).
 		AddItem(groupsPage.ListEmails, 0, 3, 1, 1, 0, 0, true)
-
-	//? InputCapture
-	// groupsPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
-	// 	if event.Key() == tcell.KeyTAB {
-	// 		currentFocus := app.GetFocus()
-	// 		switch currentFocus {
-	// 		case groupsPage.ListGroups:
-	// 			app.SetFocus(groupsPage.ButtonSelect)
-	// 		case groupsPage.ButtonSelect:
-	// 			app.SetFocus(groupsPage.ButtonNew)
-	// 		case groupsPage.ButtonNew:
-	// 			app.SetFocus(groupsPage.ButtonSettings)
-	// 		case groupsPage.ButtonSettings:
-	// 			app.SetFocus(groupsPage.ButtonDelete)
-	// 		case groupsPage.ButtonDelete:
-	// 			app.SetFocus(groupsPage.ButtonLogout)
-	// 		case groupsPage.ButtonLogout:
-	// 			app.SetFocus(groupsPage.ButtonExit)
-	// 		case groupsPage.ButtonExit:
-	// 			app.SetFocus(groupsPage.ListGroups)
-	// 		}
-	// 		return nil
-	// 	}
-	// 	return event
-	// }
 
 	// app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
 	// 	focus := app.GetFocus()
@@ -390,8 +421,8 @@ func (av *AppView) Run() error {
 	// })
 
 	//? Adding pages
-	groupsPage.PagesSelEd.AddPage("select_page", groupsPage.PageSelect.Page, true, true)
-	groupsPage.PagesSelEd.AddPage("edit_page", groupsPage.PageEdit.Page, true, true)
+	groupsPage.PagesSelEd.AddPage("select_page", groupsPage.PageSelect.Grid, true, true)
+	groupsPage.PagesSelEd.AddPage("edit_page", groupsPage.PageEdit.Grid, true, true)
 
 	//! Adding Pages
 
