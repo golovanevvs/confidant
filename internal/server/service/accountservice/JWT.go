@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	tokenExp  = time.Hour * 3 // token lifetime
-	secretKey = "sskey"       // the secret key of the token
+	accessTokenExp  = time.Hour * 3  // access token lifetime
+	refreshTokenExp = time.Hour * 24 // refresh token lifetime
+	secretKey       = "sskey"        // the secret key of the token
 )
 
 // the structure of the claims
@@ -20,24 +21,44 @@ type claims struct {
 	AccountID int
 }
 
-// BuildJWTString creates a token and returns it as a string
-func (sv *AccountService) BuildJWTString(ctx context.Context, accountID int) (tokenString string, err error) {
+// BuildAccessJWTString creates a access token and returns it as a string
+func (sv *AccountService) BuildAccessJWTString(ctx context.Context, accountID int) (accessTokenString string, err error) {
 	action := "build JWT string"
 	// creating a token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExp)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenExp)),
 		},
 		AccountID: accountID,
 	})
 
 	// creating a token string
-	tokenString, err = token.SignedString([]byte(secretKey))
+	accessTokenString, err = token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", fmt.Errorf("%s: %s: %w: %w", customerrors.AccountServiceErr, action, customerrors.ErrTokenSignedString, err)
 	}
 
-	return tokenString, nil
+	return accessTokenString, nil
+}
+
+// BuildRefreshJWTString creates a refresh token and returns it as a string
+func (sv *AccountService) BuildRefreshJWTString(ctx context.Context, accountID int) (refreshTokenString string, err error) {
+	action := "build JWT string"
+	// creating a token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(refreshTokenExp)),
+		},
+		AccountID: accountID,
+	})
+
+	// creating a token string
+	refreshTokenString, err = token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", fmt.Errorf("%s: %s: %w: %w", customerrors.AccountServiceErr, action, customerrors.ErrTokenSignedString, err)
+	}
+
+	return refreshTokenString, nil
 }
 
 // GetAccountIDFromJWT returns the accountID from JWT
