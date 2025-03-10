@@ -91,7 +91,7 @@ func TestAccountRegisterPost(t *testing.T) {
 						gomock.Any(),
 						gomock.Any(),
 					).Return(1, nil)
-				svMock.EXPECT().BuildJWTString(
+				svMock.EXPECT().BuildAccessJWTString(
 					gomock.Any(),
 					gomock.Any(),
 				).Return("testTokenString", nil)
@@ -119,7 +119,7 @@ func TestAccountRegisterPost(t *testing.T) {
 						gomock.Any(),
 						gomock.Any(),
 					).Times(0)
-				svMock.EXPECT().BuildJWTString(
+				svMock.EXPECT().BuildAccessJWTString(
 					gomock.Any(),
 					gomock.Any(),
 				).Times(0)

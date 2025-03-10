@@ -16,3 +16,8 @@ type RegisterAccountResp struct {
 type AccountRegisterResp struct {
 	AccountID string `json:"account_id"`
 }
+
+type StatusResp struct {
+	HTTPStatusCode int
+	HTTPStatus     string
+}

@@ -13,9 +13,9 @@ import (
 
 func (tr *trHTTP) RegisterAccount(email, password string) (trResponse *model.TrResponse, err error) {
 	//! Request
-	action := "register account"
+	action := "register account transport"
 
-	endpoint := fmt.Sprintf("http://%s/register", tr.addr)
+	endpoint := fmt.Sprintf("http://%s/api/register", tr.addr)
 
 	account := model.Account{
 		Email:    email,
@@ -24,12 +24,25 @@ func (tr *trHTTP) RegisterAccount(email, password string) (trResponse *model.TrR
 
 	accountJSON, err := json.Marshal(account)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrEncodeJSON500, err)
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrEncodeJSON500,
+			err,
+		)
 	}
 
 	request, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(accountJSON))
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrCreateRequest, err)
+		return nil, fmt.Errorf("%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrCreateRequest,
+			err,
+		)
 	}
 
 	request.Header.Set("Content-Type", "application/json")
@@ -37,13 +50,27 @@ func (tr *trHTTP) RegisterAccount(email, password string) (trResponse *model.TrR
 	//! Response
 	response, err := tr.cl.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrSendRequest, err)
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrSendRequest,
+			err,
+		)
 	}
 	defer response.Body.Close()
 
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s: %w: %w", customerrors.ClientHTTPErr, action, customerrors.ErrReadResponseBody, err)
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrReadResponseBody,
+			err,
+		)
 	}
 
 	//! Result

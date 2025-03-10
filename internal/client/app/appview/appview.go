@@ -12,8 +12,13 @@ type IAccountService interface {
 	//GetUser(login string) (string, error)
 }
 
+type IStatusServerService interface {
+	GetServerStatus() (statusResp *model.StatusResp, err error)
+}
+
 type IService interface {
 	IAccountService
+	IStatusServerService
 }
 
 type AppView struct {

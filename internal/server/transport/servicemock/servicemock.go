@@ -35,19 +35,34 @@ func (m *MockIService) EXPECT() *MockIServiceMockRecorder {
 	return m.recorder
 }
 
-// BuildJWTString mocks base method.
-func (m *MockIService) BuildJWTString(arg0 context.Context, arg1 int) (string, error) {
+// BuildAccessJWTString mocks base method.
+func (m *MockIService) BuildAccessJWTString(arg0 context.Context, arg1 int) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BuildJWTString", arg0, arg1)
+	ret := m.ctrl.Call(m, "BuildAccessJWTString", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// BuildJWTString indicates an expected call of BuildJWTString.
-func (mr *MockIServiceMockRecorder) BuildJWTString(arg0, arg1 interface{}) *gomock.Call {
+// BuildAccessJWTString indicates an expected call of BuildAccessJWTString.
+func (mr *MockIServiceMockRecorder) BuildAccessJWTString(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildJWTString", reflect.TypeOf((*MockIService)(nil).BuildJWTString), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildAccessJWTString", reflect.TypeOf((*MockIService)(nil).BuildAccessJWTString), arg0, arg1)
+}
+
+// BuildRefreshJWTString mocks base method.
+func (m *MockIService) BuildRefreshJWTString(arg0 context.Context, arg1 int) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildRefreshJWTString", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BuildRefreshJWTString indicates an expected call of BuildRefreshJWTString.
+func (mr *MockIServiceMockRecorder) BuildRefreshJWTString(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildRefreshJWTString", reflect.TypeOf((*MockIService)(nil).BuildRefreshJWTString), arg0, arg1)
 }
 
 // CreateAccount mocks base method.
@@ -77,4 +92,18 @@ func (m *MockIService) DoSomething() error {
 func (mr *MockIServiceMockRecorder) DoSomething() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoSomething", reflect.TypeOf((*MockIService)(nil).DoSomething))
+}
+
+// PingDB mocks base method.
+func (m *MockIService) PingDB() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PingDB")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PingDB indicates an expected call of PingDB.
+func (mr *MockIServiceMockRecorder) PingDB() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingDB", reflect.TypeOf((*MockIService)(nil).PingDB))
 }

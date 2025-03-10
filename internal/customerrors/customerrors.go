@@ -40,6 +40,7 @@ var (
 	ErrCreateRequest    = errors.New("creating request error")
 	ErrSendRequest      = errors.New("sending request error")
 	ErrReadResponseBody = errors.New("error reading response body")
+	ErrServerStatus     = errors.New("error get server status")
 )
 
 const (
@@ -50,6 +51,7 @@ const (
 	AccountErr        = "account model"
 	HandlerErr        = "transport HTTP"
 	AccountServiceErr = "account service"
+	ManageServiceErr  = "manage service"
 	DBErr             = "DB"
 )
 

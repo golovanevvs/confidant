@@ -6,6 +6,7 @@ import (
 
 type ITransport interface {
 	RegisterAccount(email, password string) (trResponse *model.TrResponse, err error)
+	ServerStatus() (statusResp *model.TrResponse, err error)
 }
 
 type Service struct {

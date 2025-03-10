@@ -17,7 +17,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	// checking the Content-Type
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		resErr := fmt.Errorf("%s: %s: %s:%w", customerrors.ServerMsg, customerrors.HandlerErr, action, customerrors.ErrContentType400)
+		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, customerrors.ErrContentType400)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusBadRequest)
 		return
@@ -74,7 +74,7 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	// authorization
 	// getting a token string
-	tokenString, err := hd.sv.BuildJWTString(r.Context(), account.ID)
+	tokenString, err := hd.sv.BuildAccessJWTString(r.Context(), account.ID)
 	if err != nil {
 		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 		hd.lg.Errorf(resErr.Error())

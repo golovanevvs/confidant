@@ -3,8 +3,10 @@ package appview
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/rivo/tview"
 )
@@ -12,6 +14,10 @@ import (
 func (av *AppView) Run() error {
 	//!Beginning
 	action := "new"
+
+	var statusServer *model.StatusResp
+	var statusServerErr error
+
 	// app
 	app := tview.NewApplication()
 	// app.EnableMouse(true)
@@ -23,28 +29,82 @@ func (av *AppView) Run() error {
 	messageBoxL := tview.NewTextView()
 	messageBoxL.SetDynamicColors(true)
 	messageBoxL.SetTextAlign(tview.AlignLeft)
-	messageBoxL.SetText("[green]Добро пожаловать в систему хранения конфиденциальной информации [white]CON[blue]FID[red]ANT")
-	messageBoxL.SetBorder(true)
-	messageBoxL.SetBorderColor(tcell.ColorRed)
+	messageBoxL.SetBorder(true).SetBorderColor(tcell.ColorRed)
 	messageBoxL.SetTitle(" Сообщения ")
 
 	//? right message box
 	messageBoxR := tview.NewTextView()
 	messageBoxR.SetDynamicColors(true)
 	messageBoxR.SetTextAlign(tview.AlignLeft)
-	messageBoxR.SetBorder(true)
-	messageBoxR.SetBorderColor(tcell.ColorRed)
+	messageBoxR.SetBorder(true).SetBorderColor(tcell.ColorRed)
 	messageBoxR.SetTitle(" Дополнительная информация ")
+
+	//? status bar
+	statusBar := tview.NewTable().SetBorders(true).SetBordersColor(tcell.ColorRed)
+	statusBar.SetCell(0, 0, tview.NewTableCell("Тип соединения").SetAlign(tview.AlignCenter).SetExpansion(1))
+	statusBar.SetCell(0, 1, tview.NewTableCell("Соединение с сервером").SetAlign(tview.AlignCenter).SetExpansion(1))
+	statusBar.SetCell(0, 2, tview.NewTableCell("Соединение с БД сервера").SetAlign(tview.AlignCenter).SetExpansion(1))
+	statusBar.SetCell(0, 3, tview.NewTableCell("Статус операции").SetAlign(tview.AlignCenter).SetExpansion(1))
+	statusBar.SetCell(0, 4, tview.NewTableCell("Активный аккаунт").SetAlign(tview.AlignCenter).SetExpansion(1))
+	statusBarCellTypeConnect := tview.NewTableCell("[green]REST API").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 0, statusBarCellTypeConnect)
+	statusBarCellServerConnect := tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 1, statusBarCellServerConnect)
+	statusBarCellServerDBConnect := tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 2, statusBarCellServerDBConnect)
+
+	updateCellServerConnectChan := make(chan string)
+	updateCellServerDBConnectChan := make(chan string)
+
+	go func() {
+		for {
+			time.Sleep(2 * time.Second)
+			statusServer, statusServerErr = av.sv.GetServerStatus()
+			if statusServerErr != nil {
+				updateCellServerConnectChan <- "[red]Отсутствует"
+				updateCellServerDBConnectChan <- "[red]Отсутствует"
+			} else {
+				if statusServer.HTTPStatusCode == 200 {
+					updateCellServerConnectChan <- "[green]OK"
+					updateCellServerDBConnectChan <- "[green]OK"
+				} else {
+					updateCellServerConnectChan <- "[green]OK"
+					updateCellServerDBConnectChan <- "[red]Отсутствует"
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for info := range updateCellServerConnectChan {
+			app.QueueUpdateDraw(func() {
+				statusBarCellServerConnect.SetText(info)
+			})
+		}
+	}()
+	go func() {
+		for info := range updateCellServerDBConnectChan {
+			app.QueueUpdateDraw(func() {
+				statusBarCellServerDBConnect.SetText(info)
+			})
+		}
+	}()
+
+	statusBarCellResponseStatus := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 3, statusBarCellResponseStatus)
+	statusBarCellActiveAccount := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 4, statusBarCellActiveAccount)
 
 	//? main grid
 	mainGrid := tview.NewGrid()
 	mainGrid.SetBorder(true).
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(" Клиент [blue]системы [red]confidant ")
-	mainGrid.SetRows(0, 8)
+	mainGrid.SetRows(0, 8, 5)
 	mainGrid.AddItem(pages, 0, 0, 1, 2, 0, 0, true)
 	mainGrid.AddItem(messageBoxL, 1, 0, 1, 1, 0, 0, true)
 	mainGrid.AddItem(messageBoxR, 1, 1, 1, 1, 0, 0, true)
+	mainGrid.AddItem(statusBar, 2, 0, 1, 2, 0, 0, false)
 
 	//? pages
 	loginPage := LoginPage{}
@@ -91,7 +151,7 @@ func (av *AppView) Run() error {
 
 	//? form grid
 	loginPage.Grid = tview.NewGrid().
-		SetRows(5, 3, 3, 3).
+		SetRows(5, 1, 1, 1).
 		SetColumns(50).
 		SetGap(1, 0).
 		AddItem(loginPage.Form.Form, 0, 0, 1, 1, 0, 0, true).
@@ -204,13 +264,13 @@ func (av *AppView) Run() error {
 		app.SetInputCapture(loginPage.InputCapture)
 		app.SetFocus(loginPage.Form.InputEmail)
 		// messageBox
-		messageBoxL.SetText("[green]Добро пожаловать в систему хранения конфиденциальной информации [white]CON[blue]FID[red]ANT")
+		messageBoxL.Clear()
 		messageBoxR.Clear()
 	})
 
 	//? form grid
 	registerPage.Grid = tview.NewGrid().
-		SetRows(8, 3, 3).
+		SetRows(8, 1, 1).
 		SetColumns(50).
 		SetGap(1, 0).
 		AddItem(registerPage.Form.Form, 0, 0, 1, 1, 0, 0, true).
@@ -298,7 +358,7 @@ func (av *AppView) Run() error {
 		app.SetInputCapture(loginPage.InputCapture)
 		app.SetFocus(loginPage.Form.InputEmail)
 		// messageBox
-		messageBoxL.SetText("[green]Добро пожаловать в систему хранения конфиденциальной информации [white]CON[blue]FID[red]ANT")
+		messageBoxL.Clear()
 		messageBoxR.Clear()
 	})
 

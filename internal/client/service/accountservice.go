@@ -9,7 +9,7 @@ import (
 )
 
 func (sv *Service) RegisterAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
-	action := "register account"
+	action := "register account service"
 
 	trResponse, err := sv.tr.RegisterAccount(email, password)
 	if err != nil {

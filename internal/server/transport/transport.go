@@ -12,11 +12,16 @@ type IAccountService interface {
 	BuildRefreshJWTString(ctx context.Context, accountID int) (refreshTokenString string, err error)
 }
 
+type IManageService interface {
+	PingDB() (err error)
+}
+
 type IOtherService interface {
 	DoSomething() error
 }
 
 type IService interface {
 	IAccountService
+	IManageService
 	IOtherService
 }
