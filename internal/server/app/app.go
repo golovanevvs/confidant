@@ -79,7 +79,7 @@ func RunApp() {
 	// starting the server
 	go func() {
 		lg.Infof("The 'confidant' server is running")
-		if err := srv.RunServer(":8080", hd.InitRoutes()); err != nil {
+		if err := srv.RunServer(":7541", hd.InitRoutes()); err != nil {
 			lg.Fatalf("server startup error: %s", err.Error())
 		}
 	}()

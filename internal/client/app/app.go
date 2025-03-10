@@ -31,7 +31,7 @@ func RunApp() {
 	lg := logger.Sugar()
 
 	// initializing the transport
-	trHTTP := trhttp.New(":8080")
+	trHTTP := trhttp.New("localhost:7541")
 
 	// initializing the service
 	sv := service.New(trHTTP)

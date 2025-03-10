@@ -1,6 +1,6 @@
 BEGIN;
 
-DROP TABLE account;
 DROP TABLE groups;
+DROP TABLE account;
 
 COMMIT;

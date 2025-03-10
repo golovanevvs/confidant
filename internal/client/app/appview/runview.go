@@ -52,6 +52,10 @@ func (av *AppView) Run() error {
 	statusBar.SetCell(1, 1, statusBarCellServerConnect)
 	statusBarCellServerDBConnect := tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
 	statusBar.SetCell(1, 2, statusBarCellServerDBConnect)
+	statusBarCellResponseStatus := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 3, statusBarCellResponseStatus)
+	statusBarCellActiveAccount := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
+	statusBar.SetCell(1, 4, statusBarCellActiveAccount)
 
 	updateCellServerConnectChan := make(chan string)
 	updateCellServerDBConnectChan := make(chan string)
@@ -89,11 +93,6 @@ func (av *AppView) Run() error {
 			})
 		}
 	}()
-
-	statusBarCellResponseStatus := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 3, statusBarCellResponseStatus)
-	statusBarCellActiveAccount := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 4, statusBarCellActiveAccount)
 
 	//? main grid
 	mainGrid := tview.NewGrid()
