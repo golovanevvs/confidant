@@ -93,7 +93,11 @@ func TestAccountRegisterPost(t *testing.T) {
 				svMock.EXPECT().BuildAccessJWTString(
 					gomock.Any(),
 					gomock.Any(),
-				).Return("testTokenString", nil)
+				).Return("testAccessTokenString", nil)
+				svMock.EXPECT().BuildRefreshJWTString(
+					gomock.Any(),
+					gomock.Any(),
+				).Return("testRefreshTokenString", nil)
 			},
 			expectedResponse: expectedResponse{
 				httpStatus: http.StatusOK,
@@ -119,6 +123,10 @@ func TestAccountRegisterPost(t *testing.T) {
 						gomock.Any(),
 					).Times(0)
 				svMock.EXPECT().BuildAccessJWTString(
+					gomock.Any(),
+					gomock.Any(),
+				).Times(0)
+				svMock.EXPECT().BuildRefreshJWTString(
 					gomock.Any(),
 					gomock.Any(),
 				).Times(0)
@@ -157,11 +165,14 @@ func TestAccountRegisterPost(t *testing.T) {
 				// assert.Equal(t, "test@test.ru", m["email"])
 				// assert.Equal(t, "1", m["accountID"])
 				authHeader := response.Header.Get("Authorization")
-				require.NotEqual(t, authHeader, "")
+				require.NotEqual(t, "", authHeader)
 				authHeaderSplit := strings.Split(authHeader, " ")
 				require.Equal(t, 2, len(authHeaderSplit))
 				require.Equal(t, "Bearer", authHeaderSplit[0])
 				require.NotEqual(t, "", authHeaderSplit[1])
+
+				refreshTokenHeader := response.Header.Get("Refresh-Token")
+				require.NotEqual(t, "", refreshTokenHeader)
 
 			case strings.Contains(request.Header.Get("Content-Type"), "text/plain"):
 				require.Contains(t, string(responseBody), test.expectedResponse.bodyErr)

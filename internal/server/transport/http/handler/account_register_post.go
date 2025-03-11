@@ -73,8 +73,17 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	account.ID = accountID
 
 	// authorization
-	// getting a token string
-	tokenString, err := hd.sv.BuildAccessJWTString(r.Context(), account.ID)
+	// getting a access token string
+	accessTokenString, err := hd.sv.BuildAccessJWTString(r.Context(), account.ID)
+	if err != nil {
+		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
+		hd.lg.Errorf(resErr.Error())
+		http.Error(w, resErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// getting a refresh token string
+	refreshTokenString, err := hd.sv.BuildRefreshJWTString(r.Context(), account.ID)
 	if err != nil {
 		resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 		hd.lg.Errorf(resErr.Error())
@@ -96,8 +105,9 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// writing the headers and response
-	w.Header().Add("Authorization", fmt.Sprint("Bearer ", tokenString))
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Authorization", fmt.Sprint("Bearer ", accessTokenString))
+	w.Header().Set("Refresh-Token", refreshTokenString)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(responseJSON))
 }

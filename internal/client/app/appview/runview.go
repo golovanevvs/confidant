@@ -140,7 +140,7 @@ func (av *AppView) Run() error {
 		registerPage.Form.InputPassword.SetText("")
 		registerPage.Form.InputRPassword.SetText("")
 		// messageBox
-		mainPage.MessageBoxL.SetText("Введите e-mail и пароль. Повторите ввод пароля. Нажмите кнопку [blue]\"Зарегистрироваться\".\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+		mainPage.MessageBoxL.SetText("Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 	})
 
 	//? Выход
@@ -219,35 +219,59 @@ func (av *AppView) Run() error {
 					mainPage.MessageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 					mainPage.MessageBoxL.SetText("[red]Возникла критическая ошибка.")
 				} else {
-					if registerAccountResp.HTTPStatusCode != 200 {
-						mainPage.MessageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.ServerError))
+					mainPage.MessageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.Error))
+					// setting status
+					if registerAccountResp.HTTPStatusCode == 200 {
+						mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
+					} else {
+						mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
+					}
+					switch {
+					case registerAccountResp.HTTPStatusCode != 200:
 						switch {
 						// invalid e-mail
-						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidateEmail422.Error()):
-							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
+						case strings.Contains(registerAccountResp.Error, customerrors.ErrAccountValidateEmail422.Error()):
 							mainPage.MessageBoxL.SetText("[red]Неверно введён e-mail!")
 							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// invalid password
-						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidatePassword422.Error()):
-							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
+						case strings.Contains(registerAccountResp.Error, customerrors.ErrAccountValidatePassword422.Error()):
 							mainPage.MessageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
 							registerPage.Form.InputPassword.SetText("")
 							registerPage.Form.InputRPassword.SetText("")
 							mainPage.App.SetFocus(registerPage.Form.InputPassword)
 						// e-mail is already busy
-						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrDBBusyEmail409.Error()):
-							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
-							mainPage.MessageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
+						case strings.Contains(registerAccountResp.Error, customerrors.ErrDBBusyEmail409.Error()):
+							mainPage.MessageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегистрирован!", email))
 							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// other errors
 						default:
-							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[red]%s", registerAccountResp.HTTPStatus))
 							mainPage.MessageBoxL.SetText("[red]Возникла ошибка.")
 						}
-					} else {
+
+					// OK
+					case registerAccountResp.Error == "":
+						mainPage.StatusBar.CellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
+						mainPage.MessageBoxL.Clear()
 						mainPage.MessageBoxR.Clear()
-						mainPage.MessageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %s\n[white]Войдите в систему, используя свой e-mail и пароль.", registerAccountResp.AccountID))
-						mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
+						mainPage.Pages.SwitchToPage("groups_page")
+						groupsPage.PagesSelEd.SwitchToPage("select_page")
+						mainPage.App.SetInputCapture(groupsPage.PageSelect.InputCapture)
+						mainPage.App.SetFocus(groupsPage.ListGroups)
+					// the response does not contain the "Authorization" header
+					case strings.Contains(registerAccountResp.Error, customerrors.ErrAuthHeader.Error()):
+						mainPage.MessageBoxL.SetText("[red]Ответ не содержит заголовок \"Authorization\"!")
+					// the "Authorization" header does not contain "Bearer"
+					case strings.Contains(registerAccountResp.Error, customerrors.ErrBearer.Error()):
+						mainPage.MessageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит \"Bearer\"!")
+					// the "Authorization" header does not contain a access token
+					case strings.Contains(registerAccountResp.Error, customerrors.ErrAccessToken.Error()):
+						mainPage.MessageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит access токен!")
+					// the response does not contain the "Refresh-Token" header
+					case strings.Contains(registerAccountResp.Error, customerrors.ErrRefreshToken.Error()):
+						mainPage.MessageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит refresh токен!")
+					// unknown error
+					default:
+						mainPage.MessageBoxL.SetText("Неизвестная ошибка!")
 					}
 				}
 			} else {

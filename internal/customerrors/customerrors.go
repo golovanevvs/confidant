@@ -36,11 +36,16 @@ const (
 )
 
 var (
-	ErrRunAppView       = errors.New("application view error")
-	ErrCreateRequest    = errors.New("creating request error")
-	ErrSendRequest      = errors.New("sending request error")
-	ErrReadResponseBody = errors.New("error reading response body")
-	ErrServerStatus     = errors.New("error get server status")
+	ErrRunAppView        = errors.New("application view error")
+	ErrCreateRequest     = errors.New("creating request error")
+	ErrSendRequest       = errors.New("sending request error")
+	ErrReadResponseBody  = errors.New("error reading response body")
+	ErrServerStatus      = errors.New("error get server status")
+	ErrAuthHeader        = errors.New("the response does not contain the \"Authorization\" header")
+	ErrInvalidAuthHeader = errors.New("the response contains the invalid \"Authorization\" header")
+	ErrBearer            = errors.New("the \"Authorization\" header does not contain \"Bearer\"")
+	ErrAccessToken       = errors.New("the \"Authorization\" header does not contain a access token")
+	ErrRefreshToken      = errors.New("the response does not contain the \"Refresh-Token\" header")
 )
 
 const (

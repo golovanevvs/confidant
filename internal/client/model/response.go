@@ -1,16 +1,20 @@
 package model
 
 type TrResponse struct {
-	HTTPStatusCode int
-	HTTPStatus     string
-	ResponseBody   []byte
+	HTTPStatusCode     int
+	HTTPStatus         string
+	AuthHeader         string
+	RefreshTokenHeader string
+	ResponseBody       []byte
 }
 
 type RegisterAccountResp struct {
-	HTTPStatusCode int
-	HTTPStatus     string
-	AccountID      string
-	ServerError    string
+	HTTPStatusCode     int
+	HTTPStatus         string
+	AccountID          string
+	AccessTokenString  string
+	RefreshTokenString string
+	Error              string
 }
 
 type AccountRegisterResp struct {

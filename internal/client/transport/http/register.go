@@ -73,11 +73,16 @@ func (tr *trHTTP) RegisterAccount(email, password string) (trResponse *model.TrR
 		)
 	}
 
+	authHeader := response.Header.Get("Authorization")
+	refreshTokenHeader := response.Header.Get("Refresh-Token")
+
 	//! Result
 	trResponse = &model.TrResponse{
-		HTTPStatusCode: response.StatusCode,
-		HTTPStatus:     response.Status,
-		ResponseBody:   responseBody,
+		HTTPStatusCode:     response.StatusCode,
+		HTTPStatus:         response.Status,
+		AuthHeader:         authHeader,
+		RefreshTokenHeader: refreshTokenHeader,
+		ResponseBody:       responseBody,
 	}
 
 	return trResponse, nil
