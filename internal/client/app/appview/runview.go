@@ -224,6 +224,7 @@ func (av *AppView) Run() error {
 						switch {
 						// invalid e-mail
 						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidateEmail422.Error()):
+							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
 							mainPage.MessageBoxL.SetText("[red]Неверно введён e-mail!")
 							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// invalid password

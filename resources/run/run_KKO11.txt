@@ -6,3 +6,4 @@ migrate -path /c/Golovanev/dev/projects/yapracticum/confidant/resources/migratio
 
 migrate -path /c/Golovanev/dev/projects/yapracticum/confidant/resources/migration -database "postgres://localhost:5432/revelio?sslmode=disable&user=postgres&password=password" down
 
+go build ./cmd/confidant_server && start confidant_server && go build ./cmd/confidant_client && start confidant_client
