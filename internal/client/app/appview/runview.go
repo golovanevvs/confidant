@@ -13,16 +13,16 @@ import (
 
 func (av *AppView) Run() error {
 	//!Beginning
-	action := "new"
+	action := "run"
 
 	var statusServer *model.StatusResp
 	var statusServerErr error
 
 	//? pages
-	loginPage := LoginPage{}
-	registerPage := RegisterPage{}
-	groupsPage := GroupsPage{}
 	mainPage := PageMain{}
+	loginPage := PageLogin{}
+	registerPage := PageRegister{}
+	groupsPage := PageGroups{}
 
 	// app
 	mainPage.App = tview.NewApplication()

@@ -33,7 +33,7 @@ type FormAdd struct {
 	Form       *tview.Form
 }
 
-type GroupsPage struct {
+type PageGroups struct {
 	ListGroups *tview.List
 	ListEmails *tview.List
 	GridMain   *tview.Grid

@@ -5,15 +5,15 @@ import (
 	"github.com/rivo/tview"
 )
 
-type FormLoginPage struct {
+type FormPageLogin struct {
 	Form          *tview.Form
 	InputEmail    *tview.InputField
 	InputPassword *tview.InputField
 }
 
-type LoginPage struct {
+type PageLogin struct {
 	InputCapture   func(event *tcell.EventKey) *tcell.EventKey
-	Form           FormLoginPage
+	Form           FormPageLogin
 	ButtonLogin    *tview.Button
 	ButtonRegister *tview.Button
 	ButtonExit     *tview.Button
