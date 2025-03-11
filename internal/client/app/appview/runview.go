@@ -228,21 +228,25 @@ func (av *AppView) Run() error {
 							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// invalid password
 						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidatePassword422.Error()):
+							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
 							mainPage.MessageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
 							registerPage.Form.InputPassword.SetText("")
 							registerPage.Form.InputRPassword.SetText("")
 							mainPage.App.SetFocus(registerPage.Form.InputPassword)
 						// e-mail is already busy
 						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrDBBusyEmail409.Error()):
+							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
 							mainPage.MessageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
 							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// other errors
 						default:
+							mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[red]%s", registerAccountResp.HTTPStatus))
 							mainPage.MessageBoxL.SetText("[red]Возникла ошибка.")
 						}
 					} else {
 						mainPage.MessageBoxR.Clear()
 						mainPage.MessageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %s\n[white]Войдите в систему, используя свой e-mail и пароль.", registerAccountResp.AccountID))
+						mainPage.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
 					}
 				}
 			} else {
@@ -265,6 +269,7 @@ func (av *AppView) Run() error {
 		// messageBox
 		mainPage.MessageBoxL.Clear()
 		mainPage.MessageBoxR.Clear()
+		mainPage.StatusBar.CellResponseStatus.SetText("")
 	})
 
 	//? form grid
