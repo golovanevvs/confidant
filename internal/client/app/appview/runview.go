@@ -18,44 +18,49 @@ func (av *AppView) Run() error {
 	var statusServer *model.StatusResp
 	var statusServerErr error
 
+	//? pages
+	loginPage := LoginPage{}
+	registerPage := RegisterPage{}
+	groupsPage := GroupsPage{}
+	mainPage := PageMain{}
+
 	// app
-	app := tview.NewApplication()
-	// app.EnableMouse(true)
+	mainPage.App = tview.NewApplication()
 
 	// page container
-	pages := tview.NewPages()
+	mainPage.Pages = tview.NewPages()
 
 	//? left message box
-	messageBoxL := tview.NewTextView()
-	messageBoxL.SetDynamicColors(true)
-	messageBoxL.SetTextAlign(tview.AlignLeft)
-	messageBoxL.SetBorder(true).SetBorderColor(tcell.ColorRed)
-	messageBoxL.SetTitle(" Сообщения ")
+	mainPage.MessageBoxL = tview.NewTextView()
+	mainPage.MessageBoxL.SetDynamicColors(true)
+	mainPage.MessageBoxL.SetTextAlign(tview.AlignLeft)
+	mainPage.MessageBoxL.SetBorder(true).SetBorderColor(tcell.ColorRed)
+	mainPage.MessageBoxL.SetTitle(" Сообщения ")
 
 	//? right message box
-	messageBoxR := tview.NewTextView()
-	messageBoxR.SetDynamicColors(true)
-	messageBoxR.SetTextAlign(tview.AlignLeft)
-	messageBoxR.SetBorder(true).SetBorderColor(tcell.ColorRed)
-	messageBoxR.SetTitle(" Дополнительная информация ")
+	mainPage.MessageBoxR = tview.NewTextView()
+	mainPage.MessageBoxR.SetDynamicColors(true)
+	mainPage.MessageBoxR.SetTextAlign(tview.AlignLeft)
+	mainPage.MessageBoxR.SetBorder(true).SetBorderColor(tcell.ColorRed)
+	mainPage.MessageBoxR.SetTitle(" Дополнительная информация ")
 
 	//? status bar
-	statusBar := tview.NewTable().SetBorders(true).SetBordersColor(tcell.ColorRed)
-	statusBar.SetCell(0, 0, tview.NewTableCell("Тип соединения").SetAlign(tview.AlignCenter).SetExpansion(1))
-	statusBar.SetCell(0, 1, tview.NewTableCell("Соединение с сервером").SetAlign(tview.AlignCenter).SetExpansion(1))
-	statusBar.SetCell(0, 2, tview.NewTableCell("Соединение с БД сервера").SetAlign(tview.AlignCenter).SetExpansion(1))
-	statusBar.SetCell(0, 3, tview.NewTableCell("Статус операции").SetAlign(tview.AlignCenter).SetExpansion(1))
-	statusBar.SetCell(0, 4, tview.NewTableCell("Активный аккаунт").SetAlign(tview.AlignCenter).SetExpansion(1))
-	statusBarCellTypeConnect := tview.NewTableCell("[green]REST API").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 0, statusBarCellTypeConnect)
-	statusBarCellServerConnect := tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 1, statusBarCellServerConnect)
-	statusBarCellServerDBConnect := tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 2, statusBarCellServerDBConnect)
-	statusBarCellResponseStatus := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 3, statusBarCellResponseStatus)
-	statusBarCellActiveAccount := tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
-	statusBar.SetCell(1, 4, statusBarCellActiveAccount)
+	mainPage.StatusBar.Table = tview.NewTable().SetBorders(true).SetBordersColor(tcell.ColorRed)
+	mainPage.StatusBar.Table.SetCell(0, 0, tview.NewTableCell("Тип соединения").SetAlign(tview.AlignCenter).SetExpansion(1))
+	mainPage.StatusBar.Table.SetCell(0, 1, tview.NewTableCell("Соединение с сервером").SetAlign(tview.AlignCenter).SetExpansion(1))
+	mainPage.StatusBar.Table.SetCell(0, 2, tview.NewTableCell("Соединение с БД сервера").SetAlign(tview.AlignCenter).SetExpansion(1))
+	mainPage.StatusBar.Table.SetCell(0, 3, tview.NewTableCell("Статус операции").SetAlign(tview.AlignCenter).SetExpansion(1))
+	mainPage.StatusBar.Table.SetCell(0, 4, tview.NewTableCell("Активный аккаунт").SetAlign(tview.AlignCenter).SetExpansion(1))
+	mainPage.StatusBar.CellTypeConnect = tview.NewTableCell("[green]REST API").SetAlign(tview.AlignCenter).SetExpansion(1)
+	mainPage.StatusBar.Table.SetCell(1, 0, mainPage.StatusBar.CellTypeConnect)
+	mainPage.StatusBar.CellServerConnect = tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
+	mainPage.StatusBar.Table.SetCell(1, 1, mainPage.StatusBar.CellServerConnect)
+	mainPage.StatusBar.CellServerDBConnect = tview.NewTableCell("[red]Отсутствует").SetAlign(tview.AlignCenter).SetExpansion(1)
+	mainPage.StatusBar.Table.SetCell(1, 2, mainPage.StatusBar.CellServerDBConnect)
+	mainPage.StatusBar.CellResponseStatus = tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
+	mainPage.StatusBar.Table.SetCell(1, 3, mainPage.StatusBar.CellResponseStatus)
+	mainPage.StatusBar.CellActiveAccount = tview.NewTableCell("").SetAlign(tview.AlignCenter).SetExpansion(1)
+	mainPage.StatusBar.Table.SetCell(1, 4, mainPage.StatusBar.CellActiveAccount)
 
 	updateCellServerConnectChan := make(chan string)
 	updateCellServerDBConnectChan := make(chan string)
@@ -81,15 +86,15 @@ func (av *AppView) Run() error {
 
 	go func() {
 		for info := range updateCellServerConnectChan {
-			app.QueueUpdateDraw(func() {
-				statusBarCellServerConnect.SetText(info)
+			mainPage.App.QueueUpdateDraw(func() {
+				mainPage.StatusBar.CellServerConnect.SetText(info)
 			})
 		}
 	}()
 	go func() {
 		for info := range updateCellServerDBConnectChan {
-			app.QueueUpdateDraw(func() {
-				statusBarCellServerDBConnect.SetText(info)
+			mainPage.App.QueueUpdateDraw(func() {
+				mainPage.StatusBar.CellServerDBConnect.SetText(info)
 			})
 		}
 	}()
@@ -100,15 +105,10 @@ func (av *AppView) Run() error {
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(" Клиент [blue]системы [red]confidant ")
 	mainGrid.SetRows(0, 8, 5)
-	mainGrid.AddItem(pages, 0, 0, 1, 2, 0, 0, true)
-	mainGrid.AddItem(messageBoxL, 1, 0, 1, 1, 0, 0, true)
-	mainGrid.AddItem(messageBoxR, 1, 1, 1, 1, 0, 0, true)
-	mainGrid.AddItem(statusBar, 2, 0, 1, 2, 0, 0, false)
-
-	//? pages
-	loginPage := LoginPage{}
-	registerPage := RegisterPage{}
-	groupsPage := GroupsPage{}
+	mainGrid.AddItem(mainPage.Pages, 0, 0, 1, 2, 0, 0, true)
+	mainGrid.AddItem(mainPage.MessageBoxL, 1, 0, 1, 1, 0, 0, true)
+	mainGrid.AddItem(mainPage.MessageBoxR, 1, 1, 1, 1, 0, 0, true)
+	mainGrid.AddItem(mainPage.StatusBar.Table, 2, 0, 1, 2, 0, 0, false)
 
 	//! LOGIN PAGE
 
@@ -122,30 +122,30 @@ func (av *AppView) Run() error {
 	//? Войти
 	loginPage.ButtonLogin = tview.NewButton("Войти").SetSelectedFunc(func() {
 		// switch
-		pages.SwitchToPage("groups_page")
+		mainPage.Pages.SwitchToPage("groups_page")
 		groupsPage.PagesSelEd.SwitchToPage("select_page")
-		app.SetInputCapture(groupsPage.PageSelect.InputCapture)
-		app.SetFocus(groupsPage.ListGroups)
+		mainPage.App.SetInputCapture(groupsPage.PageSelect.InputCapture)
+		mainPage.App.SetFocus(groupsPage.ListGroups)
 	})
 
 	//? Зарегистрироваться
 	loginPage.ButtonRegister = tview.NewButton("Зарегистрироваться").SetSelectedFunc(func() {
 		// switch
-		pages.SwitchToPage("register_page")
+		mainPage.Pages.SwitchToPage("register_page")
 		// focus
-		app.SetInputCapture(registerPage.InputCapture)
-		app.SetFocus(registerPage.Form.InputEmail)
+		mainPage.App.SetInputCapture(registerPage.InputCapture)
+		mainPage.App.SetFocus(registerPage.Form.InputEmail)
 		// clear
 		registerPage.Form.InputEmail.SetText("")
 		registerPage.Form.InputPassword.SetText("")
 		registerPage.Form.InputRPassword.SetText("")
 		// messageBox
-		messageBoxL.SetText("Введите e-mail и пароль. Повторите ввод пароля. Нажмите кнопку [blue]\"Зарегистрироваться\".\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+		mainPage.MessageBoxL.SetText("Введите e-mail и пароль. Повторите ввод пароля. Нажмите кнопку [blue]\"Зарегистрироваться\".\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 	})
 
 	//? Выход
 	loginPage.ButtonExit = tview.NewButton("Выход").SetSelectedFunc(func() {
-		app.Stop()
+		mainPage.App.Stop()
 	})
 
 	//? form grid
@@ -167,27 +167,27 @@ func (av *AppView) Run() error {
 	//? InputCapture
 	loginPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
-			currentFocus := app.GetFocus()
+			currentFocus := mainPage.App.GetFocus()
 			switch currentFocus {
 			case loginPage.Form.InputEmail:
-				app.SetFocus(loginPage.Form.InputPassword)
+				mainPage.App.SetFocus(loginPage.Form.InputPassword)
 			case loginPage.Form.InputPassword:
-				app.SetFocus(loginPage.ButtonLogin)
+				mainPage.App.SetFocus(loginPage.ButtonLogin)
 			case loginPage.ButtonLogin:
-				app.SetFocus(loginPage.ButtonRegister)
+				mainPage.App.SetFocus(loginPage.ButtonRegister)
 			case loginPage.ButtonRegister:
-				app.SetFocus(loginPage.ButtonExit)
+				mainPage.App.SetFocus(loginPage.ButtonExit)
 			case loginPage.ButtonExit:
-				app.SetFocus(loginPage.Form.InputEmail)
+				mainPage.App.SetFocus(loginPage.Form.InputEmail)
 			}
 			return nil
 		}
 
 		// if event.Key() == tcell.KeyEnter {
-		// 	currentFocus := app.GetFocus()
+		// 	currentFocus := mainPage.App.GetFocus()
 		// 	switch currentFocus {
 		// 	case formLoginPage.GetFormItem(1):
-		// 		app.SetFocus(buttonLoginLoginPage)
+		// 		mainPage.App.SetFocus(buttonLoginLoginPage)
 		// 	}
 		// }
 
@@ -216,55 +216,55 @@ func (av *AppView) Run() error {
 				password := registerPage.Form.InputPassword.GetText()
 				registerAccountResp, err := av.sv.RegisterAccount(email, password)
 				if err != nil {
-					messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
-					messageBoxL.SetText("[red]Возникла критическая ошибка.")
+					mainPage.MessageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+					mainPage.MessageBoxL.SetText("[red]Возникла критическая ошибка.")
 				} else {
 					if registerAccountResp.HTTPStatusCode != 200 {
-						messageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.ServerError))
+						mainPage.MessageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.ServerError))
 						switch {
 						// invalid e-mail
 						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidateEmail422.Error()):
-							messageBoxL.SetText("[red]Неверно введён e-mail!")
-							app.SetFocus(registerPage.Form.InputEmail)
+							mainPage.MessageBoxL.SetText("[red]Неверно введён e-mail!")
+							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// invalid password
 						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrAccountValidatePassword422.Error()):
-							messageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
+							mainPage.MessageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
 							registerPage.Form.InputPassword.SetText("")
 							registerPage.Form.InputRPassword.SetText("")
-							app.SetFocus(registerPage.Form.InputPassword)
+							mainPage.App.SetFocus(registerPage.Form.InputPassword)
 						// e-mail is already busy
 						case strings.Contains(registerAccountResp.ServerError, customerrors.ErrDBBusyEmail409.Error()):
-							messageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
-							app.SetFocus(registerPage.Form.InputEmail)
+							mainPage.MessageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегестрирован!", email))
+							mainPage.App.SetFocus(registerPage.Form.InputEmail)
 						// other errors
 						default:
-							messageBoxL.SetText("[red]Возникла ошибка.")
+							mainPage.MessageBoxL.SetText("[red]Возникла ошибка.")
 						}
 					} else {
-						messageBoxR.Clear()
-						messageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %s\n[white]Войдите в систему, используя свой e-mail и пароль.", registerAccountResp.AccountID))
+						mainPage.MessageBoxR.Clear()
+						mainPage.MessageBoxL.SetText(fmt.Sprintf("[green]Вы успешно зарегистрировались. Ваш ID: %s\n[white]Войдите в систему, используя свой e-mail и пароль.", registerAccountResp.AccountID))
 					}
 				}
 			} else {
-				messageBoxL.Clear()
-				messageBoxL.SetText("[red]Пароли не совпадают! Повторите ввод.\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
-				messageBoxR.Clear()
+				mainPage.MessageBoxL.Clear()
+				mainPage.MessageBoxL.SetText("[red]Пароли не совпадают! Повторите ввод.\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+				mainPage.MessageBoxR.Clear()
 				registerPage.Form.InputPassword.SetText("")
 				registerPage.Form.InputRPassword.SetText("")
-				app.SetFocus(registerPage.Form.InputPassword)
+				mainPage.App.SetFocus(registerPage.Form.InputPassword)
 			}
 		})
 
 	//? Назад
 	registerPage.ButtonExit = tview.NewButton("Назад").SetSelectedFunc(func() {
 		// switch
-		pages.SwitchToPage("login_page")
+		mainPage.Pages.SwitchToPage("login_page")
 		// focus
-		app.SetInputCapture(loginPage.InputCapture)
-		app.SetFocus(loginPage.Form.InputEmail)
+		mainPage.App.SetInputCapture(loginPage.InputCapture)
+		mainPage.App.SetFocus(loginPage.Form.InputEmail)
 		// messageBox
-		messageBoxL.Clear()
-		messageBoxR.Clear()
+		mainPage.MessageBoxL.Clear()
+		mainPage.MessageBoxR.Clear()
 	})
 
 	//? form grid
@@ -285,27 +285,27 @@ func (av *AppView) Run() error {
 	//? InputCapture
 	registerPage.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
-			currentFocus := app.GetFocus()
+			currentFocus := mainPage.App.GetFocus()
 			switch currentFocus {
 			case registerPage.Form.InputEmail:
-				app.SetFocus(registerPage.Form.InputPassword)
+				mainPage.App.SetFocus(registerPage.Form.InputPassword)
 			case registerPage.Form.InputPassword:
-				app.SetFocus(registerPage.Form.InputRPassword)
+				mainPage.App.SetFocus(registerPage.Form.InputRPassword)
 			case registerPage.Form.InputRPassword:
-				app.SetFocus(registerPage.ButtonRegister)
+				mainPage.App.SetFocus(registerPage.ButtonRegister)
 			case registerPage.ButtonRegister:
-				app.SetFocus(registerPage.ButtonExit)
+				mainPage.App.SetFocus(registerPage.ButtonExit)
 			case registerPage.ButtonExit:
-				app.SetFocus(registerPage.Form.InputEmail)
+				mainPage.App.SetFocus(registerPage.Form.InputEmail)
 			}
 			return nil
 		}
 
 		// if event.Key() == tcell.KeyEnter {
-		// 	currentFocus := app.GetFocus()
+		// 	currentFocus := mainPage.App.GetFocus()
 		// 	switch currentFocus {
 		// 	case registerPage.Form.Form.GetFormItem(2):
-		// 		app.SetFocus(registerPage.ButtonRegister)
+		// 		mainPage.App.SetFocus(registerPage.ButtonRegister)
 		// 	}
 		// }
 
@@ -327,7 +327,7 @@ func (av *AppView) Run() error {
 	}
 
 	groupsPage.ListGroups.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		messageBoxL.SetText(mainText + secondaryText + string(shortcut))
+		mainPage.MessageBoxL.SetText(mainText + secondaryText + string(shortcut))
 	})
 
 	//? "select_page"
@@ -341,8 +341,8 @@ func (av *AppView) Run() error {
 	//? Настроить группу
 	groupsPage.PageSelect.ButtonSettings = tview.NewButton("Настроить группу").SetSelectedFunc(func() {
 		groupsPage.PagesSelEd.SwitchToPage("edit_page")
-		app.SetInputCapture(groupsPage.PageEdit.InputCapture)
-		app.SetFocus(groupsPage.ListEmails)
+		mainPage.App.SetInputCapture(groupsPage.PageEdit.InputCapture)
+		mainPage.App.SetFocus(groupsPage.ListEmails)
 		groupsPage.PageEdit.FormAddEmail.InputEmail.SetText("")
 	})
 
@@ -352,18 +352,18 @@ func (av *AppView) Run() error {
 	//? Выйти из аккаунта
 	groupsPage.PageSelect.ButtonLogout = tview.NewButton("Выйти из аккаунта").SetSelectedFunc(func() {
 		// switch
-		pages.SwitchToPage("login_page")
+		mainPage.Pages.SwitchToPage("login_page")
 		// focus
-		app.SetInputCapture(loginPage.InputCapture)
-		app.SetFocus(loginPage.Form.InputEmail)
+		mainPage.App.SetInputCapture(loginPage.InputCapture)
+		mainPage.App.SetFocus(loginPage.Form.InputEmail)
 		// messageBox
-		messageBoxL.Clear()
-		messageBoxR.Clear()
+		mainPage.MessageBoxL.Clear()
+		mainPage.MessageBoxR.Clear()
 	})
 
 	//? Выход
 	groupsPage.PageSelect.ButtonExit = tview.NewButton("Выход").SetSelectedFunc(func() {
-		app.Stop()
+		mainPage.App.Stop()
 	})
 
 	//? MainButtonsGrid
@@ -381,22 +381,22 @@ func (av *AppView) Run() error {
 	//? InputCapture select page
 	groupsPage.PageSelect.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
-			currentFocus := app.GetFocus()
+			currentFocus := mainPage.App.GetFocus()
 			switch currentFocus {
 			case groupsPage.ListGroups:
-				app.SetFocus(groupsPage.PageSelect.ButtonSelect)
+				mainPage.App.SetFocus(groupsPage.PageSelect.ButtonSelect)
 			case groupsPage.PageSelect.ButtonSelect:
-				app.SetFocus(groupsPage.PageSelect.ButtonNew)
+				mainPage.App.SetFocus(groupsPage.PageSelect.ButtonNew)
 			case groupsPage.PageSelect.ButtonNew:
-				app.SetFocus(groupsPage.PageSelect.ButtonSettings)
+				mainPage.App.SetFocus(groupsPage.PageSelect.ButtonSettings)
 			case groupsPage.PageSelect.ButtonSettings:
-				app.SetFocus(groupsPage.PageSelect.ButtonDelete)
+				mainPage.App.SetFocus(groupsPage.PageSelect.ButtonDelete)
 			case groupsPage.PageSelect.ButtonDelete:
-				app.SetFocus(groupsPage.PageSelect.ButtonLogout)
+				mainPage.App.SetFocus(groupsPage.PageSelect.ButtonLogout)
 			case groupsPage.PageSelect.ButtonLogout:
-				app.SetFocus(groupsPage.PageSelect.ButtonExit)
+				mainPage.App.SetFocus(groupsPage.PageSelect.ButtonExit)
 			case groupsPage.PageSelect.ButtonExit:
-				app.SetFocus(groupsPage.ListGroups)
+				mainPage.App.SetFocus(groupsPage.ListGroups)
 			}
 			return nil
 		}
@@ -420,8 +420,8 @@ func (av *AppView) Run() error {
 	//? Назад
 	groupsPage.PageEdit.ButtonEditExit = tview.NewButton("Назад").SetSelectedFunc(func() {
 		groupsPage.PagesSelEd.SwitchToPage("select_page")
-		app.SetInputCapture(groupsPage.PageSelect.InputCapture)
-		app.SetFocus(groupsPage.ListGroups)
+		mainPage.App.SetInputCapture(groupsPage.PageSelect.InputCapture)
+		mainPage.App.SetFocus(groupsPage.ListGroups)
 	})
 
 	//? EditButtonsGrid
@@ -443,18 +443,18 @@ func (av *AppView) Run() error {
 	//? InputCapture edit page
 	groupsPage.PageEdit.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
-			currentFocus := app.GetFocus()
+			currentFocus := mainPage.App.GetFocus()
 			switch currentFocus {
 			case groupsPage.ListEmails:
-				app.SetFocus(groupsPage.PageEdit.FormAddEmail.InputEmail)
+				mainPage.App.SetFocus(groupsPage.PageEdit.FormAddEmail.InputEmail)
 			case groupsPage.PageEdit.FormAddEmail.InputEmail:
-				app.SetFocus(groupsPage.PageEdit.ButtonAddEmail)
+				mainPage.App.SetFocus(groupsPage.PageEdit.ButtonAddEmail)
 			case groupsPage.PageEdit.ButtonAddEmail:
-				app.SetFocus(groupsPage.PageEdit.ButtonDeleteEmail)
+				mainPage.App.SetFocus(groupsPage.PageEdit.ButtonDeleteEmail)
 			case groupsPage.PageEdit.ButtonDeleteEmail:
-				app.SetFocus(groupsPage.PageEdit.ButtonEditExit)
+				mainPage.App.SetFocus(groupsPage.PageEdit.ButtonEditExit)
 			case groupsPage.PageEdit.ButtonEditExit:
-				app.SetFocus(groupsPage.ListEmails)
+				mainPage.App.SetFocus(groupsPage.ListEmails)
 			}
 			return nil
 		}
@@ -470,8 +470,8 @@ func (av *AppView) Run() error {
 		AddItem(groupsPage.PagesSelEd, 0, 2, 1, 1, 0, 0, true).
 		AddItem(groupsPage.ListEmails, 0, 3, 1, 1, 0, 0, true)
 
-	// app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
-	// 	focus := app.GetFocus()
+	// mainPage.App.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	// 	focus := mainPage.App.GetFocus()
 	// 	if focus != groupsPage.ButtonDeleteEmail {
 	// 		return event, action
 
@@ -485,16 +485,16 @@ func (av *AppView) Run() error {
 
 	//! Adding Pages
 
-	pages.AddPage("groups_page", groupsPage.GridMain, true, true)
-	pages.AddPage("register_page", registerPage.MainGrid, true, true)
-	pages.AddAndSwitchToPage("login_page", loginPage.MainGrid, true)
-	app.SetInputCapture(loginPage.InputCapture)
-	app.SetFocus(loginPage.Form.InputEmail)
+	mainPage.Pages.AddPage("groups_page", groupsPage.GridMain, true, true)
+	mainPage.Pages.AddPage("register_page", registerPage.MainGrid, true, true)
+	mainPage.Pages.AddAndSwitchToPage("login_page", loginPage.MainGrid, true)
+	mainPage.App.SetInputCapture(loginPage.InputCapture)
+	mainPage.App.SetFocus(loginPage.Form.InputEmail)
 
 	//! Launching the app
-	app.SetRoot(mainGrid, true)
+	mainPage.App.SetRoot(mainGrid, true)
 
-	if err := app.Run(); err != nil {
+	if err := mainPage.App.Run(); err != nil {
 		return fmt.Errorf("%s: %s: %w: %w", customerrors.ClientAppViewErr, action, customerrors.ErrRunAppView, err)
 	}
 
