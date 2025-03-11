@@ -13,7 +13,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/golovanevvs/confidant/internal/server/transport/servicemock"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -151,12 +150,19 @@ func TestAccountRegisterPost(t *testing.T) {
 
 			switch {
 			case strings.Contains(request.Header.Get("Content-Type"), "application/json"):
-				var m map[string]any
-				err = json.Unmarshal(responseBody, &m)
-				require.NoError(t, err)
+				// var m map[string]any
+				// err = json.Unmarshal(responseBody, &m)
+				// require.NoError(t, err)
 
-				assert.Equal(t, "test@test.ru", m["email"])
-				assert.Equal(t, "1", m["accountID"])
+				// assert.Equal(t, "test@test.ru", m["email"])
+				// assert.Equal(t, "1", m["accountID"])
+				authHeader := response.Header.Get("Authorization")
+				require.NotEqual(t, authHeader, "")
+				authHeaderSplit := strings.Split(authHeader, " ")
+				require.Equal(t, 2, len(authHeaderSplit))
+				require.Equal(t, "Bearer", authHeaderSplit[0])
+				require.NotEqual(t, "", authHeaderSplit[1])
+
 			case strings.Contains(request.Header.Get("Content-Type"), "text/plain"):
 				require.Contains(t, string(responseBody), test.expectedResponse.bodyErr)
 			default:
