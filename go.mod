@@ -30,6 +30,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jmoiron/sqlx v1.4.0
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/rivo/tview v0.0.0-20241227133733-17b7edb88c57
 	github.com/stretchr/testify v1.8.1
 	go.uber.org/zap v1.27.0

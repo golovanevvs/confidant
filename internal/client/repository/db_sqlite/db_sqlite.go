@@ -1,12 +1,12 @@
-package sqlite
+package db_sqlite
 
 import (
 	"context"
 	"os"
 	"path/filepath"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type SQLite struct {

@@ -1,4 +1,4 @@
-package sqlite
+package db_sqlite
 
 import (
 	"github.com/golovanevvs/confidant/internal/client/model"

@@ -1,13 +1,13 @@
 package repository
 
-import "github.com/golovanevvs/confidant/internal/client/repository/sqlite"
+import "github.com/golovanevvs/confidant/internal/client/repository/db_sqlite"
 
 type Repository struct {
-	*sqlite.SQLite
+	*db_sqlite.SQLite
 }
 
 func New() (*Repository, error) {
-	sqlite, err := sqlite.New()
+	sqlite, err := db_sqlite.New()
 	if err != nil {
 		return nil, err
 	}
