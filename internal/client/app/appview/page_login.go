@@ -40,14 +40,14 @@ func newPageLogin() *pageLogin {
 }
 
 func (av *appView) vLogin() {
-
+	//! form
 	av.v.pageLogin.form.form.SetHorizontal(false)
 	av.v.pageLogin.form.form.AddInputField("E-mail:", "", 0, nil, nil)
 	av.v.pageLogin.form.inputEmail = av.v.pageLogin.form.form.GetFormItem(0).(*tview.InputField)
 	av.v.pageLogin.form.form.AddPasswordField("Пароль:", "", 0, '*', nil)
 	av.v.pageLogin.form.inputPassword = av.v.pageLogin.form.form.GetFormItem(1).(*tview.InputField)
 
-	//? Войти
+	//! "Войти"
 	av.v.pageLogin.buttonLogin.SetSelectedFunc(func() {
 		// switch
 		av.v.pageMain.pages.SwitchToPage("groups_page")
@@ -56,7 +56,7 @@ func (av *appView) vLogin() {
 		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 	})
 
-	//? Регистрация
+	//! "Регистрация"
 	av.v.pageLogin.buttonRegister.SetSelectedFunc(func() {
 		// switch
 		av.v.pageMain.pages.SwitchToPage("register_page")
@@ -71,12 +71,12 @@ func (av *appView) vLogin() {
 		av.v.pageMain.messageBoxL.SetText("Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 	})
 
-	//? Выход
+	//! "Выход"
 	av.v.pageLogin.buttonExit.SetSelectedFunc(func() {
 		av.v.pageApp.app.Stop()
 	})
 
-	//? form grid
+	//! form grid
 	av.v.pageLogin.grid.
 		SetRows(5, 1, 1, 1).
 		SetColumns(50).
@@ -86,13 +86,13 @@ func (av *appView) vLogin() {
 		AddItem(av.v.pageLogin.buttonRegister, 2, 0, 1, 1, 0, 0, false).
 		AddItem(av.v.pageLogin.buttonExit, 3, 0, 1, 1, 0, 0, false)
 
-	//? main grid
+	//! main grid
 	av.v.pageLogin.mainGrid.
 		SetRows(0, 20, 0).
 		SetColumns(0, 40, 0).
 		AddItem(av.v.pageLogin.grid, 1, 1, 1, 1, 0, 0, true)
 
-	//? InputCapture
+	//! InputCapture
 	av.v.pageLogin.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()

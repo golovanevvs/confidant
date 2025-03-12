@@ -43,24 +43,22 @@ func newPageMain() *pageMain {
 }
 
 func (av *appView) vMain() {
-	// action := "run"
-
 	var statusServer *model.StatusResp
 	var statusServerErr error
 
-	//? left message box
+	//! left message box
 	av.v.pageMain.messageBoxL.SetDynamicColors(true)
 	av.v.pageMain.messageBoxL.SetTextAlign(tview.AlignLeft)
 	av.v.pageMain.messageBoxL.SetBorder(true).SetBorderColor(tcell.ColorRed)
 	av.v.pageMain.messageBoxL.SetTitle(" Сообщения ")
 
-	//? right message box
+	//! right message box
 	av.v.pageMain.messageBoxR.SetDynamicColors(true)
 	av.v.pageMain.messageBoxR.SetTextAlign(tview.AlignLeft)
 	av.v.pageMain.messageBoxR.SetBorder(true).SetBorderColor(tcell.ColorRed)
 	av.v.pageMain.messageBoxR.SetTitle(" Дополнительная информация ")
 
-	//? status bar
+	//! status bar
 	av.v.pageMain.statusBar.table.SetBorders(true).SetBordersColor(tcell.ColorRed)
 	av.v.pageMain.statusBar.table.SetCell(0, 0, tview.NewTableCell("Тип соединения").SetAlign(tview.AlignCenter).SetExpansion(1))
 	av.v.pageMain.statusBar.table.SetCell(0, 1, tview.NewTableCell("Соединение с сервером").SetAlign(tview.AlignCenter).SetExpansion(1))
@@ -78,6 +76,7 @@ func (av *appView) vMain() {
 	av.v.pageMain.statusBar.cellActiveAccount.SetAlign(tview.AlignCenter).SetExpansion(1)
 	av.v.pageMain.statusBar.table.SetCell(1, 4, av.v.pageMain.statusBar.cellActiveAccount)
 
+	//! updating status bar
 	updateCellServerConnectChan := make(chan string)
 	updateCellServerDBConnectChan := make(chan string)
 
@@ -115,7 +114,7 @@ func (av *appView) vMain() {
 		}
 	}()
 
-	//? main grid
+	//! main grid
 	av.v.pageMain.mainGrid.SetBorder(true).
 		SetBorderAttributes(tcell.AttrBold).
 		SetTitle(" Клиент [blue]системы [red]confidant ")
@@ -134,8 +133,7 @@ func (av *appView) vMain() {
 	// 	return nil, 0
 	// })
 
-	//! Adding Pages
-
+	//! adding pages
 	av.v.pageMain.pages.AddPage("groups_page", av.v.pageGroups.gridMain, true, true)
 	av.v.pageMain.pages.AddPage("register_page", av.v.pageRegister.mainGrid, true, true)
 	av.v.pageMain.pages.AddAndSwitchToPage("login_page", av.v.pageLogin.mainGrid, true)

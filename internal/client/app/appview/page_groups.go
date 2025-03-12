@@ -82,11 +82,7 @@ func newPageGroups() *pageGroups {
 }
 
 func (av *appView) vGroups() {
-	//? pages
-	// av.v.pageGroups.PagesSelEd = tview.NewPages()
-
-	//? Groups List
-	// av.v.pageGroups.ListGroups = tview.NewList()
+	//! Groups List
 	av.v.pageGroups.listGroups.SetBorder(true)
 	av.v.pageGroups.listGroups.SetHighlightFullLine(true)
 	av.v.pageGroups.listGroups.SetTitle(" Список групп ")
@@ -98,15 +94,15 @@ func (av *appView) vGroups() {
 		av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
 	})
 
-	//? "select_page"
+	//! "select_page"
 
-	//? Выбрать группу
+	//! "Выбрать группу"
 	// av.v.pageGroups.PageSelect.ButtonSelect = tview.NewButton("Выбрать группу")
 
-	//? Создать группу
+	//! "Создать группу"
 	// av.v.pageGroups.PageSelect.ButtonNew = tview.NewButton("Создать группу")
 
-	//? Настроить группу
+	//! "Настроить группу"
 	av.v.pageGroups.pageSelect.buttonSettings.SetSelectedFunc(func() {
 		av.v.pageGroups.pagesSelEd.SwitchToPage("edit_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageEdit.InputCapture)
@@ -114,10 +110,10 @@ func (av *appView) vGroups() {
 		av.v.pageGroups.pageEdit.formAddEmail.inputEmail.SetText("")
 	})
 
-	//? Удалить группу
+	//! "Удалить группу"
 	// av.v.pageGroups.PageSelect.ButtonDelete = tview.NewButton("Удалить группу")
 
-	//? Выйти из аккаунта
+	//! "Выйти из аккаунта"
 	av.v.pageGroups.pageSelect.buttonLogout.SetSelectedFunc(func() {
 		// switch
 		av.v.pageMain.pages.SwitchToPage("login_page")
@@ -129,12 +125,12 @@ func (av *appView) vGroups() {
 		av.v.pageMain.messageBoxR.Clear()
 	})
 
-	//? Выход
+	//! "Выход"
 	av.v.pageGroups.pageSelect.buttonExit.SetSelectedFunc(func() {
 		av.v.pageApp.app.Stop()
 	})
 
-	//? MainButtonsGrid
+	//! MainButtonsGrid
 	av.v.pageGroups.pageSelect.grid.
 		SetRows(1, 1, 1, 1, 1, 1, 1).
 		SetColumns(0).
@@ -146,7 +142,7 @@ func (av *appView) vGroups() {
 		AddItem(av.v.pageGroups.pageSelect.buttonLogout, 5, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageGroups.pageSelect.buttonExit, 6, 0, 1, 1, 0, 0, true)
 
-	//? InputCapture select page
+	//! InputCapture select page
 	av.v.pageGroups.pageSelect.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
@@ -171,27 +167,27 @@ func (av *appView) vGroups() {
 		return event
 	}
 
-	//? "edit_page"
+	//! "edit_page"
 
-	//? add form
+	//! add form
 	av.v.pageGroups.pageEdit.formAddEmail.form.SetHorizontal(false)
 	av.v.pageGroups.pageEdit.formAddEmail.form.AddInputField("", "", 0, nil, nil)
 	av.v.pageGroups.pageEdit.formAddEmail.inputEmail = av.v.pageGroups.pageEdit.formAddEmail.form.GetFormItem(0).(*tview.InputField)
 
-	//? Добавить e-mail
+	//! "Добавить e-mail"
 	// av.v.pageGroups.PageEdit.ButtonAddEmail = tview.NewButton("Добавить e-mail")
 
-	//? Удалить e-mail
+	//! "Удалить e-mail"
 	// av.v.pageGroups.PageEdit.ButtonDeleteEmail = tview.NewButton("Удалить e-mail")
 
-	//? Назад
+	//! "Назад"
 	av.v.pageGroups.pageEdit.buttonEditExit.SetSelectedFunc(func() {
 		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 	})
 
-	//? EditButtonsGrid
+	//! "EditButtonsGrid"
 	av.v.pageGroups.pageEdit.grid.
 		SetRows(3, 1, 1, 1).
 		SetColumns(0).
@@ -201,12 +197,12 @@ func (av *appView) vGroups() {
 		AddItem(av.v.pageGroups.pageEdit.buttonDeleteEmail, 2, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageGroups.pageEdit.buttonEditExit, 3, 0, 1, 1, 0, 0, true)
 
-	//? emails list
+	//! "emails list"
 	av.v.pageGroups.listEmails.SetBorder(true)
 	av.v.pageGroups.listEmails.SetHighlightFullLine(true)
 	av.v.pageGroups.listEmails.SetTitle(" Список допущенных e-mail ")
 
-	//? InputCapture edit page
+	//! InputCapture edit page
 	av.v.pageGroups.pageEdit.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
@@ -227,7 +223,7 @@ func (av *appView) vGroups() {
 		return event
 	}
 
-	//? Main grid
+	//! Main grid
 	av.v.pageGroups.gridMain.
 		SetRows(0).
 		SetColumns(0, 30, 20, 30, 0).
@@ -236,7 +232,7 @@ func (av *appView) vGroups() {
 		AddItem(av.v.pageGroups.pagesSelEd, 0, 2, 1, 1, 0, 0, true).
 		AddItem(av.v.pageGroups.listEmails, 0, 3, 1, 1, 0, 0, true)
 
-		//? Adding pages
+	//! adding pages
 	av.v.pageGroups.pagesSelEd.AddPage("select_page", av.v.pageGroups.pageSelect.grid, true, true)
 	av.v.pageGroups.pagesSelEd.AddPage("edit_page", av.v.pageGroups.pageEdit.grid, true, true)
 }

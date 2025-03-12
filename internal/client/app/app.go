@@ -38,5 +38,8 @@ func RunApp() {
 
 	av := appview.New(sv, lg)
 
-	av.Run()
+	// running the app view
+	if err := av.Run(); err != nil {
+		lg.Fatal(err)
+	}
 }

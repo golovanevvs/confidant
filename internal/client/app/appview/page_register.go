@@ -44,7 +44,7 @@ func newPageRegister() *pageRegister {
 }
 
 func (av *appView) vRegister() {
-	//? Form
+	//! form
 	av.v.pageRegister.form.form.SetHorizontal(false)
 	av.v.pageRegister.form.form.AddInputField("E-mail:", "", 0, nil, nil)
 	av.v.pageRegister.form.inputEmail = av.v.pageRegister.form.form.GetFormItem(0).(*tview.InputField)
@@ -53,27 +53,40 @@ func (av *appView) vRegister() {
 	av.v.pageRegister.form.form.AddPasswordField("Повторите:", "", 0, '*', nil)
 	av.v.pageRegister.form.inputRPassword = av.v.pageRegister.form.form.GetFormItem(2).(*tview.InputField)
 
-	//? Зарегистрироваться
+	//! "Зарегистрироваться"
 	av.v.pageRegister.buttonRegister.
 		SetSelectedFunc(func() {
 			pass1 := av.v.pageRegister.form.inputPassword.GetText()
 			pass2 := av.v.pageRegister.form.inputRPassword.GetText()
+
+			// pass1 == pass2
 			if pass1 == pass2 {
 				email := av.v.pageRegister.form.inputEmail.GetText()
 				password := av.v.pageRegister.form.inputPassword.GetText()
+
+				//? running service
 				registerAccountResp, err := av.sv.RegisterAccount(email, password)
+
+				// error
 				if err != nil {
 					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 					av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
+
+					// no error
 				} else {
 					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.Error))
+
 					// setting status
 					if registerAccountResp.HTTPStatusCode == 200 {
 						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
 					} else {
 						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
 					}
+
 					switch {
+
+					// status != 200
+
 					case registerAccountResp.HTTPStatusCode != 200:
 						switch {
 						// invalid e-mail
@@ -95,7 +108,9 @@ func (av *appView) vRegister() {
 							av.v.pageMain.messageBoxL.SetText("[red]Возникла ошибка.")
 						}
 
-					// OK
+					// status == 200
+
+					//? OK
 					case registerAccountResp.Error == "":
 						av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
 						av.v.pageMain.messageBoxL.Clear()
@@ -104,6 +119,7 @@ func (av *appView) vRegister() {
 						av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
 						av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 						av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+
 					// the response does not contain the "Authorization" header
 					case strings.Contains(registerAccountResp.Error, customerrors.ErrAuthHeader.Error()):
 						av.v.pageMain.messageBoxL.SetText("[red]Ответ не содержит заголовок \"Authorization\"!")
@@ -121,6 +137,8 @@ func (av *appView) vRegister() {
 						av.v.pageMain.messageBoxL.SetText("Неизвестная ошибка!")
 					}
 				}
+
+				// pass1 != pass2
 			} else {
 				av.v.pageMain.messageBoxL.Clear()
 				av.v.pageMain.messageBoxL.SetText("[red]Пароли не совпадают! Повторите ввод.\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
@@ -131,7 +149,7 @@ func (av *appView) vRegister() {
 			}
 		})
 
-	//? Назад
+	//! "Назад"
 	av.v.pageRegister.buttonExit.SetSelectedFunc(func() {
 		// switch
 		av.v.pageMain.pages.SwitchToPage("login_page")
@@ -144,7 +162,7 @@ func (av *appView) vRegister() {
 		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 	})
 
-	//? form grid
+	//! form grid
 	av.v.pageRegister.grid.
 		SetRows(8, 1, 1).
 		SetColumns(50).
@@ -153,13 +171,13 @@ func (av *appView) vRegister() {
 		AddItem(av.v.pageRegister.buttonRegister, 1, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageRegister.buttonExit, 2, 0, 1, 1, 0, 0, true)
 
-	//? main grid
+	//! main grid
 	av.v.pageRegister.mainGrid.
 		SetRows(0, 20, 0).
 		SetColumns(0, 40, 0).
 		AddItem(av.v.pageRegister.grid, 1, 1, 1, 1, 0, 0, true)
 
-	//? InputCapture
+	//! InputCapture
 	av.v.pageRegister.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
