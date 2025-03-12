@@ -21,14 +21,40 @@ type IService interface {
 	IStatusServerService
 }
 
-type AppView struct {
-	sv IService
-	lg *zap.SugaredLogger
+type view struct {
+	pageApp      *pageApp
+	pageMain     *pageMain
+	pageLogin    *pageLogin
+	pageRegister *pageRegister
+	pageGroups   *pageGroups
 }
 
-func New(sv IService, lg *zap.SugaredLogger) *AppView {
-	return &AppView{
+type appView struct {
+	sv IService
+	lg *zap.SugaredLogger
+	v  view
+}
+
+func New(sv IService, lg *zap.SugaredLogger) *appView {
+	return &appView{
+		v: view{
+			pageApp:      newPageApp(),
+			pageMain:     newPageMain(),
+			pageLogin:    newPageLogin(),
+			pageRegister: newPageRegister(),
+			pageGroups:   newPageGroups(),
+		},
 		sv: sv,
 		lg: lg,
 	}
+}
+
+func (av *appView) Run() error {
+
+	av.vMain()
+	av.vLogin()
+	av.vRegister()
+	av.vGroups()
+
+	return av.vApp()
 }
