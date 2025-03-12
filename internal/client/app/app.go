@@ -35,7 +35,7 @@ func RunApp() {
 	trHTTP := trhttp.New("localhost:7541")
 
 	// initializing the repository
-	rp, err := repository.New("")
+	rp, err := repository.New()
 	if err != nil {
 		lg.Fatal(err)
 	}

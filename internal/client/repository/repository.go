@@ -6,8 +6,8 @@ type Repository struct {
 	*sqlite.SQLite
 }
 
-func New(databasePath string) (*Repository, error) {
-	sqlite, err := sqlite.New(databasePath)
+func New() (*Repository, error) {
+	sqlite, err := sqlite.New()
 	if err != nil {
 		return nil, err
 	}
