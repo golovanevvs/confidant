@@ -5,99 +5,117 @@ import (
 	"github.com/rivo/tview"
 )
 
-type FormPageLogin struct {
-	Form          *tview.Form
-	InputEmail    *tview.InputField
-	InputPassword *tview.InputField
+type formPageLogin struct {
+	form          *tview.Form
+	inputEmail    *tview.InputField
+	inputPassword *tview.InputField
 }
 
-type PageLogin struct {
-	InputCapture   func(event *tcell.EventKey) *tcell.EventKey
-	Form           FormPageLogin
-	ButtonLogin    *tview.Button
-	ButtonRegister *tview.Button
-	ButtonExit     *tview.Button
-	Grid           *tview.Grid
-	MainGrid       *tview.Grid
+type pageLogin struct {
+	inputCapture   func(event *tcell.EventKey) *tcell.EventKey
+	form           formPageLogin
+	buttonLogin    *tview.Button
+	buttonRegister *tview.Button
+	buttonExit     *tview.Button
+	grid           *tview.Grid
+	mainGrid       *tview.Grid
 }
 
-func (av *AppView) VLogin() {
+func newPageLogin() *pageLogin {
+	return &pageLogin{
+		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
+			return event
+		},
+		form: formPageLogin{
+			form:          tview.NewForm(),
+			inputEmail:    tview.NewInputField(),
+			inputPassword: tview.NewInputField(),
+		},
+		buttonLogin:    tview.NewButton("Войти"),
+		buttonRegister: tview.NewButton("Регистрация"),
+		buttonExit:     tview.NewButton("Выход"),
+		grid:           tview.NewGrid(),
+		mainGrid:       tview.NewGrid(),
+	}
+}
 
-	av.v.pageLogin.Form.Form.SetHorizontal(false)
-	av.v.pageLogin.Form.Form.AddInputField("E-mail:", "", 0, nil, nil)
-	av.v.pageLogin.Form.InputEmail = av.v.pageLogin.Form.Form.GetFormItem(0).(*tview.InputField)
-	av.v.pageLogin.Form.Form.AddPasswordField("Пароль:", "", 0, '*', nil)
-	av.v.pageLogin.Form.InputPassword = av.v.pageLogin.Form.Form.GetFormItem(1).(*tview.InputField)
+func (av *appView) vLogin() {
+
+	av.v.pageLogin.form.form.SetHorizontal(false)
+	av.v.pageLogin.form.form.AddInputField("E-mail:", "", 0, nil, nil)
+	av.v.pageLogin.form.inputEmail = av.v.pageLogin.form.form.GetFormItem(0).(*tview.InputField)
+	av.v.pageLogin.form.form.AddPasswordField("Пароль:", "", 0, '*', nil)
+	av.v.pageLogin.form.inputPassword = av.v.pageLogin.form.form.GetFormItem(1).(*tview.InputField)
 
 	//? Войти
-	av.v.pageLogin.ButtonLogin.SetSelectedFunc(func() {
+	av.v.pageLogin.buttonLogin.SetSelectedFunc(func() {
 		// switch
-		av.v.pageMain.Pages.SwitchToPage("groups_page")
-		av.v.pageGroups.PagesSelEd.SwitchToPage("select_page")
-		av.v.pageMain.App.SetInputCapture(av.v.pageGroups.PageSelect.InputCapture)
-		av.v.pageMain.App.SetFocus(av.v.pageGroups.ListGroups)
+		av.v.pageMain.pages.SwitchToPage("groups_page")
+		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 	})
 
 	//? Регистрация
-	av.v.pageLogin.ButtonRegister.SetSelectedFunc(func() {
+	av.v.pageLogin.buttonRegister.SetSelectedFunc(func() {
 		// switch
-		av.v.pageMain.Pages.SwitchToPage("register_page")
+		av.v.pageMain.pages.SwitchToPage("register_page")
 		// focus
-		av.v.pageMain.App.SetInputCapture(av.v.pageRegister.InputCapture)
-		av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputEmail)
+		av.v.pageApp.app.SetInputCapture(av.v.pageRegister.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
 		// clear
-		av.v.pageRegister.Form.InputEmail.SetText("")
-		av.v.pageRegister.Form.InputPassword.SetText("")
-		av.v.pageRegister.Form.InputRPassword.SetText("")
+		av.v.pageRegister.form.inputEmail.SetText("")
+		av.v.pageRegister.form.inputPassword.SetText("")
+		av.v.pageRegister.form.inputRPassword.SetText("")
 		// messageBox
-		av.v.pageMain.MessageBoxL.SetText("Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+		av.v.pageMain.messageBoxL.SetText("Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 	})
 
 	//? Выход
-	av.v.pageLogin.ButtonExit.SetSelectedFunc(func() {
-		av.v.pageMain.App.Stop()
+	av.v.pageLogin.buttonExit.SetSelectedFunc(func() {
+		av.v.pageApp.app.Stop()
 	})
 
 	//? form grid
-	av.v.pageLogin.Grid.
+	av.v.pageLogin.grid.
 		SetRows(5, 1, 1, 1).
 		SetColumns(50).
 		SetGap(1, 0).
-		AddItem(av.v.pageLogin.Form.Form, 0, 0, 1, 1, 0, 0, true).
-		AddItem(av.v.pageLogin.ButtonLogin, 1, 0, 1, 1, 1, 1, false).
-		AddItem(av.v.pageLogin.ButtonRegister, 2, 0, 1, 1, 0, 0, false).
-		AddItem(av.v.pageLogin.ButtonExit, 3, 0, 1, 1, 0, 0, false)
+		AddItem(av.v.pageLogin.form.form, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageLogin.buttonLogin, 1, 0, 1, 1, 1, 1, false).
+		AddItem(av.v.pageLogin.buttonRegister, 2, 0, 1, 1, 0, 0, false).
+		AddItem(av.v.pageLogin.buttonExit, 3, 0, 1, 1, 0, 0, false)
 
 	//? main grid
-	av.v.pageLogin.MainGrid.
+	av.v.pageLogin.mainGrid.
 		SetRows(0, 20, 0).
 		SetColumns(0, 40, 0).
-		AddItem(av.v.pageLogin.Grid, 1, 1, 1, 1, 0, 0, true)
+		AddItem(av.v.pageLogin.grid, 1, 1, 1, 1, 0, 0, true)
 
 	//? InputCapture
-	av.v.pageLogin.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+	av.v.pageLogin.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
-			currentFocus := av.v.pageMain.App.GetFocus()
+			currentFocus := av.v.pageApp.app.GetFocus()
 			switch currentFocus {
-			case av.v.pageLogin.Form.InputEmail:
-				av.v.pageMain.App.SetFocus(av.v.pageLogin.Form.InputPassword)
-			case av.v.pageLogin.Form.InputPassword:
-				av.v.pageMain.App.SetFocus(av.v.pageLogin.ButtonLogin)
-			case av.v.pageLogin.ButtonLogin:
-				av.v.pageMain.App.SetFocus(av.v.pageLogin.ButtonRegister)
-			case av.v.pageLogin.ButtonRegister:
-				av.v.pageMain.App.SetFocus(av.v.pageLogin.ButtonExit)
-			case av.v.pageLogin.ButtonExit:
-				av.v.pageMain.App.SetFocus(av.v.pageLogin.Form.InputEmail)
+			case av.v.pageLogin.form.inputEmail:
+				av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputPassword)
+			case av.v.pageLogin.form.inputPassword:
+				av.v.pageApp.app.SetFocus(av.v.pageLogin.buttonLogin)
+			case av.v.pageLogin.buttonLogin:
+				av.v.pageApp.app.SetFocus(av.v.pageLogin.buttonRegister)
+			case av.v.pageLogin.buttonRegister:
+				av.v.pageApp.app.SetFocus(av.v.pageLogin.buttonExit)
+			case av.v.pageLogin.buttonExit:
+				av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputEmail)
 			}
 			return nil
 		}
 
 		// if event.Key() == tcell.KeyEnter {
-		// 	currentFocus := av.v.pageMain.App.GetFocus()
+		// 	currentFocus := av.v.pageApp.App.GetFocus()
 		// 	switch currentFocus {
 		// 	case formav.v.pageLogin.GetFormItem(1):
-		// 		av.v.pageMain.App.SetFocus(buttonLoginav.v.pageLogin)
+		// 		av.v.pageApp.App.SetFocus(buttonLoginav.v.pageLogin)
 		// 	}
 		// }
 

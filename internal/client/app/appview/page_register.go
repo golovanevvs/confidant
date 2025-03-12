@@ -9,162 +9,180 @@ import (
 	"github.com/rivo/tview"
 )
 
-type FormPageRegister struct {
-	Form           *tview.Form
-	InputEmail     *tview.InputField
-	InputPassword  *tview.InputField
-	InputRPassword *tview.InputField
+type formPageRegister struct {
+	form           *tview.Form
+	inputEmail     *tview.InputField
+	inputPassword  *tview.InputField
+	inputRPassword *tview.InputField
 }
 
-type PageRegister struct {
-	InputCapture   func(event *tcell.EventKey) *tcell.EventKey
-	Form           FormPageRegister
-	ButtonRegister *tview.Button
-	ButtonExit     *tview.Button
-	Grid           *tview.Grid
-	MainGrid       *tview.Grid
+type pageRegister struct {
+	inputCapture   func(event *tcell.EventKey) *tcell.EventKey
+	form           formPageRegister
+	buttonRegister *tview.Button
+	buttonExit     *tview.Button
+	grid           *tview.Grid
+	mainGrid       *tview.Grid
 }
 
-func (av *AppView) VRegister() {
+func newPageRegister() *pageRegister {
+	return &pageRegister{
+		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
+			return event
+		},
+		form: formPageRegister{
+			form:           tview.NewForm(),
+			inputEmail:     tview.NewInputField(),
+			inputPassword:  tview.NewInputField(),
+			inputRPassword: tview.NewInputField(),
+		},
+		buttonRegister: tview.NewButton("Зарегистрироваться"),
+		buttonExit:     tview.NewButton("Назад"),
+		grid:           tview.NewGrid(),
+		mainGrid:       tview.NewGrid(),
+	}
+}
+
+func (av *appView) vRegister() {
 	//? Form
-	av.v.pageRegister.Form.Form.SetHorizontal(false)
-	av.v.pageRegister.Form.Form.AddInputField("E-mail:", "", 0, nil, nil)
-	av.v.pageRegister.Form.InputEmail = av.v.pageRegister.Form.Form.GetFormItem(0).(*tview.InputField)
-	av.v.pageRegister.Form.Form.AddPasswordField("Пароль:", "", 0, '*', nil)
-	av.v.pageRegister.Form.InputPassword = av.v.pageRegister.Form.Form.GetFormItem(1).(*tview.InputField)
-	av.v.pageRegister.Form.Form.AddPasswordField("Повторите:", "", 0, '*', nil)
-	av.v.pageRegister.Form.InputRPassword = av.v.pageRegister.Form.Form.GetFormItem(2).(*tview.InputField)
+	av.v.pageRegister.form.form.SetHorizontal(false)
+	av.v.pageRegister.form.form.AddInputField("E-mail:", "", 0, nil, nil)
+	av.v.pageRegister.form.inputEmail = av.v.pageRegister.form.form.GetFormItem(0).(*tview.InputField)
+	av.v.pageRegister.form.form.AddPasswordField("Пароль:", "", 0, '*', nil)
+	av.v.pageRegister.form.inputPassword = av.v.pageRegister.form.form.GetFormItem(1).(*tview.InputField)
+	av.v.pageRegister.form.form.AddPasswordField("Повторите:", "", 0, '*', nil)
+	av.v.pageRegister.form.inputRPassword = av.v.pageRegister.form.form.GetFormItem(2).(*tview.InputField)
 
 	//? Зарегистрироваться
-	av.v.pageRegister.ButtonRegister.
+	av.v.pageRegister.buttonRegister.
 		SetSelectedFunc(func() {
-			pass1 := av.v.pageRegister.Form.InputPassword.GetText()
-			pass2 := av.v.pageRegister.Form.InputRPassword.GetText()
+			pass1 := av.v.pageRegister.form.inputPassword.GetText()
+			pass2 := av.v.pageRegister.form.inputRPassword.GetText()
 			if pass1 == pass2 {
-				email := av.v.pageRegister.Form.InputEmail.GetText()
-				password := av.v.pageRegister.Form.InputPassword.GetText()
+				email := av.v.pageRegister.form.inputEmail.GetText()
+				password := av.v.pageRegister.form.inputPassword.GetText()
 				registerAccountResp, err := av.sv.RegisterAccount(email, password)
 				if err != nil {
-					av.v.pageMain.MessageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
-					av.v.pageMain.MessageBoxL.SetText("[red]Возникла критическая ошибка.")
+					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+					av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
 				} else {
-					av.v.pageMain.MessageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.Error))
+					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.Error))
 					// setting status
 					if registerAccountResp.HTTPStatusCode == 200 {
-						av.v.pageMain.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
+						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
 					} else {
-						av.v.pageMain.StatusBar.CellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
+						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
 					}
 					switch {
 					case registerAccountResp.HTTPStatusCode != 200:
 						switch {
 						// invalid e-mail
 						case strings.Contains(registerAccountResp.Error, customerrors.ErrAccountValidateEmail422.Error()):
-							av.v.pageMain.MessageBoxL.SetText("[red]Неверно введён e-mail!")
-							av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputEmail)
+							av.v.pageMain.messageBoxL.SetText("[red]Неверно введён e-mail!")
+							av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
 						// invalid password
 						case strings.Contains(registerAccountResp.Error, customerrors.ErrAccountValidatePassword422.Error()):
-							av.v.pageMain.MessageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
-							av.v.pageRegister.Form.InputPassword.SetText("")
-							av.v.pageRegister.Form.InputRPassword.SetText("")
-							av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputPassword)
+							av.v.pageMain.messageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
+							av.v.pageRegister.form.inputPassword.SetText("")
+							av.v.pageRegister.form.inputRPassword.SetText("")
+							av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputPassword)
 						// e-mail is already busy
 						case strings.Contains(registerAccountResp.Error, customerrors.ErrDBBusyEmail409.Error()):
-							av.v.pageMain.MessageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегистрирован!", email))
-							av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputEmail)
+							av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегистрирован!", email))
+							av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
 						// other errors
 						default:
-							av.v.pageMain.MessageBoxL.SetText("[red]Возникла ошибка.")
+							av.v.pageMain.messageBoxL.SetText("[red]Возникла ошибка.")
 						}
 
 					// OK
 					case registerAccountResp.Error == "":
-						av.v.pageMain.StatusBar.CellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
-						av.v.pageMain.MessageBoxL.Clear()
-						av.v.pageMain.MessageBoxR.Clear()
-						av.v.pageMain.Pages.SwitchToPage("groups_page")
-						av.v.pageGroups.PagesSelEd.SwitchToPage("select_page")
-						av.v.pageMain.App.SetInputCapture(av.v.pageGroups.PageSelect.InputCapture)
-						av.v.pageMain.App.SetFocus(av.v.pageGroups.ListGroups)
+						av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
+						av.v.pageMain.messageBoxL.Clear()
+						av.v.pageMain.messageBoxR.Clear()
+						av.v.pageMain.pages.SwitchToPage("groups_page")
+						av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
+						av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
+						av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 					// the response does not contain the "Authorization" header
 					case strings.Contains(registerAccountResp.Error, customerrors.ErrAuthHeader.Error()):
-						av.v.pageMain.MessageBoxL.SetText("[red]Ответ не содержит заголовок \"Authorization\"!")
+						av.v.pageMain.messageBoxL.SetText("[red]Ответ не содержит заголовок \"Authorization\"!")
 					// the "Authorization" header does not contain "Bearer"
 					case strings.Contains(registerAccountResp.Error, customerrors.ErrBearer.Error()):
-						av.v.pageMain.MessageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит \"Bearer\"!")
+						av.v.pageMain.messageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит \"Bearer\"!")
 					// the "Authorization" header does not contain a access token
 					case strings.Contains(registerAccountResp.Error, customerrors.ErrAccessToken.Error()):
-						av.v.pageMain.MessageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит access токен!")
+						av.v.pageMain.messageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит access токен!")
 					// the response does not contain the "Refresh-Token" header
 					case strings.Contains(registerAccountResp.Error, customerrors.ErrRefreshToken.Error()):
-						av.v.pageMain.MessageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит refresh токен!")
+						av.v.pageMain.messageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит refresh токен!")
 					// unknown error
 					default:
-						av.v.pageMain.MessageBoxL.SetText("Неизвестная ошибка!")
+						av.v.pageMain.messageBoxL.SetText("Неизвестная ошибка!")
 					}
 				}
 			} else {
-				av.v.pageMain.MessageBoxL.Clear()
-				av.v.pageMain.MessageBoxL.SetText("[red]Пароли не совпадают! Повторите ввод.\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
-				av.v.pageMain.MessageBoxR.Clear()
-				av.v.pageRegister.Form.InputPassword.SetText("")
-				av.v.pageRegister.Form.InputRPassword.SetText("")
-				av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputPassword)
+				av.v.pageMain.messageBoxL.Clear()
+				av.v.pageMain.messageBoxL.SetText("[red]Пароли не совпадают! Повторите ввод.\n[white]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+				av.v.pageMain.messageBoxR.Clear()
+				av.v.pageRegister.form.inputPassword.SetText("")
+				av.v.pageRegister.form.inputRPassword.SetText("")
+				av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputPassword)
 			}
 		})
 
 	//? Назад
-	av.v.pageRegister.ButtonExit.SetSelectedFunc(func() {
+	av.v.pageRegister.buttonExit.SetSelectedFunc(func() {
 		// switch
-		av.v.pageMain.Pages.SwitchToPage("login_page")
+		av.v.pageMain.pages.SwitchToPage("login_page")
 		// focus
-		av.v.pageMain.App.SetInputCapture(av.v.pageLogin.InputCapture)
-		av.v.pageMain.App.SetFocus(av.v.pageLogin.Form.InputEmail)
+		av.v.pageApp.app.SetInputCapture(av.v.pageLogin.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputEmail)
 		// messageBox
-		av.v.pageMain.MessageBoxL.Clear()
-		av.v.pageMain.MessageBoxR.Clear()
-		av.v.pageMain.StatusBar.CellResponseStatus.SetText("")
+		av.v.pageMain.messageBoxL.Clear()
+		av.v.pageMain.messageBoxR.Clear()
+		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 	})
 
 	//? form grid
-	av.v.pageRegister.Grid.
+	av.v.pageRegister.grid.
 		SetRows(8, 1, 1).
 		SetColumns(50).
 		SetGap(1, 0).
-		AddItem(av.v.pageRegister.Form.Form, 0, 0, 1, 1, 0, 0, true).
-		AddItem(av.v.pageRegister.ButtonRegister, 1, 0, 1, 1, 0, 0, true).
-		AddItem(av.v.pageRegister.ButtonExit, 2, 0, 1, 1, 0, 0, true)
+		AddItem(av.v.pageRegister.form.form, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageRegister.buttonRegister, 1, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageRegister.buttonExit, 2, 0, 1, 1, 0, 0, true)
 
 	//? main grid
-	av.v.pageRegister.MainGrid.
+	av.v.pageRegister.mainGrid.
 		SetRows(0, 20, 0).
 		SetColumns(0, 40, 0).
-		AddItem(av.v.pageRegister.Grid, 1, 1, 1, 1, 0, 0, true)
+		AddItem(av.v.pageRegister.grid, 1, 1, 1, 1, 0, 0, true)
 
 	//? InputCapture
-	av.v.pageRegister.InputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+	av.v.pageRegister.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
-			currentFocus := av.v.pageMain.App.GetFocus()
+			currentFocus := av.v.pageApp.app.GetFocus()
 			switch currentFocus {
-			case av.v.pageRegister.Form.InputEmail:
-				av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputPassword)
-			case av.v.pageRegister.Form.InputPassword:
-				av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputRPassword)
-			case av.v.pageRegister.Form.InputRPassword:
-				av.v.pageMain.App.SetFocus(av.v.pageRegister.ButtonRegister)
-			case av.v.pageRegister.ButtonRegister:
-				av.v.pageMain.App.SetFocus(av.v.pageRegister.ButtonExit)
-			case av.v.pageRegister.ButtonExit:
-				av.v.pageMain.App.SetFocus(av.v.pageRegister.Form.InputEmail)
+			case av.v.pageRegister.form.inputEmail:
+				av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputPassword)
+			case av.v.pageRegister.form.inputPassword:
+				av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputRPassword)
+			case av.v.pageRegister.form.inputRPassword:
+				av.v.pageApp.app.SetFocus(av.v.pageRegister.buttonRegister)
+			case av.v.pageRegister.buttonRegister:
+				av.v.pageApp.app.SetFocus(av.v.pageRegister.buttonExit)
+			case av.v.pageRegister.buttonExit:
+				av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
 			}
 			return nil
 		}
 
 		// if event.Key() == tcell.KeyEnter {
-		// 	currentFocus := av.v.pageMain.App.GetFocus()
+		// 	currentFocus := av.v.pageApp.App.GetFocus()
 		// 	switch currentFocus {
 		// 	case av.v.pageRegister.Form.Form.GetFormItem(2):
-		// 		av.v.pageMain.App.SetFocus(av.v.pageRegister.ButtonRegister)
+		// 		av.v.pageApp.App.SetFocus(av.v.pageRegister.ButtonRegister)
 		// 	}
 		// }
 
