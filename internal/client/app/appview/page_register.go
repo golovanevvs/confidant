@@ -65,7 +65,7 @@ func (av *appView) vRegister() {
 				password := av.v.pageRegister.form.inputPassword.GetText()
 
 				//? running service
-				registerAccountResp, err := av.sv.RegisterAccount(email, password)
+				registerAccountResp, err := av.sv.CreateAccount(email, password)
 
 				// error
 				if err != nil {

@@ -1,4 +1,4 @@
-package accountservice
+package service_account
 
 import (
 	"context"
@@ -22,7 +22,7 @@ type claims struct {
 }
 
 // BuildAccessJWTString creates a access token and returns it as a string
-func (sv *AccountService) BuildAccessJWTString(ctx context.Context, accountID int) (accessTokenString string, err error) {
+func (sv *ServiceAccount) BuildAccessJWTString(ctx context.Context, accountID int) (accessTokenString string, err error) {
 	action := "build JWT string"
 	// creating a token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
@@ -42,7 +42,7 @@ func (sv *AccountService) BuildAccessJWTString(ctx context.Context, accountID in
 }
 
 // BuildRefreshJWTString creates a refresh token and returns it as a string
-func (sv *AccountService) BuildRefreshJWTString(ctx context.Context, accountID int) (refreshTokenString string, err error) {
+func (sv *ServiceAccount) BuildRefreshJWTString(ctx context.Context, accountID int) (refreshTokenString string, err error) {
 	action := "build JWT string"
 	// creating a token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{

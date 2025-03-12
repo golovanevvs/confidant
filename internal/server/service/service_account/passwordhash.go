@@ -1,4 +1,4 @@
-package accountservice
+package service_account
 
 import (
 	"crypto/sha256"
@@ -10,7 +10,7 @@ const (
 )
 
 // GenPasswordHash generates a hash of the password
-func (as *AccountService) genPasswordHash(password string) string {
+func (as *ServiceAccount) genPasswordHash(password string) string {
 	hash := sha256.New()
 	hash.Write([]byte(password))
 	hash.Write([]byte(hashKey))

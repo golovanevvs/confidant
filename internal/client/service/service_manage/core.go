@@ -1,4 +1,4 @@
-package service
+package service_manage
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *Service) GetServerStatus() (statusResp *model.StatusResp, err error) {
+func (sv *ServiceManage) GetServerStatus() (statusResp *model.StatusResp, err error) {
 	action := "get server status service"
 
 	trResponse, err := sv.tr.ServerStatus()

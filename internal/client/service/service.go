@@ -1,20 +1,28 @@
 package service
 
 import (
-	"github.com/golovanevvs/confidant/internal/client/model"
+	"github.com/golovanevvs/confidant/internal/client/service/service_account"
+	"github.com/golovanevvs/confidant/internal/client/service/service_manage"
 )
 
 type ITransport interface {
-	RegisterAccount(email, password string) (trResponse *model.TrResponse, err error)
-	ServerStatus() (statusResp *model.TrResponse, err error)
+	service_account.ITransportAccount
+	service_manage.ITransportManage
 }
 
-type Service struct {
-	tr ITransport
+type IRepository interface {
+	service_account.IRepositoryAccount
+	service_manage.IRepositoryManage
 }
 
-func New(tr ITransport) *Service {
-	return &Service{
-		tr: tr,
+type service struct {
+	*service_account.ServiceAccount
+	*service_manage.ServiceManage
+}
+
+func New(tr ITransport, rp IRepository) *service {
+	return &service{
+		ServiceAccount: service_account.New(tr, rp),
+		ServiceManage:  service_manage.New(tr, rp),
 	}
 }

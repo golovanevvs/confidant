@@ -27,7 +27,7 @@ func TestSaveAccount(t *testing.T) {
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
 
 	//initializing the accountPostgres
-	rp := NewAccountPostgres(sqlxDB)
+	rp := NewPostgresAccount(sqlxDB)
 
 	// configuring expected values
 	mock.ExpectQuery(`

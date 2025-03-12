@@ -1,4 +1,4 @@
-package service
+package service_account
 
 import (
 	"encoding/json"
@@ -9,10 +9,10 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *Service) RegisterAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
-	action := "register account service"
+func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
+	action := "register account"
 
-	trResponse, err := sv.tr.RegisterAccount(email, password)
+	trResponse, err := sv.tr.CreateAccount(email, password)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s: %w", customerrors.ClientServiceErr, action, err)
 	}

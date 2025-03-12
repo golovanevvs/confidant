@@ -1,27 +1,23 @@
 package service
 
 import (
-	"github.com/golovanevvs/confidant/internal/server/service/accountservice"
-	"github.com/golovanevvs/confidant/internal/server/service/manageservice"
-	"github.com/golovanevvs/confidant/internal/server/service/otherservice"
+	"github.com/golovanevvs/confidant/internal/server/service/service_account"
+	"github.com/golovanevvs/confidant/internal/server/service/service_manage"
 )
 
 type IRepository interface {
-	accountservice.IAccountRepository
-	manageservice.IManageRepository
-	otherservice.IManageRepository
+	service_account.IRepositoryAccount
+	service_manage.IRepositoryManage
 }
 
-type Service struct {
-	*accountservice.AccountService
-	*manageservice.ManageService
-	*otherservice.OtherService
+type service struct {
+	*service_account.ServiceAccount
+	*service_manage.ServiceManage
 }
 
-func New(rp IRepository) *Service {
-	return &Service{
-		AccountService: accountservice.New(rp),
-		ManageService:  manageservice.New(rp),
-		OtherService:   otherservice.New(rp),
+func New(rp IRepository) *service {
+	return &service{
+		ServiceAccount: service_account.New(rp),
+		ServiceManage:  service_manage.New(rp),
 	}
 }

@@ -7,17 +7,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type ManagePostgres struct {
+type postgresManage struct {
 	db *sqlx.DB
 }
 
-func NewManagePostgres(db *sqlx.DB) *ManagePostgres {
-	return &ManagePostgres{
+func NewPostgresManage(db *sqlx.DB) *postgresManage {
+	return &postgresManage{
 		db: db,
 	}
 }
 
-func (rp *ManagePostgres) CloseDB() error {
+func (rp *postgresManage) CloseDB() error {
 	err := rp.db.Close()
 	if err != nil {
 		return fmt.Errorf("error when closing the DB: %s", err.Error())
@@ -25,7 +25,7 @@ func (rp *ManagePostgres) CloseDB() error {
 	return nil
 }
 
-func (rp *ManagePostgres) Ping() (err error) {
+func (rp *postgresManage) Ping() (err error) {
 	action := "ping DB"
 	if err := rp.db.Ping(); err != nil {
 		return fmt.Errorf(

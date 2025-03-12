@@ -11,7 +11,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) RegisterAccount(email, password string) (trResponse *model.TrResponse, err error) {
+func (tr *trHTTP) CreateAccount(email, password string) (trResponse *model.TrResponse, err error) {
 	//! Request
 	action := "register account transport"
 

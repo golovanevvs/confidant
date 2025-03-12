@@ -1,4 +1,4 @@
-package accountservice
+package service_account
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/golovanevvs/confidant/internal/server/model"
-	"github.com/golovanevvs/confidant/internal/server/service/repositorymock"
+	"github.com/golovanevvs/confidant/internal/server/service/repository_mock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +22,7 @@ func TestCreateAccount(t *testing.T) {
 	defer ctrl.Finish()
 
 	// creating a repository mock-object
-	rpMock := repositorymock.NewMockIRepository(ctrl)
+	rpMock := repository_mock.NewMockIRepository(ctrl)
 
 	//initializing the service
 	sv := New(rpMock)

@@ -8,8 +8,8 @@ import (
 )
 
 type Postgres struct {
-	*ManagePostgres
-	*AccountPostgres
+	*postgresManage
+	*postgresAccount
 }
 
 func New(databaseURI string) (*Postgres, error) {
@@ -24,7 +24,7 @@ func New(databaseURI string) (*Postgres, error) {
 	}
 
 	return &Postgres{
-		NewManagePostgres(db),
-		NewAccountPostgres(db),
+		NewPostgresManage(db),
+		NewPostgresAccount(db),
 	}, nil
 }

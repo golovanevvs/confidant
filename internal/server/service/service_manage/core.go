@@ -1,4 +1,4 @@
-package manageservice
+package service_manage
 
 import (
 	"fmt"
@@ -6,9 +6,9 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ManageService) PingDB() (err error) {
+func (sv *ServiceManage) PingDB() (err error) {
 	action := "ping DB"
-	if err = sv.Rp.Ping(); err != nil {
+	if err = sv.rp.Ping(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.ManageServiceErr,

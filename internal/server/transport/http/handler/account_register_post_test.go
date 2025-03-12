@@ -12,7 +12,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/golovanevvs/confidant/internal/customerrors"
-	"github.com/golovanevvs/confidant/internal/server/transport/servicemock"
+	"github.com/golovanevvs/confidant/internal/server/transport/service_mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -45,7 +45,7 @@ func TestAccountRegisterPost(t *testing.T) {
 	defer ctrl.Finish()
 
 	// creating a service mock-object
-	svMock := servicemock.NewMockIService(ctrl)
+	svMock := service_mock.NewMockIService(ctrl)
 
 	//initializing the handler
 	hd := New(svMock, lg)

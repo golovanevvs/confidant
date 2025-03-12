@@ -1,4 +1,4 @@
-package accountservice
+package service_account
 
 import (
 	"context"
@@ -6,17 +6,17 @@ import (
 	"github.com/golovanevvs/confidant/internal/server/model"
 )
 
-type IAccountRepository interface {
+type IRepositoryAccount interface {
 	SaveAccount(ctx context.Context, account model.Account) (int, error)
 	LoadAccountID(ctx context.Context, email, passwordHash string) (int, error)
 }
 
-type AccountService struct {
-	Rp IAccountRepository
+type ServiceAccount struct {
+	rp IRepositoryAccount
 }
 
-func New(accountRp IAccountRepository) *AccountService {
-	return &AccountService{
-		Rp: accountRp,
+func New(accountRp IRepositoryAccount) *ServiceAccount {
+	return &ServiceAccount{
+		rp: accountRp,
 	}
 }

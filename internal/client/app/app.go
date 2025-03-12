@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/golovanevvs/confidant/internal/client/app/appview"
+	"github.com/golovanevvs/confidant/internal/client/repository"
 	"github.com/golovanevvs/confidant/internal/client/service"
 	trhttp "github.com/golovanevvs/confidant/internal/client/transport/http"
 	"go.uber.org/zap"
@@ -33,8 +34,14 @@ func RunApp() {
 	// initializing the transport
 	trHTTP := trhttp.New("localhost:7541")
 
+	// initializing the repository
+	rp, err := repository.New("")
+	if err != nil {
+		lg.Fatal(err)
+	}
+
 	// initializing the service
-	sv := service.New(trHTTP)
+	sv := service.New(trHTTP, rp)
 
 	av := appview.New(sv, lg)
 
