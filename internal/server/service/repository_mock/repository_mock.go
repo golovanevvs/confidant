@@ -78,3 +78,17 @@ func (mr *MockIRepositoryMockRecorder) SaveAccount(arg0, arg1 interface{}) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAccount", reflect.TypeOf((*MockIRepository)(nil).SaveAccount), arg0, arg1)
 }
+
+// SaveRefreshTokenHash mocks base method.
+func (m *MockIRepository) SaveRefreshTokenHash(arg0 context.Context, arg1 int, arg2 []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveRefreshTokenHash", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveRefreshTokenHash indicates an expected call of SaveRefreshTokenHash.
+func (mr *MockIRepositoryMockRecorder) SaveRefreshTokenHash(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveRefreshTokenHash", reflect.TypeOf((*MockIRepository)(nil).SaveRefreshTokenHash), arg0, arg1, arg2)
+}

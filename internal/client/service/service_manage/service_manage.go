@@ -10,6 +10,7 @@ type ITransportManage interface {
 
 type IRepositoryManage interface {
 	GetServerStatus() (statusResp *model.StatusResp, err error)
+	CloseDB() error
 }
 
 type ServiceManage struct {

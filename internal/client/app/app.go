@@ -39,6 +39,7 @@ func RunApp() {
 	if err != nil {
 		lg.Fatal(err)
 	}
+	defer rp.CloseDB()
 
 	// initializing the service
 	sv := service.New(trHTTP, rp)

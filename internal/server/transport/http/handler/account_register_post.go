@@ -54,13 +54,13 @@ func (hd *handler) accountRegisterPost(w http.ResponseWriter, r *http.Request) {
 	accountID, err := hd.sv.CreateAccount(r.Context(), account)
 	if err != nil {
 		switch {
+		// if the email already exists in the DB
 		case errors.Is(err, customerrors.ErrDBBusyEmail409):
-			// if the email already exists in the DB
 			resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 			hd.lg.Errorf(resErr.Error())
 			http.Error(w, resErr.Error(), http.StatusConflict)
 			return
-			// other errors
+		// other errors
 		case errors.Is(err, customerrors.ErrDBInternalError500):
 			resErr := fmt.Errorf("%s: %s: %s: %w", customerrors.ServerMsg, customerrors.HandlerErr, action, err)
 			hd.lg.Errorf(resErr.Error())

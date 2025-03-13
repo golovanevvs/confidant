@@ -35,7 +35,13 @@ func (sv *ServiceAccount) BuildAccessJWTString(ctx context.Context, accountID in
 	// creating a token string
 	accessTokenString, err = token.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", fmt.Errorf("%s: %s: %w: %w", customerrors.AccountServiceErr, action, customerrors.ErrTokenSignedString, err)
+		return "", fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.AccountServiceErr,
+			action,
+			customerrors.ErrTokenSignedString,
+			err,
+		)
 	}
 
 	return accessTokenString, nil
@@ -55,7 +61,37 @@ func (sv *ServiceAccount) BuildRefreshJWTString(ctx context.Context, accountID i
 	// creating a token string
 	refreshTokenString, err = token.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", fmt.Errorf("%s: %s: %w: %w", customerrors.AccountServiceErr, action, customerrors.ErrTokenSignedString, err)
+		return "", fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.AccountServiceErr,
+			action,
+			customerrors.ErrTokenSignedString,
+			err,
+		)
+	}
+
+	// generate a refresh token hash
+	refreshTokenHash, err := sv.genHash(refreshTokenString)
+	if err != nil {
+		return "", fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.AccountServiceErr,
+			action,
+			customerrors.ErrGenRefreshTokenHash,
+			err,
+		)
+	}
+
+	// saving a refresh token hash to the DB
+	err = sv.rp.SaveRefreshTokenHash(ctx, accountID, refreshTokenHash)
+	if err != nil {
+		return "", fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.AccountServiceErr,
+			action,
+			customerrors.ErrSaveRefreshToken,
+			err,
+		)
 	}
 
 	return refreshTokenString, nil

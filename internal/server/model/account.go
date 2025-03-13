@@ -12,7 +12,7 @@ type Account struct {
 	ID           int    `json:"-"`
 	Email        string `json:"email"`
 	Password     string `json:"password"`
-	PasswordHash string `json:"-"`
+	PasswordHash []byte `json:"-"`
 }
 
 func (m *Account) ValidateEmail() error {

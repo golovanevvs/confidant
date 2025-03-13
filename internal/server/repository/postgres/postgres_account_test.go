@@ -38,14 +38,14 @@ func TestSaveAccount(t *testing.T) {
 			\(\$1, \$2\)
 	 	RETURNING id;$
 	 
-	 `).WithArgs("test@test.com", "testPasswordHash").
+	 `).WithArgs("test@test.com", []byte("testPasswordHash")).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 	//! runnig the tests
 	accountID, err := rp.SaveAccount(ctx,
 		model.Account{
 			Email:        "test@test.com",
-			PasswordHash: "testPasswordHash",
+			PasswordHash: []byte("testPasswordHash"),
 		},
 	)
 	require.NoError(t, err)

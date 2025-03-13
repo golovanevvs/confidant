@@ -87,3 +87,22 @@ func (rp *postgresAccount) LoadAccountID(ctx context.Context, email, passwordHas
 
 	return accountID, nil
 }
+
+func (rp *postgresAccount) SaveRefreshTokenHash(ctx context.Context, accountID int, refreshTokenHash []byte) error {
+	action := "save refresh token"
+
+	_, err := rp.db.ExecContext(ctx, `
+
+		INSERT INTO refresh_tokens
+			(account_id, token_hash)
+		VALUES
+			($1, $2);
+
+	`, accountID, refreshTokenHash)
+
+	if err != nil {
+		return fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+	}
+
+	return nil
+}
