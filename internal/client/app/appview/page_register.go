@@ -120,8 +120,10 @@ func (av *appView) vRegister() {
 						av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 						av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 
+						av.accessToken = registerAccountResp.AccessTokenString
+
 					// the response does not contain the "Authorization" header
-					case strings.Contains(registerAccountResp.Error, customerrors.ErrAuthHeader.Error()):
+					case strings.Contains(registerAccountResp.Error, customerrors.ErrAuthHeaderResp.Error()):
 						av.v.pageMain.messageBoxL.SetText("[red]Ответ не содержит заголовок \"Authorization\"!")
 					// the "Authorization" header does not contain "Bearer"
 					case strings.Contains(registerAccountResp.Error, customerrors.ErrBearer.Error()):

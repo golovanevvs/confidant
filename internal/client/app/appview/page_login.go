@@ -49,6 +49,7 @@ func (av *appView) vLogin() {
 
 	//! "Войти"
 	av.v.pageLogin.buttonLogin.SetSelectedFunc(func() {
+
 		// switch
 		av.v.pageMain.pages.SwitchToPage("groups_page")
 		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")

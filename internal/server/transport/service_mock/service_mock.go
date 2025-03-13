@@ -80,6 +80,21 @@ func (mr *MockIServiceMockRecorder) CreateAccount(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockIService)(nil).CreateAccount), arg0, arg1)
 }
 
+// GetAccountIDFromJWT mocks base method.
+func (m *MockIService) GetAccountIDFromJWT(arg0 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccountIDFromJWT", arg0)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAccountIDFromJWT indicates an expected call of GetAccountIDFromJWT.
+func (mr *MockIServiceMockRecorder) GetAccountIDFromJWT(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountIDFromJWT", reflect.TypeOf((*MockIService)(nil).GetAccountIDFromJWT), arg0)
+}
+
 // PingDB mocks base method.
 func (m *MockIService) PingDB() error {
 	m.ctrl.T.Helper()

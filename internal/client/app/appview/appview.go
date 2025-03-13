@@ -30,9 +30,10 @@ type view struct {
 }
 
 type appView struct {
-	sv IService
-	lg *zap.SugaredLogger
-	v  view
+	sv          IService
+	lg          *zap.SugaredLogger
+	v           view
+	accessToken string
 }
 
 func New(sv IService, lg *zap.SugaredLogger) *appView {

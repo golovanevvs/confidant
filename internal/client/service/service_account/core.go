@@ -35,7 +35,7 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 	authHeaderSplit := strings.Split(authHeader, " ")
 	refreshTokenHeader := trResponse.RefreshTokenHeader
 
-	if authHeader == "" {
+	if len(authHeader) == 0 {
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
@@ -44,12 +44,12 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,
 				action,
-				customerrors.ErrAuthHeader.Error(),
+				customerrors.ErrAuthHeaderResp.Error(),
 			),
 		}, nil
 	}
 
-	if authHeader == "" {
+	if len(authHeaderSplit) != 2 {
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
@@ -58,7 +58,7 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,
 				action,
-				customerrors.ErrInvalidAuthHeader.Error(),
+				customerrors.ErrInvalidAuthHeaderResp.Error(),
 			),
 		}, nil
 	}
@@ -77,7 +77,7 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 		}, nil
 	}
 
-	if authHeaderSplit[1] == "" {
+	if len(authHeaderSplit[1]) == 0 {
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
@@ -91,7 +91,7 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 		}, nil
 	}
 
-	if refreshTokenHeader == "" {
+	if len(refreshTokenHeader) == 0 {
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
