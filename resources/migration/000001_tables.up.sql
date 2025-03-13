@@ -6,12 +6,12 @@ CREATE TABLE account(
     password_hash BYTEA NOT NULL
 );
 
-CREATE TABLE refresh_tokens (
+CREATE TABLE refresh_tokens(
     id SERIAL PRIMARY KEY,
     account_id INT REFERENCES account(id) ON DELETE CASCADE,
     token_hash BYTEA NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    revoked BOOLEAN DEFAULT FALSE,
+    revoked BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE groups(

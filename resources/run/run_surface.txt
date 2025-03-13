@@ -4,7 +4,7 @@ migrate -path PATH_TO_YOUR_MIGRATIONS -database YOUR_DATABASE_URL force VERSION
 
 migrate -path resources/migration -database "postgres://localhost:5434/confidant?sslmode=disable&user=postgres&password=password" up
 
-migrate -path ./internal/migrations -database "postgres://localhost:5434/revelio?sslmode=disable&user=postgres&password=password" down
+migrate -path resources/migration -database "postgres://localhost:5434/confidant?sslmode=disable&user=postgres&password=password" down
 
 go build ./cmd/confidant_server && start confidant_server
 

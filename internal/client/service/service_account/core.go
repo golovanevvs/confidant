@@ -1,7 +1,6 @@
 package service_account
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -106,26 +105,31 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 		}, nil
 	}
 
-	var accountRegisterResp model.AccountRegisterResp
-	err = json.Unmarshal(trResponse.ResponseBody, &accountRegisterResp)
+	passwordHash, err := sv.genHash(password)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s: %s: %s: %w: %w",
-			customerrors.ClientMsg,
+			"%s: %s: %w: %w",
 			customerrors.ClientServiceErr,
 			action,
-			customerrors.ErrDecodeJSON400,
+			customerrors.ErrGenPasswordHash,
+			err)
+	}
+
+	err = sv.rp.SaveAccount(email, passwordHash, refreshTokenHeader)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.ClientServiceErr,
+			action,
 			err,
 		)
 	}
 
-	//! Сохранить access токен в SQLite
-	//! Сохранить refresh токен в SQLite
-
 	return &model.RegisterAccountResp{
-		HTTPStatusCode: trResponse.HTTPStatusCode,
-		HTTPStatus:     trResponse.HTTPStatus,
-		AccountID:      accountRegisterResp.AccountID,
-		Error:          "",
+		HTTPStatusCode:     trResponse.HTTPStatusCode,
+		HTTPStatus:         trResponse.HTTPStatus,
+		AccessTokenString:  authHeaderSplit[1],
+		RefreshTokenString: refreshTokenHeader,
+		Error:              "",
 	}, nil
 }

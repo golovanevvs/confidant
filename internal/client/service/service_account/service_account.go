@@ -9,7 +9,7 @@ type ITransportAccount interface {
 }
 
 type IRepositoryAccount interface {
-	SaveAccount(account model.Account) (int, error)
+	SaveAccount(email string, passwordHash []byte, refreshTokenString string) error
 	LoadAccountID(email, passwordHash string) (int, error)
 }
 

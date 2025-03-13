@@ -46,6 +46,7 @@ var (
 	ErrBearer              = errors.New("the \"Authorization\" header does not contain \"Bearer\"")
 	ErrAccessToken         = errors.New("the \"Authorization\" header does not contain a access token")
 	ErrRefreshToken        = errors.New("the response does not contain the \"Refresh-Token\" header")
+	ErrGenPasswordHash     = errors.New("generate password hash error")
 	ErrGenHash             = errors.New("generate hash error")
 	ErrGenRefreshTokenHash = errors.New("generate a refresh token hash error")
 	ErrSaveRefreshToken    = errors.New("save refresh token error")

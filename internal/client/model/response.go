@@ -17,9 +17,9 @@ type RegisterAccountResp struct {
 	Error              string
 }
 
-type AccountRegisterResp struct {
-	AccountID string `json:"account_id"`
-}
+// type AccountRegisterResp struct {
+// 	AccountID string `json:"account_id"`
+// }
 
 type StatusResp struct {
 	HTTPStatusCode int

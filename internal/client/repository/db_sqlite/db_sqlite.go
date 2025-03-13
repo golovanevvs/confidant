@@ -38,8 +38,11 @@ func New() (*SQLite, error) {
 			CREATE TABLE account(
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
     			email TEXT NOT NULL UNIQUE,
-    			password_hash TEXT NOT NULL
+    			password_hash BLOB NOT NULL,
+				refresh_token TEXT
 			);
+
+
 
 			CREATE TABLE groups(
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
