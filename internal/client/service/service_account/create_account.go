@@ -1,6 +1,7 @@
 package service_account
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -8,10 +9,11 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
+func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
 	action := "register account"
 
-	trResponse, err := sv.tr.CreateAccount(email, password)
+	// creating an account on the server
+	trResponse, err := sv.tr.CreateAccount(ctx, email, password)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s: %w", customerrors.ClientServiceErr, action, err)
 	}
@@ -105,6 +107,18 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 		}, nil
 	}
 
+	// saving the refresh token in a local DB
+	err = sv.rp.SaveRefreshToken(ctx, refreshTokenHeader)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.ClientServiceErr,
+			action,
+			err,
+		)
+	}
+
+	// generating a password hash for saving it to local DB
 	passwordHash, err := sv.genHash(password)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -115,7 +129,8 @@ func (sv *ServiceAccount) CreateAccount(email, password string) (registerAccount
 			err)
 	}
 
-	err = sv.rp.SaveAccount(email, passwordHash, refreshTokenHeader)
+	// saving the account in a local DB
+	err = sv.rp.SaveAccount(ctx, email, passwordHash)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w",

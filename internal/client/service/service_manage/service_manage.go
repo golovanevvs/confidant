@@ -1,16 +1,18 @@
 package service_manage
 
 import (
+	"context"
+
 	"github.com/golovanevvs/confidant/internal/client/model"
 )
 
 type ITransportManage interface {
-	ServerStatus() (statusResp *model.TrResponse, err error)
+	GetServerStatus(ctx context.Context) (statusResp *model.TrResponse, err error)
 }
 
 type IRepositoryManage interface {
-	GetServerStatus() (statusResp *model.StatusResp, err error)
-	CloseDB() error
+	GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error)
+	CloseDB(ctx context.Context) error
 }
 
 type ServiceManage struct {

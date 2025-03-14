@@ -35,16 +35,18 @@ func New() (*SQLite, error) {
 		}
 		_, err = db.ExecContext(ctx, `
 
-			CREATE TABLE account(
+			CREATE TABLE IF NOT EXISTS account(
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
     			email TEXT NOT NULL UNIQUE,
     			password_hash BLOB NOT NULL,
-				refresh_token TEXT
 			);
 
+			CREATE TABLE IF NOT EXISTS refresh_token(
+				token TEXT,
+				dummy INTEGER DEFAULT 1 UNIQUE
+			)
 
-
-			CREATE TABLE groups(
+			CREATE TABLE IF NOT EXISTS groups(
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
    				title TEXT,
     			account_id INTEGER,

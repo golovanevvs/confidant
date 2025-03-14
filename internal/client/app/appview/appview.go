@@ -1,24 +1,31 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/golovanevvs/confidant/internal/client/model"
 	"go.uber.org/zap"
 )
 
-type IAccountService interface {
-	CreateAccount(email, password string) (registerAccountResp *model.RegisterAccountResp, err error)
+type IServiceAccount interface {
+	CreateAccount(ctx context.Context, email, password string) (registerAccountResp *model.RegisterAccountResp, err error)
+	GetAccessToken(ctx context.Context, refreshTokenString string) (accessTokenString string, err error)
 	// Login(email, password string) (accountID int, err error)
 	// ChangePassword(email, password, newPassword string) error
 	//GetUser(login string) (string, error)
 }
 
-type IStatusServerService interface {
-	GetServerStatus() (statusResp *model.StatusResp, err error)
+type IServiceGroups interface {
+	GetGroups(ctx context.Context)
+}
+
+type IServiceStatusServer interface {
+	GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error)
 }
 
 type IService interface {
-	IAccountService
-	IStatusServerService
+	IServiceAccount
+	IServiceStatusServer
 }
 
 type view struct {

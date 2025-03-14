@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/golovanevvs/confidant/internal/client/app/appview"
@@ -39,7 +40,7 @@ func RunApp() {
 	if err != nil {
 		lg.Fatal(err)
 	}
-	defer rp.CloseDB()
+	defer rp.CloseDB(context.Background())
 
 	// initializing the service
 	sv := service.New(trHTTP, rp)

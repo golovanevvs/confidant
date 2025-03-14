@@ -2,6 +2,7 @@ package service_account
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -106,17 +107,43 @@ func (sv *ServiceAccount) GetAccountIDFromJWT(tokenString string) (int, error) {
 	// converting a string to a token
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("%s: %s: %w", customerrors.AccountServiceErr, action, customerrors.ErrJWTWrongSingingMethod401)
+			return nil, fmt.Errorf(
+				"%s: %s: %w",
+				customerrors.AccountServiceErr,
+				action,
+				customerrors.ErrJWTWrongSingingMethod401,
+			)
 		}
 		return []byte(secretKey), nil
 	})
 	if err != nil {
-		return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.AccountServiceErr, action, customerrors.ErrJWTInvalidToken401, err)
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return -1, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.AccountServiceErr,
+				action,
+				customerrors.ErrJWTExpiredToken401,
+				err,
+			)
+
+		}
+		return -1, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.AccountServiceErr,
+			action,
+			customerrors.ErrJWTInvalidToken401,
+			err,
+		)
 	}
 
 	// token validation
 	if !token.Valid {
-		return -1, fmt.Errorf("%s: %s: %w", customerrors.AccountServiceErr, action, customerrors.ErrJWTInvalidToken401)
+		return -1, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.AccountServiceErr,
+			action,
+			customerrors.ErrJWTInvalidToken401,
+		)
 	}
 
 	return claims.AccountID, nil

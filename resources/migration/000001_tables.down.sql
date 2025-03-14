@@ -1,7 +1,8 @@
 BEGIN;
 
-DROP TABLE groups;
-DROP TABLE refresh_tokens;
-DROP TABLE account;
+DROP TABLE IF EXISTS emails_of_groups;
+DROP TABLE IF EXISTS groups;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS account;
 
 COMMIT;

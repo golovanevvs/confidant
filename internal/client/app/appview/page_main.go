@@ -1,6 +1,7 @@
 package appview
 
 import (
+	"context"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -83,7 +84,7 @@ func (av *appView) vMain() {
 	go func() {
 		for {
 			time.Sleep(5 * time.Second)
-			statusServer, statusServerErr = av.sv.GetServerStatus()
+			statusServer, statusServerErr = av.sv.GetServerStatus(context.Background())
 			if statusServerErr != nil {
 				updateCellServerConnectChan <- "[red]Отсутствует"
 				updateCellServerDBConnectChan <- "[red]Отсутствует"
@@ -137,4 +138,5 @@ func (av *appView) vMain() {
 	av.v.pageMain.pages.AddPage("groups_page", av.v.pageGroups.gridMain, true, true)
 	av.v.pageMain.pages.AddPage("register_page", av.v.pageRegister.mainGrid, true, true)
 	av.v.pageMain.pages.AddAndSwitchToPage("login_page", av.v.pageLogin.mainGrid, true)
+
 }

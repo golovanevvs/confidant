@@ -1,16 +1,21 @@
 package service_account
 
 import (
+	"context"
+
 	"github.com/golovanevvs/confidant/internal/client/model"
 )
 
 type ITransportAccount interface {
-	CreateAccount(email, password string) (trResponse *model.TrResponse, err error)
+	CreateAccount(ctx context.Context, email, password string) (trResponse *model.TrResponse, err error)
 }
 
 type IRepositoryAccount interface {
-	SaveAccount(email string, passwordHash []byte, refreshTokenString string) error
-	LoadAccountID(email, passwordHash string) (int, error)
+	SaveAccount(ctx context.Context, email string, passwordHash []byte) (err error)
+	LoadAccountID(ctx context.Context, email, passwordHash string) (int, error)
+	LoadActiveRefreshToken(ctx context.Context) (refreshTokenstring string, err error)
+	SaveRefreshToken(ctx context.Context, refreshTokenString string) (err error)
+	DeleteActiveRefreshToken(ctx context.Context) (err error)
 }
 
 type ServiceAccount struct {

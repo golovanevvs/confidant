@@ -50,6 +50,9 @@ func (av *appView) vLogin() {
 	//! "Войти"
 	av.v.pageLogin.buttonLogin.SetSelectedFunc(func() {
 
+		email := av.v.pageLogin.form.inputEmail.GetText()
+		password := av.v.pageLogin.form.inputPassword.GetText()
+
 		// switch
 		av.v.pageMain.pages.SwitchToPage("groups_page")
 		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")

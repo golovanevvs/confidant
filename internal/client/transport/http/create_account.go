@@ -2,6 +2,7 @@ package trhttp
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,9 +12,9 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) CreateAccount(email, password string) (trResponse *model.TrResponse, err error) {
+func (tr *trHTTP) CreateAccount(ctx context.Context, email, password string) (trResponse *model.TrResponse, err error) {
 	//! Request
-	action := "register account transport"
+	action := "create account transport"
 
 	endpoint := fmt.Sprintf("http://%s/api/register", tr.addr)
 

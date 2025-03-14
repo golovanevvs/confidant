@@ -76,7 +76,15 @@ func (hd *handler) authByJWT(next http.Handler) http.Handler {
 
 		accountID, err := hd.sv.GetAccountIDFromJWT(headerSplit[1])
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			resErr := fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ServerMsg,
+				customerrors.HandlerErr,
+				action,
+				err,
+			)
+			hd.lg.Errorf(resErr.Error())
+			http.Error(w, resErr.Error(), http.StatusUnauthorized)
 			return
 		}
 

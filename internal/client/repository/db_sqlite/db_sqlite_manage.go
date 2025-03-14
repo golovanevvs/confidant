@@ -1,6 +1,7 @@
 package db_sqlite
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
@@ -18,11 +19,11 @@ func NewSQLiteManage(db *sqlx.DB) *sqliteManage {
 	}
 }
 
-func (rp *sqliteAccount) GetServerStatus() (statusResp *model.StatusResp, err error) {
+func (rp *sqliteAccount) GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error) {
 	return nil, nil
 }
 
-func (rp *sqliteAccount) CloseDB() error {
+func (rp *sqliteAccount) CloseDB(ctx context.Context) error {
 	action := "close DB"
 
 	if err := rp.db.Close(); err != nil {

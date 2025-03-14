@@ -1,6 +1,7 @@
 package trhttp
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) ServerStatus() (statusResp *model.TrResponse, err error) {
+func (tr *trHTTP) GetServerStatus(ctx context.Context) (statusResp *model.TrResponse, err error) {
 	//! Request
 	action := "get server status"
 
