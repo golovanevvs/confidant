@@ -8,7 +8,7 @@ import (
 
 type IRepositoryAccount interface {
 	SaveAccount(ctx context.Context, account model.Account) (int, error)
-	LoadAccountID(ctx context.Context, email, passwordHash string) (int, error)
+	LoadAccountID(ctx context.Context, email string, passwordHash []byte) (int, error)
 	SaveRefreshTokenHash(ctx context.Context, accountID int, refreshTokenHash []byte) error
 }
 

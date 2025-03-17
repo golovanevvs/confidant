@@ -38,22 +38,34 @@ func (rp *postgresAccount) SaveAccount(ctx context.Context, account model.Accoun
 	if err := row.Scan(&accountID); err != nil {
 		switch {
 		case strings.Contains(err.Error(), " 23505"):
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBBusyEmail409, err)
+			return -1, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBBusyEmail409,
+				err,
+			)
 		default:
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+			return -1, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
 		}
 	}
 
 	return accountID, nil
 }
 
-func (rp *postgresAccount) LoadAccountID(ctx context.Context, email, passwordHash string) (int, error) {
+func (rp *postgresAccount) LoadAccountID(ctx context.Context, email string, passwordHash []byte) (int, error) {
 	action := "load account ID"
 
 	row := rp.db.QueryRowContext(ctx, `
 
-	SELECT id FROM account
-	WHERE email=$1;
+		SELECT id FROM account
+		WHERE email=$1;
 
 	`, email)
 
@@ -62,27 +74,49 @@ func (rp *postgresAccount) LoadAccountID(ctx context.Context, email, passwordHas
 	if err := row.Scan(&accountID); err != nil {
 		switch {
 		case err == sql.ErrNoRows:
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBEmailNotFound401, err)
+			return -1, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBEmailNotFound401,
+				err,
+			)
 		default:
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+			return -1, fmt.Errorf("%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
 		}
 	}
 
 	row = rp.db.QueryRowContext(ctx, `
 
-	SELECT password_hash FROM account
-	WHERE id = $1;
+		SELECT password_hash FROM account
+		WHERE id = $1;
 
 	`, accountID)
 
-	var dbPasswordHash string
+	var dbPasswordHash []byte
 
 	if err := row.Scan(&dbPasswordHash); err != nil {
-		return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+		return -1, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
-	if dbPasswordHash != passwordHash {
-		return -1, fmt.Errorf("%s: %s: %w", customerrors.DBErr, action, customerrors.ErrDBWrongPassword401)
+	if string(dbPasswordHash) != string(passwordHash) {
+		return -1, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBWrongPassword401,
+		)
 	}
 
 	return accountID, nil
@@ -101,7 +135,13 @@ func (rp *postgresAccount) SaveRefreshTokenHash(ctx context.Context, accountID i
 	`, accountID, refreshTokenHash)
 
 	if err != nil {
-		return fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
 	return nil

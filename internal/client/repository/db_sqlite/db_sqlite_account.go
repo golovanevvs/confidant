@@ -54,8 +54,43 @@ func (rp *sqliteAccount) SaveAccount(ctx context.Context, email string, password
 	return nil
 }
 
-func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email, passwordHash string) (int, error) {
-	return 0, nil
+func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email, passwordHash string) (accountID int, err error) {
+	action := "load account ID"
+
+	row := rp.db.QueryRowContext(ctx, `
+
+		SELECT id FROM account
+		WHERE email=?;
+
+	`, email)
+
+	if err = row.Scan(&accountID); err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBEmailNotFound401, err)
+		default:
+			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+		}
+	}
+
+	row = rp.db.QueryRowContext(ctx, `
+
+		SELECT password_hash FROM account
+		WHERE id = ?;
+
+	`, accountID)
+
+	var dbPasswordHash string
+
+	if err = row.Scan(&dbPasswordHash); err != nil {
+		return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+	}
+
+	if dbPasswordHash != passwordHash {
+		return -1, fmt.Errorf("%s: %s: %w", customerrors.DBErr, action, customerrors.ErrDBWrongPassword401)
+	}
+
+	return accountID, nil
 }
 
 func (rp *sqliteAccount) LoadActiveRefreshToken(ctx context.Context) (refreshTokenstring string, err error) {

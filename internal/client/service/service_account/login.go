@@ -1,5 +1,167 @@
 package service_account
 
-func (sv *ServiceAccountService) Login(email, password string) (string, error) {
-	return "", nil
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/golovanevvs/confidant/internal/client/model"
+	"github.com/golovanevvs/confidant/internal/customerrors"
+)
+
+func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
+	action := "login"
+
+	accountID, err := sv.rp.LoadAccountID(ctx, email, password)
+	if err != nil {
+		if errors.Is(err, customerrors.ErrDBEmailNotFound401) {
+			// login on the server
+			var trResponse *model.TrResponse
+			trResponse, err = sv.tr.Login(ctx, email, password)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w",
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+			if trResponse.HTTPStatusCode != 200 {
+				return &model.RegisterAccountResp{
+					HTTPStatusCode: trResponse.HTTPStatusCode,
+					HTTPStatus:     trResponse.HTTPStatus,
+					Error: fmt.Sprintf(
+						"%s: %s: %s: %s",
+						customerrors.ClientMsg,
+						customerrors.ClientServiceErr,
+						action,
+						string(trResponse.ResponseBody),
+					),
+				}, nil
+			}
+
+			authHeader := trResponse.AuthHeader
+			authHeaderSplit := strings.Split(authHeader, " ")
+			refreshTokenHeader := trResponse.RefreshTokenHeader
+
+			if len(authHeader) == 0 {
+				return &model.RegisterAccountResp{
+					HTTPStatusCode: trResponse.HTTPStatusCode,
+					HTTPStatus:     trResponse.HTTPStatus,
+					Error: fmt.Sprintf(
+						"%s: %s: %s",
+						customerrors.ClientServiceErr,
+						action,
+						customerrors.ErrAuthHeaderResp.Error(),
+					),
+				}, nil
+			}
+
+			if len(authHeaderSplit) != 2 {
+				return &model.RegisterAccountResp{
+					HTTPStatusCode: trResponse.HTTPStatusCode,
+					HTTPStatus:     trResponse.HTTPStatus,
+					Error: fmt.Sprintf(
+						"%s: %s: %s",
+						customerrors.ClientServiceErr,
+						action,
+						customerrors.ErrInvalidAuthHeaderResp.Error(),
+					),
+				}, nil
+			}
+
+			if authHeaderSplit[0] != "Bearer" {
+				return &model.RegisterAccountResp{
+					HTTPStatusCode: trResponse.HTTPStatusCode,
+					HTTPStatus:     trResponse.HTTPStatus,
+					Error: fmt.Sprintf(
+						"%s: %s: %s",
+						customerrors.ClientServiceErr,
+						action,
+						customerrors.ErrBearer.Error(),
+					),
+				}, nil
+			}
+
+			if len(authHeaderSplit[1]) == 0 {
+				return &model.RegisterAccountResp{
+					HTTPStatusCode: trResponse.HTTPStatusCode,
+					HTTPStatus:     trResponse.HTTPStatus,
+					Error: fmt.Sprintf(
+						"%s: %s: %s",
+						customerrors.ClientServiceErr,
+						action,
+						customerrors.ErrAccessToken.Error(),
+					),
+				}, nil
+			}
+
+			if len(refreshTokenHeader) == 0 {
+				return &model.RegisterAccountResp{
+					HTTPStatusCode: trResponse.HTTPStatusCode,
+					HTTPStatus:     trResponse.HTTPStatus,
+					Error: fmt.Sprintf(
+						"%s: %s: %s",
+						customerrors.ClientServiceErr,
+						action,
+						customerrors.ErrRefreshToken.Error(),
+					),
+				}, nil
+			}
+
+			// saving the refresh token in a local DB
+			err = sv.rp.SaveRefreshToken(ctx, refreshTokenHeader)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w",
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+
+			// generating a password hash for saving it to local DB
+			passwordHash, err := sv.genHash(password)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.ClientServiceErr,
+					action,
+					customerrors.ErrGenPasswordHash,
+					err)
+			}
+
+			// saving the account in a local DB
+			err = sv.rp.SaveAccount(ctx, email, passwordHash)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w",
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+
+			return &model.RegisterAccountResp{
+				HTTPStatusCode:     trResponse.HTTPStatusCode,
+				HTTPStatus:         trResponse.HTTPStatus,
+				AccessTokenString:  authHeaderSplit[1],
+				RefreshTokenString: refreshTokenHeader,
+				Error:              "",
+			}, nil
+		} else {
+			return nil, fmt.Errorf(
+				"%s: %s: %w",
+				customerrors.AccountServiceErr,
+				action,
+				err,
+			)
+		}
+	}
+
+	return &model.RegisterAccountResp{
+		AccountID: accountID,
+		Error:     "",
+	}, nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (hd *handler) GetStatus(w http.ResponseWriter, r *http.Request) {
+func (hd *handler) getStatus(w http.ResponseWriter, r *http.Request) {
 	action := "get server status"
 	if err := hd.sv.PingDB(); err != nil {
 		resErr := fmt.Errorf(

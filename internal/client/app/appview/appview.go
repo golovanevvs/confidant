@@ -10,7 +10,7 @@ import (
 type IServiceAccount interface {
 	CreateAccount(ctx context.Context, email, password string) (registerAccountResp *model.RegisterAccountResp, err error)
 	GetAccessToken(ctx context.Context, refreshTokenString string) (accessTokenString string, err error)
-	// Login(email, password string) (accountID int, err error)
+	Login(ctx context.Context, email, password string) (registerAccountResp *model.RegisterAccountResp, err error)
 	// ChangePassword(email, password, newPassword string) error
 	//GetUser(login string) (string, error)
 }

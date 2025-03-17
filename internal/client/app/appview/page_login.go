@@ -1,6 +1,9 @@
 package appview
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -52,7 +55,16 @@ func (av *appView) vLogin() {
 
 		email := av.v.pageLogin.form.inputEmail.GetText()
 		password := av.v.pageLogin.form.inputPassword.GetText()
-
+		resp, err := av.sv.Login(context.Background(), email, password)
+		if err != nil {
+			av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", resp.HTTPStatus))
+			av.v.pageMain.messageBoxL.SetText("[red]Ошибка при входе в аккаунт.")
+			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+		} else {
+			av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", resp.HTTPStatus))
+			av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
+			av.v.pageMain.messageBoxL.SetText("[green]Успешный вход.")
+		}
 		// switch
 		av.v.pageMain.pages.SwitchToPage("groups_page")
 		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")

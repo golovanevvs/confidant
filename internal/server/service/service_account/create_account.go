@@ -14,13 +14,23 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, account model.Accou
 	// password hashing
 	account.PasswordHash, err = sv.genHash(account.Password)
 	if err != nil {
-		return -1, fmt.Errorf("%s: %s: %w", customerrors.AccountServiceErr, action, err)
+		return -1, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.AccountServiceErr,
+			action,
+			err,
+		)
 	}
 
 	// DB: saving a new account
 	accountID, err = sv.rp.SaveAccount(ctx, account)
 	if err != nil {
-		return -1, fmt.Errorf("%s: %s: %w", customerrors.AccountServiceErr, action, err)
+		return -1, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.AccountServiceErr,
+			action,
+			err,
+		)
 	}
 
 	return accountID, nil

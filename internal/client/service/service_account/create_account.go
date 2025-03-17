@@ -22,7 +22,6 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
-			AccountID:      "",
 			Error: fmt.Sprintf(
 				"%s: %s: %s: %s",
 				customerrors.ClientMsg,
@@ -41,7 +40,6 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
-			AccountID:      "",
 			Error: fmt.Sprintf(
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,
@@ -55,7 +53,6 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
-			AccountID:      "",
 			Error: fmt.Sprintf(
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,
@@ -69,7 +66,6 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
-			AccountID:      "",
 			Error: fmt.Sprintf(
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,
@@ -83,7 +79,6 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
-			AccountID:      "",
 			Error: fmt.Sprintf(
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,
@@ -97,7 +92,6 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		return &model.RegisterAccountResp{
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
-			AccountID:      "",
 			Error: fmt.Sprintf(
 				"%s: %s: %s",
 				customerrors.ClientServiceErr,

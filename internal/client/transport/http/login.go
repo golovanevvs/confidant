@@ -12,11 +12,11 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) CreateAccount(ctx context.Context, email, password string) (trResponse *model.TrResponse, err error) {
+func (tr *trHTTP) Login(ctx context.Context, email, password string) (trResponse *model.TrResponse, err error) {
 	//! Request
-	action := "create account transport"
+	action := "login"
 
-	endpoint := fmt.Sprintf("http://%s/api/register", tr.addr)
+	endpoint := fmt.Sprintf("http://%s/api/login", tr.addr)
 
 	account := model.Account{
 		Email:    email,
@@ -36,7 +36,8 @@ func (tr *trHTTP) CreateAccount(ctx context.Context, email, password string) (tr
 
 	request, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(accountJSON))
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s: %w: %w",
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
 			customerrors.ErrCreateRequest,

@@ -11,7 +11,7 @@ type TrResponse struct {
 type RegisterAccountResp struct {
 	HTTPStatusCode     int
 	HTTPStatus         string
-	AccountID          string
+	AccountID          int
 	AccessTokenString  string
 	RefreshTokenString string
 	Error              string
