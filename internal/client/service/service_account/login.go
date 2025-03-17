@@ -10,7 +10,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (registerAccountResp *model.RegisterAccountResp, err error) {
+func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (registerAccountResp *model.AccountResp, err error) {
 	action := "login"
 
 	accountID, err := sv.rp.LoadAccountID(ctx, email, password)
@@ -28,7 +28,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 				)
 			}
 			if trResponse.HTTPStatusCode != 200 {
-				return &model.RegisterAccountResp{
+				return &model.AccountResp{
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
@@ -46,7 +46,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			refreshTokenHeader := trResponse.RefreshTokenHeader
 
 			if len(authHeader) == 0 {
-				return &model.RegisterAccountResp{
+				return &model.AccountResp{
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
@@ -59,7 +59,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}
 
 			if len(authHeaderSplit) != 2 {
-				return &model.RegisterAccountResp{
+				return &model.AccountResp{
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
@@ -72,7 +72,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}
 
 			if authHeaderSplit[0] != "Bearer" {
-				return &model.RegisterAccountResp{
+				return &model.AccountResp{
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
@@ -85,7 +85,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}
 
 			if len(authHeaderSplit[1]) == 0 {
-				return &model.RegisterAccountResp{
+				return &model.AccountResp{
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
@@ -98,7 +98,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}
 
 			if len(refreshTokenHeader) == 0 {
-				return &model.RegisterAccountResp{
+				return &model.AccountResp{
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
@@ -143,7 +143,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 				)
 			}
 
-			return &model.RegisterAccountResp{
+			return &model.AccountResp{
 				HTTPStatusCode:     trResponse.HTTPStatusCode,
 				HTTPStatus:         trResponse.HTTPStatus,
 				AccessTokenString:  authHeaderSplit[1],
@@ -160,7 +160,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 		}
 	}
 
-	return &model.RegisterAccountResp{
+	return &model.AccountResp{
 		AccountID: accountID,
 		Error:     "",
 	}, nil

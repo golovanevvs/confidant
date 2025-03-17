@@ -28,7 +28,7 @@ func (rp *sqliteAccount) SaveAccount(ctx context.Context, email string, password
 		INSERT INTO account
 			(email, password_hash)
 		VALUES
-			($1, $2, $3)
+			(?, ?)
 
 	`, email, passwordHash)
 	if err != nil {

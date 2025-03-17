@@ -38,7 +38,7 @@ func New() (*SQLite, error) {
 			CREATE TABLE IF NOT EXISTS account(
     			id INTEGER PRIMARY KEY,
     			email TEXT NOT NULL UNIQUE,
-    			password_hash BLOB NOT NULL,
+    			password_hash BLOB NOT NULL
 			);
 
 			CREATE TABLE IF NOT EXISTS refresh_token(
@@ -57,6 +57,7 @@ func New() (*SQLite, error) {
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("Таблицы созданы")
 
 		_, err = db.ExecContext(ctx, `
 

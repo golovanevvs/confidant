@@ -8,7 +8,7 @@ type TrResponse struct {
 	ResponseBody       []byte
 }
 
-type RegisterAccountResp struct {
+type AccountResp struct {
 	HTTPStatusCode     int
 	HTTPStatus         string
 	AccountID          int

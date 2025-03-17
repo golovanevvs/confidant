@@ -66,42 +66,43 @@ func (av *appView) vRegister() {
 				password := av.v.pageRegister.form.inputPassword.GetText()
 
 				//? running service
-				registerAccountResp, err := av.sv.CreateAccount(context.Background(), email, password)
+				accountResp, err := av.sv.CreateAccount(context.Background(), email, password)
 
 				// error
 				if err != nil {
-					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+					av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 					av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
+					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 
 					// no error
 				} else {
-					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", registerAccountResp.Error))
+					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", accountResp.Error))
 
 					// setting status
-					if registerAccountResp.HTTPStatusCode == 200 {
-						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", registerAccountResp.HTTPStatus))
+					if accountResp.HTTPStatusCode == 200 {
+						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", accountResp.HTTPStatus))
 					} else {
-						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", registerAccountResp.HTTPStatus))
+						av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", accountResp.HTTPStatus))
 					}
 
 					switch {
 
 					// status != 200
 
-					case registerAccountResp.HTTPStatusCode != 200:
+					case accountResp.HTTPStatusCode != 200:
 						switch {
 						// invalid e-mail
-						case strings.Contains(registerAccountResp.Error, customerrors.ErrAccountValidateEmail422.Error()):
+						case strings.Contains(accountResp.Error, customerrors.ErrAccountValidateEmail422.Error()):
 							av.v.pageMain.messageBoxL.SetText("[red]Неверно введён e-mail!")
 							av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
 						// invalid password
-						case strings.Contains(registerAccountResp.Error, customerrors.ErrAccountValidatePassword422.Error()):
+						case strings.Contains(accountResp.Error, customerrors.ErrAccountValidatePassword422.Error()):
 							av.v.pageMain.messageBoxL.SetText("[red]Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов!")
 							av.v.pageRegister.form.inputPassword.SetText("")
 							av.v.pageRegister.form.inputRPassword.SetText("")
 							av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputPassword)
 						// e-mail is already busy
-						case strings.Contains(registerAccountResp.Error, customerrors.ErrDBBusyEmail409.Error()):
+						case strings.Contains(accountResp.Error, customerrors.ErrDBBusyEmail409.Error()):
 							av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Пользователь с e-mail %s уже зарегистрирован!", email))
 							av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
 						// other errors
@@ -112,7 +113,7 @@ func (av *appView) vRegister() {
 					// status == 200
 
 					//? OK
-					case registerAccountResp.Error == "":
+					case accountResp.Error == "":
 						av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
 						av.v.pageMain.messageBoxL.Clear()
 						av.v.pageMain.messageBoxR.Clear()
@@ -121,19 +122,19 @@ func (av *appView) vRegister() {
 						av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 						av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 
-						av.accessToken = registerAccountResp.AccessTokenString
+						av.accessToken = accountResp.AccessTokenString
 
 					// the response does not contain the "Authorization" header
-					case strings.Contains(registerAccountResp.Error, customerrors.ErrAuthHeaderResp.Error()):
+					case strings.Contains(accountResp.Error, customerrors.ErrAuthHeaderResp.Error()):
 						av.v.pageMain.messageBoxL.SetText("[red]Ответ не содержит заголовок \"Authorization\"!")
 					// the "Authorization" header does not contain "Bearer"
-					case strings.Contains(registerAccountResp.Error, customerrors.ErrBearer.Error()):
+					case strings.Contains(accountResp.Error, customerrors.ErrBearer.Error()):
 						av.v.pageMain.messageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит \"Bearer\"!")
 					// the "Authorization" header does not contain a access token
-					case strings.Contains(registerAccountResp.Error, customerrors.ErrAccessToken.Error()):
+					case strings.Contains(accountResp.Error, customerrors.ErrAccessToken.Error()):
 						av.v.pageMain.messageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит access токен!")
 					// the response does not contain the "Refresh-Token" header
-					case strings.Contains(registerAccountResp.Error, customerrors.ErrRefreshToken.Error()):
+					case strings.Contains(accountResp.Error, customerrors.ErrRefreshToken.Error()):
 						av.v.pageMain.messageBoxL.SetText("[red]Заголовок \"Authorization\" не содержит refresh токен!")
 					// unknown error
 					default:

@@ -3,8 +3,10 @@ package appview
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/rivo/tview"
 )
 
@@ -55,21 +57,58 @@ func (av *appView) vLogin() {
 
 		email := av.v.pageLogin.form.inputEmail.GetText()
 		password := av.v.pageLogin.form.inputPassword.GetText()
-		resp, err := av.sv.Login(context.Background(), email, password)
+
+		accountResp, err := av.sv.Login(context.Background(), email, password)
+
+		// error
 		if err != nil {
-			av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", resp.HTTPStatus))
-			av.v.pageMain.messageBoxL.SetText("[red]Ошибка при входе в аккаунт.")
+			av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+			av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
 			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+
+			// no error
 		} else {
-			av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", resp.HTTPStatus))
-			av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
-			av.v.pageMain.messageBoxL.SetText("[green]Успешный вход.")
+			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", accountResp.Error))
+
+			// setting status
+			if accountResp.HTTPStatusCode == 200 {
+				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", accountResp.HTTPStatus))
+			} else {
+				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", accountResp.HTTPStatus))
+			}
+
+			switch {
+
+			// status != 200
+
+			case accountResp.HTTPStatusCode != 200:
+				switch {
+				case strings.Contains(accountResp.Error, customerrors.ErrDBEmailNotFound401.Error()):
+					av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red] e-mail %s не зарегистрирован!", email))
+					//TODO: фокус?
+				case strings.Contains(accountResp.Error, customerrors.ErrDBWrongPassword401.Error()):
+					av.v.pageMain.messageBoxL.SetText("[red]Введён неверный пароль!")
+					//TODO: фокус?
+				default:
+					av.v.pageMain.messageBoxL.SetText("[red]Возникла ошибка.")
+				}
+
+			// status == 200
+
+			case accountResp.Error == "":
+				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", accountResp.HTTPStatus))
+				av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
+				av.v.pageMain.messageBoxL.Clear()
+				av.v.pageMain.messageBoxR.Clear()
+
+				// switch
+				av.v.pageMain.pages.SwitchToPage("groups_page")
+				av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
+				av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
+				av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+			}
 		}
-		// switch
-		av.v.pageMain.pages.SwitchToPage("groups_page")
-		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+
 	})
 
 	//! "Регистрация"
