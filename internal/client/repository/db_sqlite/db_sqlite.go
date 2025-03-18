@@ -41,7 +41,8 @@ func New() (*SQLite, error) {
     			password_hash BLOB NOT NULL
 			);
 
-			CREATE TABLE IF NOT EXISTS refresh_token(
+			CREATE TABLE IF NOT EXISTS active_account(
+				account_id INTEGER,
 				token TEXT,
 				dummy INTEGER DEFAULT 1 UNIQUE
 			);

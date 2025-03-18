@@ -1,6 +1,7 @@
 package appview
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
@@ -120,9 +121,22 @@ func (av *appView) vGroups() {
 		// focus
 		av.v.pageApp.app.SetInputCapture(av.v.pageLogin.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputEmail)
+		// status bar
+		av.v.pageMain.statusBar.cellActiveAccount.SetText("")
+		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 		// messageBox
 		av.v.pageMain.messageBoxL.Clear()
 		av.v.pageMain.messageBoxR.Clear()
+		// form
+		av.v.pageLogin.form.inputEmail.SetText("")
+		av.v.pageLogin.form.inputPassword.SetText("")
+
+		// deleting active account
+		err := av.sv.Logout(context.Background())
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText("[red]Критическая ошибка!")
+			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+		}
 	})
 
 	//! "Выход"
@@ -185,6 +199,7 @@ func (av *appView) vGroups() {
 		av.v.pageGroups.pagesSelEd.SwitchToPage("select_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 	})
 
 	//! "EditButtonsGrid"

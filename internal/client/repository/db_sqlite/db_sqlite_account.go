@@ -1,6 +1,7 @@
 package db_sqlite
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
@@ -20,17 +21,17 @@ func NewSQLiteAccount(db *sqlx.DB) *sqliteAccount {
 	}
 }
 
-func (rp *sqliteAccount) SaveAccount(ctx context.Context, email string, passwordHash []byte) (err error) {
+func (rp *sqliteAccount) SaveAccount(ctx context.Context, accountID int, email string, passwordHash []byte) (err error) {
 	action := "save account"
 
 	_, err = rp.db.ExecContext(ctx, `
 	
 		INSERT INTO account
-			(email, password_hash)
+			(id, email, password_hash)
 		VALUES
-			(?, ?)
+			(?, ?, ?)
 
-	`, email, passwordHash)
+	`, accountID, email, passwordHash)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return fmt.Errorf(
@@ -54,7 +55,7 @@ func (rp *sqliteAccount) SaveAccount(ctx context.Context, email string, password
 	return nil
 }
 
-func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email, passwordHash string) (accountID int, err error) {
+func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email string, passwordHash []byte) (accountID int, err error) {
 	action := "load account ID"
 
 	row := rp.db.QueryRowContext(ctx, `
@@ -67,9 +68,21 @@ func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email, passwordHash 
 	if err = row.Scan(&accountID); err != nil {
 		switch {
 		case err == sql.ErrNoRows:
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBEmailNotFound401, err)
+			return -1, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBEmailNotFound401,
+				err,
+			)
 		default:
-			return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+			return -1, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
 		}
 	}
 
@@ -80,39 +93,98 @@ func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email, passwordHash 
 
 	`, accountID)
 
-	var dbPasswordHash string
+	var dbPasswordHash []byte
 
 	if err = row.Scan(&dbPasswordHash); err != nil {
-		return -1, fmt.Errorf("%s: %s: %w: %w", customerrors.DBErr, action, customerrors.ErrDBInternalError500, err)
+		return -1, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
-	if dbPasswordHash != passwordHash {
-		return -1, fmt.Errorf("%s: %s: %w", customerrors.DBErr, action, customerrors.ErrDBWrongPassword401)
+	if !bytes.Equal(dbPasswordHash, passwordHash) {
+		return -1, fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBWrongPassword401,
+		)
 	}
 
 	return accountID, nil
 }
 
-func (rp *sqliteAccount) LoadActiveRefreshToken(ctx context.Context) (refreshTokenstring string, err error) {
-	action := "load active refresh token"
+func (rp *sqliteAccount) LoadEmail(ctx context.Context, accountID int) (email string, err error) {
+	action := "load email"
 
 	row := rp.db.QueryRowContext(ctx, `
 
-		SELECT token FROM refresh_token
+		SELECT email FROM account
+		WHERE id=?;
+
+	`, accountID)
+
+	if err = row.Scan(&email); err != nil {
+		return "", fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return email, nil
+}
+
+func (rp *sqliteAccount) SaveActiveAccount(ctx context.Context, accountID int, refreshTokenString string) (err error) {
+	action := "save active account"
+
+	_, err = rp.db.ExecContext(ctx, `
+
+		INSERT OR REPLACE INTO active_account
+			(account_id, token)
+		VALUES
+			(?,?)
+
+	`, accountID, refreshTokenString)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrSaveActiveAccount,
+			err,
+		)
+	}
+
+	return
+}
+
+func (rp *sqliteAccount) LoadActiveAccount(ctx context.Context) (accountID int, refreshTokenstring string, err error) {
+	action := "load active account"
+
+	row := rp.db.QueryRowContext(ctx, `
+
+		SELECT account_id, token
+		FROM active_account
 
 	`)
-	err = row.Scan(&refreshTokenstring)
+	err = row.Scan(&accountID, &refreshTokenstring)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", fmt.Errorf(
+			return -1, "", fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
 				action,
-				customerrors.ErrNoActiveRefreshToken,
+				customerrors.ErrNoActiveAccount,
 				err,
 			)
 		} else {
-			return "", fmt.Errorf(
+			return -1, "", fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
 				action,
@@ -125,36 +197,12 @@ func (rp *sqliteAccount) LoadActiveRefreshToken(ctx context.Context) (refreshTok
 	return
 }
 
-func (rp *sqliteAccount) SaveRefreshToken(ctx context.Context, refreshTokenString string) (err error) {
-	action := "save active refresh token"
+func (rp *sqliteAccount) DeleteActiveAccount(ctx context.Context) (err error) {
+	action := "delete active account"
 
 	_, err = rp.db.ExecContext(ctx, `
 
-		INSERT INTO refresh_token
-			(token)
-		VALUES
-			($1)
-
-	`, refreshTokenString)
-	if err != nil {
-		return fmt.Errorf(
-			"%s: %s: %w: %w",
-			customerrors.DBErr,
-			action,
-			customerrors.ErrSaveActiveRefreshToken,
-			err,
-		)
-	}
-
-	return
-}
-
-func (rp *sqliteAccount) DeleteActiveRefreshToken(ctx context.Context) (err error) {
-	action := "delete active refresh token"
-
-	_, err = rp.db.ExecContext(ctx, `
-
-		DELETE FROM active_refresh_token
+		DELETE FROM active_account
 
 	`)
 	if err != nil {
@@ -162,7 +210,7 @@ func (rp *sqliteAccount) DeleteActiveRefreshToken(ctx context.Context) (err erro
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
-			customerrors.ErrDeleteActiveRefreshToken,
+			customerrors.ErrDeleteActiveAccount,
 			err,
 		)
 	}

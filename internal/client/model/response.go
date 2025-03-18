@@ -25,3 +25,7 @@ type StatusResp struct {
 	HTTPStatusCode int
 	HTTPStatus     string
 }
+
+type AccID struct {
+	AccountID int `json:"account_id"`
+}

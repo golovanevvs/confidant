@@ -2,6 +2,7 @@ package service_account
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -41,7 +42,8 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
 			Error: fmt.Sprintf(
-				"%s: %s: %s",
+				"%s: %s: %s: %s",
+				customerrors.ClientMsg,
 				customerrors.ClientServiceErr,
 				action,
 				customerrors.ErrAuthHeaderResp.Error(),
@@ -54,7 +56,8 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
 			Error: fmt.Sprintf(
-				"%s: %s: %s",
+				"%s: %s: %s: %s",
+				customerrors.ClientMsg,
 				customerrors.ClientServiceErr,
 				action,
 				customerrors.ErrInvalidAuthHeaderResp.Error(),
@@ -67,7 +70,8 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
 			Error: fmt.Sprintf(
-				"%s: %s: %s",
+				"%s: %s: %s: %s",
+				customerrors.ClientMsg,
 				customerrors.ClientServiceErr,
 				action,
 				customerrors.ErrBearer.Error(),
@@ -80,7 +84,8 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
 			Error: fmt.Sprintf(
-				"%s: %s: %s",
+				"%s: %s: %s: %s",
+				customerrors.ClientMsg,
 				customerrors.ClientServiceErr,
 				action,
 				customerrors.ErrAccessToken.Error(),
@@ -93,7 +98,8 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 			HTTPStatusCode: trResponse.HTTPStatusCode,
 			HTTPStatus:     trResponse.HTTPStatus,
 			Error: fmt.Sprintf(
-				"%s: %s: %s",
+				"%s: %s: %s: %s",
+				customerrors.ClientMsg,
 				customerrors.ClientServiceErr,
 				action,
 				customerrors.ErrRefreshToken.Error(),
@@ -102,10 +108,25 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 	}
 
 	// saving the refresh token in a local DB
-	err = sv.rp.SaveRefreshToken(ctx, refreshTokenHeader)
+
+	var account model.Account
+	err = json.Unmarshal(trResponse.ResponseBody, &account)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s: %s: %w",
+			"%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientServiceErr,
+			action,
+			customerrors.ErrDecodeJSON400,
+			err,
+		)
+	}
+
+	err = sv.rp.SaveActiveAccount(ctx, account.ID, refreshTokenHeader)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ClientMsg,
 			customerrors.ClientServiceErr,
 			action,
 			err,
@@ -116,18 +137,21 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 	passwordHash, err := sv.genHash(password)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s: %s: %w: %w",
+			"%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
 			customerrors.ClientServiceErr,
 			action,
 			customerrors.ErrGenPasswordHash,
-			err)
+			err,
+		)
 	}
 
 	// saving the account in a local DB
-	err = sv.rp.SaveAccount(ctx, email, passwordHash)
+	err = sv.rp.SaveAccount(ctx, account.ID, email, passwordHash)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s: %s: %w",
+			"%s: %s: %s: %w",
+			customerrors.ClientMsg,
 			customerrors.ClientServiceErr,
 			action,
 			err,

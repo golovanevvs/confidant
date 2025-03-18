@@ -11,8 +11,8 @@ type IServiceAccount interface {
 	CreateAccount(ctx context.Context, email, password string) (registerAccountResp *model.AccountResp, err error)
 	GetAccessToken(ctx context.Context, refreshTokenString string) (accessTokenString string, err error)
 	Login(ctx context.Context, email, password string) (registerAccountResp *model.AccountResp, err error)
-	// ChangePassword(email, password, newPassword string) error
-	//GetUser(login string) (string, error)
+	LoginAtStart(ctx context.Context) (accountID int, email string, refreshTokenString string, err error)
+	Logout(ctx context.Context) (err error)
 }
 
 type IServiceGroups interface {
@@ -37,10 +37,12 @@ type view struct {
 }
 
 type appView struct {
-	sv          IService
-	lg          *zap.SugaredLogger
-	v           view
-	accessToken string
+	sv           IService
+	lg           *zap.SugaredLogger
+	v            view
+	accessToken  string
+	refreshToken string
+	account      model.Account
 }
 
 func New(sv IService, lg *zap.SugaredLogger) *appView {
@@ -52,8 +54,14 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 			pageRegister: newPageRegister(),
 			pageGroups:   newPageGroups(),
 		},
-		sv: sv,
-		lg: lg,
+		sv:           sv,
+		lg:           lg,
+		accessToken:  "",
+		refreshToken: "",
+		account: model.Account{
+			ID:    -1,
+			Email: "",
+		},
 	}
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 type Account struct {
-	ID           int    `json:"-"`
+	ID           int    `json:"account_id"`
 	Email        string `json:"email"`
 	Password     string `json:"password"`
 	PasswordHash []byte `json:"-"`

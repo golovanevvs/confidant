@@ -2,6 +2,7 @@ package service_account
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,7 +14,19 @@ import (
 func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (registerAccountResp *model.AccountResp, err error) {
 	action := "login"
 
-	accountID, err := sv.rp.LoadAccountID(ctx, email, password)
+	passwordHash, err := sv.genHash(password)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientServiceErr,
+			action,
+			customerrors.ErrGenPasswordHash,
+			err,
+		)
+	}
+
+	accountID, err := sv.rp.LoadAccountID(ctx, email, passwordHash)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDBEmailNotFound401) {
 			// login on the server
@@ -21,7 +34,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			trResponse, err = sv.tr.Login(ctx, email, password)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"%s: %s: %w",
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
 					customerrors.ClientServiceErr,
 					action,
 					err,
@@ -50,7 +64,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
-						"%s: %s: %s",
+						"%s: %s: %s: %s",
+						customerrors.ClientMsg,
 						customerrors.ClientServiceErr,
 						action,
 						customerrors.ErrAuthHeaderResp.Error(),
@@ -63,7 +78,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
-						"%s: %s: %s",
+						"%s: %s: %s: %s",
+						customerrors.ClientMsg,
 						customerrors.ClientServiceErr,
 						action,
 						customerrors.ErrInvalidAuthHeaderResp.Error(),
@@ -76,7 +92,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
-						"%s: %s: %s",
+						"%s: %s: %s: %s",
+						customerrors.ClientMsg,
 						customerrors.ClientServiceErr,
 						action,
 						customerrors.ErrBearer.Error(),
@@ -89,7 +106,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
-						"%s: %s: %s",
+						"%s: %s: %s: %s",
+						customerrors.ClientMsg,
 						customerrors.ClientServiceErr,
 						action,
 						customerrors.ErrAccessToken.Error(),
@@ -102,7 +120,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 					HTTPStatusCode: trResponse.HTTPStatusCode,
 					HTTPStatus:     trResponse.HTTPStatus,
 					Error: fmt.Sprintf(
-						"%s: %s: %s",
+						"%s: %s: %s: %s",
+						customerrors.ClientMsg,
 						customerrors.ClientServiceErr,
 						action,
 						customerrors.ErrRefreshToken.Error(),
@@ -111,32 +130,37 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}
 
 			// saving the refresh token in a local DB
-			err = sv.rp.SaveRefreshToken(ctx, refreshTokenHeader)
+
+			var account model.Account
+			err = json.Unmarshal(trResponse.ResponseBody, &account)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"%s: %s: %w",
+					"%s: %s: %s: %w: %w",
+					customerrors.ClientMsg,
+					customerrors.ClientServiceErr,
+					action,
+					customerrors.ErrDecodeJSON400,
+					err,
+				)
+			}
+
+			err = sv.rp.SaveActiveAccount(ctx, account.ID, refreshTokenHeader)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
 					customerrors.ClientServiceErr,
 					action,
 					err,
 				)
 			}
 
-			// generating a password hash for saving it to local DB
-			passwordHash, err := sv.genHash(password)
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.ClientServiceErr,
-					action,
-					customerrors.ErrGenPasswordHash,
-					err)
-			}
-
 			// saving the account in a local DB
-			err = sv.rp.SaveAccount(ctx, email, passwordHash)
+			err = sv.rp.SaveAccount(ctx, account.ID, email, passwordHash)
 			if err != nil {
 				return nil, fmt.Errorf(
-					"%s: %s: %w",
+					"%s: %s: %s:%w",
+					customerrors.ClientMsg,
 					customerrors.ClientServiceErr,
 					action,
 					err,
@@ -152,7 +176,8 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}, nil
 		} else {
 			return nil, fmt.Errorf(
-				"%s: %s: %w",
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
 				customerrors.AccountServiceErr,
 				action,
 				err,

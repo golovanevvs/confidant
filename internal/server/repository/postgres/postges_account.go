@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
@@ -110,7 +111,7 @@ func (rp *postgresAccount) LoadAccountID(ctx context.Context, email string, pass
 		)
 	}
 
-	if string(dbPasswordHash) != string(passwordHash) {
+	if !bytes.Equal(dbPasswordHash, passwordHash) {
 		return -1, fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.DBErr,

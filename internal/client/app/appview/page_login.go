@@ -2,6 +2,7 @@ package appview
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -63,8 +64,16 @@ func (av *appView) vLogin() {
 		// error
 		if err != nil {
 			av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-			av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
-			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+			if errors.Is(err, customerrors.ErrDBWrongPassword401) {
+				av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+				av.v.pageMain.messageBoxL.SetText("[red]Введён неверный пароль!")
+				av.v.pageMain.messageBoxR.SetText("")
+				av.v.pageLogin.form.inputPassword.SetText("")
+				av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputPassword)
+			} else {
+				av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
+				av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+			}
 
 			// no error
 		} else {
@@ -75,27 +84,21 @@ func (av *appView) vLogin() {
 				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", accountResp.HTTPStatus))
 			} else {
 				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", accountResp.HTTPStatus))
-			}
-
-			switch {
-
-			// status != 200
-
-			case accountResp.HTTPStatusCode != 200:
 				switch {
 				case strings.Contains(accountResp.Error, customerrors.ErrDBEmailNotFound401.Error()):
 					av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red] e-mail %s не зарегистрирован!", email))
-					//TODO: фокус?
+					av.v.pageLogin.form.inputPassword.SetText("")
+					av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputEmail)
 				case strings.Contains(accountResp.Error, customerrors.ErrDBWrongPassword401.Error()):
 					av.v.pageMain.messageBoxL.SetText("[red]Введён неверный пароль!")
-					//TODO: фокус?
+					av.v.pageLogin.form.inputPassword.SetText("")
+					av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputPassword)
 				default:
 					av.v.pageMain.messageBoxL.SetText("[red]Возникла ошибка.")
 				}
+			}
 
-			// status == 200
-
-			case accountResp.Error == "":
+			if accountResp.Error == "" {
 				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", accountResp.HTTPStatus))
 				av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
 				av.v.pageMain.messageBoxL.Clear()
@@ -107,6 +110,7 @@ func (av *appView) vLogin() {
 				av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 			}
+
 		}
 
 	})

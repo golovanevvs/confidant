@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/golovanevvs/confidant/internal/server/model"
@@ -103,8 +102,8 @@ func (hd *handler) loginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// creating a response
-	response := model.AccountRegisterResp{
-		AccountID: strconv.Itoa(account.ID),
+	response := model.Account{
+		ID: accountID,
 	}
 
 	responseJSON, err := json.MarshalIndent(response, "", " ")
