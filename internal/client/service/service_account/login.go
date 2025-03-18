@@ -185,6 +185,17 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 		}
 	}
 
+	err = sv.rp.SaveActiveAccount(ctx, accountID, "")
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientServiceErr,
+			action,
+			err,
+		)
+	}
+
 	return &model.AccountResp{
 		AccountID: accountID,
 		Error:     "",

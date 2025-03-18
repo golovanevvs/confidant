@@ -174,6 +174,10 @@ func (av *appView) vGroups() {
 			av.v.pageMain.messageBoxL.SetText("[red]Критическая ошибка!")
 			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 		}
+		av.accessToken = ""
+		av.refreshToken = ""
+		av.account.ID = -1
+		av.account.Email = ""
 	})
 
 	//! "Выход"
