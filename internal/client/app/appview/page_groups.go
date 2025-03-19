@@ -229,6 +229,8 @@ func (av *appView) vGroups() {
 	av.v.pageGroups.pageAddGroup.formAddGroup.form.AddInputField("", "", 0, nil, nil)
 	av.v.pageGroups.pageAddGroup.formAddGroup.inputName = av.v.pageGroups.pageAddGroup.formAddGroup.form.GetFormItem(0).(*tview.InputField)
 
+	//! "Создать группу"
+
 	//! "Назад"
 	av.v.pageGroups.pageAddGroup.buttonExit.SetSelectedFunc(func() {
 		av.v.pageGroups.pages.SwitchToPage("select_page")

@@ -2,7 +2,6 @@ package db_sqlite
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -22,7 +21,6 @@ func New() (*SQLite, error) {
 	}
 
 	dbFile := filepath.Join(filepath.Dir(appPath), "confidant_client.db")
-	fmt.Println(dbFile)
 
 	var db *sqlx.DB
 	ctx := context.Background()
@@ -49,16 +47,23 @@ func New() (*SQLite, error) {
 
 			CREATE TABLE IF NOT EXISTS groups(
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
-   				title TEXT,
+				id_on_server INTEGER,
+   				title TEXT NOT NULL,
     			account_id INTEGER,
-    			FOREIGN KEY (account_id) REFERENCES account (id)
+    			FOREIGN KEY (account_id) REFERENCES account (id) ON DELETE CASCADE
+			);
+
+			CREATE TABLE IF NOT EXISTS emails_in_groups(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				email TEXT NOT NULL,
+				groups_id INTEGER,
+				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 
 		`)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("Таблицы созданы")
 
 		_, err = db.ExecContext(ctx, `
 
