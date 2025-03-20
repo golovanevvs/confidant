@@ -34,6 +34,7 @@ type view struct {
 	pageLogin    *pageLogin
 	pageRegister *pageRegister
 	pageGroups   *pageGroups
+	pageData     *pageData
 }
 
 type appView struct {
@@ -53,6 +54,7 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 			pageLogin:    newPageLogin(),
 			pageRegister: newPageRegister(),
 			pageGroups:   newPageGroups(),
+			pageData:     newPageData(),
 		},
 		sv:           sv,
 		lg:           lg,
@@ -71,6 +73,7 @@ func (av *appView) Run() error {
 	av.vLogin()
 	av.vRegister()
 	av.vGroups()
+	av.vData()
 
 	return av.vApp()
 }

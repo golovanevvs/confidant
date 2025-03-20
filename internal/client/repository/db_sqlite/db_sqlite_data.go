@@ -17,7 +17,7 @@ func NewSQLiteData(db *sqlx.DB) *sqliteData {
 }
 
 func (rp *sqliteData) AddGroup(ctx context.Context, accountID int, email string, title string) (err error) {
-	action := "add group"
+	// action := "add group"
 
 	_, err = rp.db.ExecContext(ctx, `
 

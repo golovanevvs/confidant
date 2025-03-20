@@ -135,6 +135,7 @@ func (av *appView) vMain() {
 	// })
 
 	//! adding pages
+	av.v.pageMain.pages.AddPage("data_page", av.v.pageData.gridMain, true, true)
 	av.v.pageMain.pages.AddPage("groups_page", av.v.pageGroups.gridMain, true, true)
 	av.v.pageMain.pages.AddPage("register_page", av.v.pageRegister.mainGrid, true, true)
 	av.v.pageMain.pages.AddPage("login_page", av.v.pageLogin.mainGrid, true, true)

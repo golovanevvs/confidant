@@ -18,7 +18,7 @@ type pageSelect struct {
 	buttonExit        *tview.Button
 	grid              *tview.Grid
 	inputCapture      func(event *tcell.EventKey) *tcell.EventKey
-	Page              *tview.Pages
+	page              *tview.Pages
 }
 
 type pageAddGroup struct {
@@ -77,7 +77,7 @@ func newPageGroups() *pageGroups {
 			inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 				return event
 			},
-			Page: tview.NewPages(),
+			page: tview.NewPages(),
 		},
 		pageAddGroup: pageAddGroup{
 			formAddGroup: formAddGroup{
@@ -122,6 +122,11 @@ func (av *appView) vGroups() {
 
 	av.v.pageGroups.listGroups.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
+		av.v.pageData.listTitles.SetTitle(fmt.Sprintf(" %s ", mainText))
+		av.v.pageMain.pages.SwitchToPage("data_page")
+		av.v.pageData.pages.SwitchToPage("data_view_note_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 	})
 
 	av.v.pageGroups.listGroups.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
@@ -237,6 +242,8 @@ func (av *appView) vGroups() {
 		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+		av.v.pageMain.messageBoxL.Clear()
+		av.v.pageMain.messageBoxR.Clear()
 	})
 
 	//! "buttons grid"
