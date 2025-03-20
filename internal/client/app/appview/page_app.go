@@ -4,17 +4,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/rivo/tview"
 )
 
 type pageApp struct {
-	app *tview.Application
+	app        *tview.Application
+	colorTitle tcell.Color
 }
 
 func newPageApp() *pageApp {
 	return &pageApp{
-		app: tview.NewApplication(),
+		app:        tview.NewApplication(),
+		colorTitle: tcell.ColorYellow,
 	}
 }
 

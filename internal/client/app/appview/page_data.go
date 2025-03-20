@@ -18,17 +18,19 @@ type pageViewNote struct {
 }
 
 type pageAddNote struct {
-	textviewNoteL *tview.TextView
-	textviewDescL *tview.TextView
-	textareaNote  *tview.TextArea
-	textareaDesc  *tview.TextArea
-	buttonAdd     *tview.Button
-	buttonCancel  *tview.Button
-	gridButtons   *tview.Grid
-	gridData      *tview.Grid
-	grid          *tview.Grid
-	inputCapture  func(event *tcell.EventKey) *tcell.EventKey
-	page          *tview.Pages
+	textviewNoteL  *tview.TextView
+	textviewDescL  *tview.TextView
+	textviewTitleL *tview.TextView
+	textareaNote   *tview.TextArea
+	textareaDesc   *tview.TextArea
+	textareaTitle  *tview.TextArea
+	buttonAdd      *tview.Button
+	buttonCancel   *tview.Button
+	gridButtons    *tview.Grid
+	gridData       *tview.Grid
+	grid           *tview.Grid
+	inputCapture   func(event *tcell.EventKey) *tcell.EventKey
+	page           *tview.Pages
 }
 
 // type pageViewPassword struct {
@@ -78,15 +80,17 @@ func newPageData() *pageData {
 			page: tview.NewPages(),
 		},
 		pageAddNote: pageAddNote{
-			textviewNoteL: tview.NewTextView(),
-			textviewDescL: tview.NewTextView(),
-			textareaNote:  tview.NewTextArea(),
-			textareaDesc:  tview.NewTextArea(),
-			buttonAdd:     tview.NewButton("Добавить"),
-			buttonCancel:  tview.NewButton("Отмена"),
-			gridButtons:   tview.NewGrid(),
-			gridData:      tview.NewGrid(),
-			grid:          tview.NewGrid(),
+			textviewNoteL:  tview.NewTextView(),
+			textviewDescL:  tview.NewTextView(),
+			textviewTitleL: tview.NewTextView(),
+			textareaNote:   tview.NewTextArea(),
+			textareaDesc:   tview.NewTextArea(),
+			textareaTitle:  tview.NewTextArea(),
+			buttonAdd:      tview.NewButton("Добавить"),
+			buttonCancel:   tview.NewButton("Отмена"),
+			gridButtons:    tview.NewGrid(),
+			gridData:       tview.NewGrid(),
+			grid:           tview.NewGrid(),
 			inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 				return event
 			},
@@ -206,19 +210,25 @@ func (av *appView) vData() {
 
 	//! note label
 
-	av.v.pageData.pageAddNote.textviewNoteL.SetText("Заметка:")
-	av.v.pageData.pageAddNote.textviewDescL.SetText("Описание:")
+	av.v.pageData.pageAddNote.textviewNoteL.SetText("Заметка:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageAddNote.textviewDescL.SetText("Описание:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageAddNote.textviewTitleL.SetText("Название:").
+		SetTextColor(av.v.pageApp.colorTitle)
 
 	//! add note page data grid
 
 	av.v.pageData.pageAddNote.gridData.
 		SetBorders(true).
-		SetRows(0, 4).
+		SetRows(0, 4, 1).
 		SetColumns(9, 0).
 		AddItem(av.v.pageData.pageAddNote.textviewNoteL, 0, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageAddNote.textviewDescL, 1, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageAddNote.textviewTitleL, 2, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageAddNote.textareaNote, 0, 1, 1, 1, 0, 0, true).
-		AddItem(av.v.pageData.pageAddNote.textareaDesc, 1, 1, 1, 1, 0, 0, true)
+		AddItem(av.v.pageData.pageAddNote.textareaDesc, 1, 1, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageAddNote.textareaTitle, 2, 1, 1, 1, 0, 0, true)
 
 	//! add note page buttons grid
 
@@ -246,6 +256,8 @@ func (av *appView) vData() {
 			case av.v.pageData.pageAddNote.textareaNote:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageAddNote.textareaDesc)
 			case av.v.pageData.pageAddNote.textareaDesc:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageAddNote.textareaTitle)
+			case av.v.pageData.pageAddNote.textareaTitle:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageAddNote.buttonAdd)
 			case av.v.pageData.pageAddNote.buttonAdd:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageAddNote.buttonCancel)
