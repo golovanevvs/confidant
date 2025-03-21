@@ -17,34 +17,42 @@ import (
 // }
 
 type pageData struct {
-	listTitles       *tview.List
-	buttonAdd        *tview.Button
-	buttonEdit       *tview.Button
-	buttonDelete     *tview.Button
-	buttonBack       *tview.Button
-	buttonExit       *tview.Button
-	gridButtons      *tview.Grid
-	gridMain         *tview.Grid
-	pageDataViewNote *pageDataViewNote
-	pageDataAddNote  *pageDataAddNote
-	pages            *tview.Pages
-	inputCapture     func(event *tcell.EventKey) *tcell.EventKey
-	page             *tview.Pages
+	listTitles         *tview.List
+	buttonAdd          *tview.Button
+	buttonEdit         *tview.Button
+	buttonDelete       *tview.Button
+	buttonBack         *tview.Button
+	buttonExit         *tview.Button
+	gridButtons        *tview.Grid
+	gridMain           *tview.Grid
+	pageDataSelectType *pageDataSelectType
+	pageDataViewNote   *pageDataViewNote
+	pageDataAddNote    *pageDataAddNote
+	pageDataViewPass   *pageDataViewPass
+	pageDataViewCard   *pageDataViewCard
+	pageDataAddCard    *pageDataAddCard
+	pages              *tview.Pages
+	inputCapture       func(event *tcell.EventKey) *tcell.EventKey
+	page               *tview.Pages
 }
 
 func newPageData() *pageData {
 	return &pageData{
-		listTitles:       tview.NewList(),
-		buttonAdd:        tview.NewButton("Добавить"),
-		buttonEdit:       tview.NewButton("Изменить"),
-		buttonDelete:     tview.NewButton("Удалить"),
-		buttonBack:       tview.NewButton("Назад"),
-		buttonExit:       tview.NewButton("Выход"),
-		gridButtons:      tview.NewGrid(),
-		gridMain:         tview.NewGrid(),
-		pageDataViewNote: newPageDataViewNote(),
-		pageDataAddNote:  newPageDataAddNote(),
-		pages:            tview.NewPages(),
+		listTitles:         tview.NewList(),
+		buttonAdd:          tview.NewButton("Добавить"),
+		buttonEdit:         tview.NewButton("Изменить"),
+		buttonDelete:       tview.NewButton("Удалить"),
+		buttonBack:         tview.NewButton("Назад"),
+		buttonExit:         tview.NewButton("Выход"),
+		gridButtons:        tview.NewGrid(),
+		gridMain:           tview.NewGrid(),
+		pageDataSelectType: newPageDataSelectType(),
+		pageDataViewNote:   newPageDataViewNote(),
+		pageDataAddNote:    newPageDataAddNote(),
+		pageDataViewPass:   newPageDataViewPass(),
+		pageDataViewCard:   newPageDataViewCard(),
+		pageDataAddCard:    newPageDataAddCard(),
+		pages:              tview.NewPages(),
 		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 			return event
 		},
@@ -71,9 +79,9 @@ func (av *appView) vData() {
 
 	//! "Добавить"
 	av.v.pageData.buttonAdd.SetSelectedFunc(func() {
-		av.v.pageData.pages.SwitchToPage("data_add_note")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddNote.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddNote.textareaNote)
+		av.v.pageData.pages.SwitchToPage("data_select_type")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataSelectType.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataSelectType.buttonNote)
 	})
 
 	//! "Назад"
@@ -138,6 +146,10 @@ func (av *appView) vData() {
 	}
 
 	//! adding pages
-	av.v.pageData.pages.AddPage("data_add_note", av.v.pageData.pageDataAddNote.grid, true, true)
+	av.v.pageData.pages.AddPage("data_select_type", av.v.pageData.pageDataSelectType.grid, true, true)
+	av.v.pageData.pages.AddPage("data_add_note_page", av.v.pageData.pageDataAddNote.grid, true, true)
+	av.v.pageData.pages.AddPage("data_add_card_page", av.v.pageData.pageDataAddCard.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_note_page", av.v.pageData.pageDataViewNote.gridData, true, true)
+	av.v.pageData.pages.AddPage("data_view_pass_page", av.v.pageData.pageDataViewPass.gridData, true, true)
+	av.v.pageData.pages.AddPage("data_view_card_page", av.v.pageData.pageDataViewCard.gridData, true, true)
 }

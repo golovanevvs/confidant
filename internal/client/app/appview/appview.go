@@ -77,8 +77,12 @@ func (av *appView) Run() error {
 	av.vGroupsAddGroup()
 	av.vGroupsEditEmails()
 	av.vData()
+	av.vDataSelectType()
 	av.vDataAddNote()
 	av.vDataViewNote()
+	av.vDataViewPass()
+	av.VDataViewCard()
+	av.vDataAddCard()
 
 	return av.vApp()
 }

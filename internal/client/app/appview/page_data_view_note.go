@@ -39,7 +39,7 @@ func (av *appView) vDataViewNote() {
 	av.v.pageData.pageDataViewNote.textviewNote.SetText("В Telegram-канале самой компании в 12:05 мск сообщили, что «Крок» продолжает свою работу в штатном режиме. Все бизнес-процессы, включая поддержку клиентов, функционируют в рамках установленных регламентов и осуществляются без перебоев. По данным из открытых источников, в 2021 году «Крок» занимала девятое место по выручке среди всех российских IT-компаний. Она специализируется на IT-услугах в области системной интеграции, Big Data, блокчейне, искусственном интеллекте, машинном обучении и других.")
 	av.v.pageData.pageDataViewNote.textviewDesc.SetText("Силовики приехали c обысками в офис одной из крупнейших IT-компаний «Крок» в Москве. Об этом ТАСС сообщили в оперативных службах.")
 
-	//! view note page grid
+	//! data grid
 
 	av.v.pageData.pageDataViewNote.gridData.
 		SetBorders(true).
@@ -50,8 +50,6 @@ func (av *appView) vDataViewNote() {
 		AddItem(av.v.pageData.pageDataViewNote.textviewDescL, 1, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewNote.textviewNote, 0, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewNote.textviewDesc, 1, 1, 1, 1, 0, 0, true)
-		// SetBorder(true).
-		// SetTitle(" Данные ")
 
 	av.v.pageData.pageDataViewNote.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {

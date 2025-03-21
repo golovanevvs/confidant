@@ -42,7 +42,7 @@ func (av *appView) vGroups() {
 		av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
 		av.v.pageData.listTitles.SetTitle(fmt.Sprintf(" %s ", mainText))
 		av.v.pageMain.pages.SwitchToPage("data_page")
-		av.v.pageData.pages.SwitchToPage("data_view_note_page")
+		av.v.pageData.pages.SwitchToPage("data_view_card_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 	})
