@@ -107,7 +107,7 @@ func (av *appView) vLogin() {
 				// switch
 				av.v.pageMain.pages.SwitchToPage("groups_page")
 				av.v.pageGroups.pages.SwitchToPage("select_page")
-				av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
+				av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 			}
 

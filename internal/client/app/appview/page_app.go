@@ -33,7 +33,7 @@ func (av *appView) vApp() error {
 		av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", av.account.Email))
 		av.v.pageMain.pages.SwitchToPage("groups_page")
 		av.v.pageGroups.pages.SwitchToPage("select_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageSelect.inputCapture)
+		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
 	} else {
 		av.v.pageMain.pages.SwitchToPage("login_page")
