@@ -42,8 +42,8 @@ func (av *appView) vDataSelectType() {
 	//! "Пароль"
 	av.v.pageData.pageDataSelectType.buttonPass.SetSelectedFunc(func() {
 		av.v.pageData.pages.SwitchToPage("data_add_pass_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddNote.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddNote.textareaNote)
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddPass.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.textareaLogin)
 	})
 
 	//! "Карта"
@@ -51,6 +51,13 @@ func (av *appView) vDataSelectType() {
 		av.v.pageData.pages.SwitchToPage("data_add_card_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddCard.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaNumber)
+	})
+
+	//! "Файл"
+	av.v.pageData.pageDataSelectType.buttonFile.SetSelectedFunc(func() {
+		av.v.pageData.pages.SwitchToPage("data_add_file_page")
+		// av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddCard.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.treeview)
 	})
 
 	//! "Отмена"

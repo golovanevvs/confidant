@@ -12,6 +12,8 @@ type pageDataAddPass struct {
 	textareaLogin  *tview.TextArea
 	textareaPass   *tview.TextArea
 	textareaDesc   *tview.TextArea
+	buttonAdd      *tview.Button
+	buttonCancel   *tview.Button
 	gridData       *tview.Grid
 	gridButtons    *tview.Grid
 	grid           *tview.Grid
@@ -27,6 +29,8 @@ func newPageDataAddPass() *pageDataAddPass {
 		textareaLogin:  tview.NewTextArea(),
 		textareaPass:   tview.NewTextArea(),
 		textareaDesc:   tview.NewTextArea(),
+		buttonAdd:      tview.NewButton("Добавить"),
+		buttonCancel:   tview.NewButton("Отмена"),
 		gridData:       tview.NewGrid(),
 		gridButtons:    tview.NewGrid(),
 		grid:           tview.NewGrid(),
@@ -62,9 +66,9 @@ func (av *appView) vDataAddPass() {
 	//! Добавить
 
 	//! Отмена
-	av.v.pageData.pageDataAddNote.buttonCancel.SetSelectedFunc(func() {
-		av.v.pageData.pages.SwitchToPage("data_view_note_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewNote.inputCapture)
+	av.v.pageData.pageDataAddPass.buttonCancel.SetSelectedFunc(func() {
+		av.v.pageData.pages.SwitchToPage("data_view_card_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewCard.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 		av.v.pageMain.messageBoxL.Clear()
@@ -72,12 +76,41 @@ func (av *appView) vDataAddPass() {
 	})
 
 	//! buttons grid
-	av.v.pageData.pageDataAddNote.gridButtons.
+	av.v.pageData.pageDataAddPass.gridButtons.
 		SetBorders(false).
 		SetRows(1).
 		SetColumns(10, 10).
 		SetGap(0, 1).
-		AddItem(av.v.pageData.pageDataAddNote.buttonAdd, 0, 0, 1, 1, 0, 0, true).
-		AddItem(av.v.pageData.pageDataAddNote.buttonCancel, 0, 1, 1, 1, 0, 0, true)
+		AddItem(av.v.pageData.pageDataAddPass.buttonAdd, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddPass.buttonCancel, 0, 1, 1, 1, 0, 0, true)
+
+	//! grid
+	av.v.pageData.pageDataAddPass.grid.
+		SetBorders(false).
+		SetRows(0, 1).
+		SetColumns(0).
+		AddItem(av.v.pageData.pageDataAddPass.gridData, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddPass.gridButtons, 1, 0, 1, 1, 0, 0, true)
+
+	//! inputCapture
+	av.v.pageData.pageDataAddPass.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := av.v.pageApp.app.GetFocus()
+			switch currentFocus {
+			case av.v.pageData.pageDataAddPass.textareaLogin:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.textareaPass)
+			case av.v.pageData.pageDataAddPass.textareaPass:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.textareaDesc)
+			case av.v.pageData.pageDataAddPass.textareaDesc:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.buttonAdd)
+			case av.v.pageData.pageDataAddPass.buttonAdd:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.buttonCancel)
+			case av.v.pageData.pageDataAddPass.buttonCancel:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.textareaLogin)
+			}
+			return nil
+		}
+		return event
+	}
 
 }

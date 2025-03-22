@@ -84,6 +84,7 @@ func (av *appView) Run() error {
 	av.vDataViewPass()
 	av.VDataViewCard()
 	av.vDataAddCard()
+	av.VDataAddFile()
 
 	return av.vApp()
 }

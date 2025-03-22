@@ -32,6 +32,7 @@ type pageData struct {
 	pageDataAddPass    *pageDataAddPass
 	pageDataViewCard   *pageDataViewCard
 	pageDataAddCard    *pageDataAddCard
+	pageDataAddFile    *pageDataAddFile
 	pages              *tview.Pages
 	inputCapture       func(event *tcell.EventKey) *tcell.EventKey
 	page               *tview.Pages
@@ -51,8 +52,10 @@ func newPageData() *pageData {
 		pageDataViewNote:   newPageDataViewNote(),
 		pageDataAddNote:    newPageDataAddNote(),
 		pageDataViewPass:   newPageDataViewPass(),
+		pageDataAddPass:    newPageDataAddPass(),
 		pageDataViewCard:   newPageDataViewCard(),
 		pageDataAddCard:    newPageDataAddCard(),
+		pageDataAddFile:    newDataAddFile(),
 		pages:              tview.NewPages(),
 		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 			return event
@@ -154,4 +157,5 @@ func (av *appView) vData() {
 	av.v.pageData.pages.AddPage("data_view_note_page", av.v.pageData.pageDataViewNote.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_pass_page", av.v.pageData.pageDataViewPass.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_card_page", av.v.pageData.pageDataViewCard.gridData, true, true)
+	av.v.pageData.pages.AddPage("data_add_file_page", av.v.pageData.pageDataAddFile.grid, true, true)
 }
