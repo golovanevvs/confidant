@@ -80,6 +80,7 @@ func (av *appView) Run() error {
 	av.vDataSelectType()
 	av.vDataAddNote()
 	av.vDataViewNote()
+	av.vDataAddPass()
 	av.vDataViewPass()
 	av.VDataViewCard()
 	av.vDataAddCard()

@@ -29,6 +29,7 @@ type pageData struct {
 	pageDataViewNote   *pageDataViewNote
 	pageDataAddNote    *pageDataAddNote
 	pageDataViewPass   *pageDataViewPass
+	pageDataAddPass    *pageDataAddPass
 	pageDataViewCard   *pageDataViewCard
 	pageDataAddCard    *pageDataAddCard
 	pages              *tview.Pages
@@ -148,7 +149,8 @@ func (av *appView) vData() {
 	//! adding pages
 	av.v.pageData.pages.AddPage("data_select_type", av.v.pageData.pageDataSelectType.grid, true, true)
 	av.v.pageData.pages.AddPage("data_add_note_page", av.v.pageData.pageDataAddNote.grid, true, true)
-	av.v.pageData.pages.AddPage("data_add_card_page", av.v.pageData.pageDataAddCard.gridData, true, true)
+	av.v.pageData.pages.AddPage("data_add_pass_page", av.v.pageData.pageDataAddPass.grid, true, true)
+	av.v.pageData.pages.AddPage("data_add_card_page", av.v.pageData.pageDataAddCard.grid, true, true)
 	av.v.pageData.pages.AddPage("data_view_note_page", av.v.pageData.pageDataViewNote.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_pass_page", av.v.pageData.pageDataViewPass.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_card_page", av.v.pageData.pageDataViewCard.gridData, true, true)

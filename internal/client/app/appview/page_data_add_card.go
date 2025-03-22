@@ -20,7 +20,11 @@ type pageDataAddCard struct {
 	textareaPIN     *tview.TextArea
 	textareaBank    *tview.TextArea
 	textareaDesc    *tview.TextArea
+	buttonAdd       *tview.Button
+	buttonCancel    *tview.Button
 	gridData        *tview.Grid
+	gridButtons     *tview.Grid
+	grid            *tview.Grid
 	inputCapture    func(event *tcell.EventKey) *tcell.EventKey
 	page            *tview.Pages
 }
@@ -41,7 +45,11 @@ func newPageDataAddCard() *pageDataAddCard {
 		textareaPIN:     tview.NewTextArea(),
 		textareaBank:    tview.NewTextArea(),
 		textareaDesc:    tview.NewTextArea(),
+		buttonAdd:       tview.NewButton("Добавить"),
+		buttonCancel:    tview.NewButton("Отмена"),
 		gridData:        tview.NewGrid(),
+		gridButtons:     tview.NewGrid(),
+		grid:            tview.NewGrid(),
 		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 			return event
 		},
@@ -50,6 +58,7 @@ func newPageDataAddCard() *pageDataAddCard {
 }
 
 func (av *appView) vDataAddCard() {
+	//! label names
 	av.v.pageData.pageDataAddCard.textviewNumberL.SetText("Номер:").
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataAddCard.textviewDateL.SetText("Годна до:").
@@ -85,4 +94,63 @@ func (av *appView) vDataAddCard() {
 		AddItem(av.v.pageData.pageDataAddCard.textareaPIN, 2, 3, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddCard.textareaBank, 3, 1, 1, 3, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddCard.textareaDesc, 4, 1, 1, 3, 0, 0, true)
+
+	//! Добавить
+
+	//! Отмена
+	av.v.pageData.pageDataAddCard.buttonCancel.SetSelectedFunc(func() {
+		av.v.pageData.pages.SwitchToPage("data_view_card_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewCard.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+		av.v.pageMain.messageBoxL.Clear()
+		av.v.pageMain.messageBoxR.Clear()
+	})
+
+	//! buttons grid
+	av.v.pageData.pageDataAddCard.gridButtons.
+		SetBorders(false).
+		SetRows(1).
+		SetColumns(10, 10).
+		SetGap(0, 1).
+		AddItem(av.v.pageData.pageDataAddCard.buttonAdd, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddCard.buttonCancel, 0, 1, 1, 1, 0, 0, true)
+
+	//! grid
+	av.v.pageData.pageDataAddCard.grid.
+		SetBorders(false).
+		SetRows(0, 1).
+		SetColumns(0).
+		AddItem(av.v.pageData.pageDataAddCard.gridData, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddCard.gridButtons, 1, 0, 1, 1, 0, 0, true)
+
+	//! inputCapture
+	av.v.pageData.pageDataAddCard.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := av.v.pageApp.app.GetFocus()
+			switch currentFocus {
+			case av.v.pageData.pageDataAddCard.textareaNumber:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaDate)
+			case av.v.pageData.pageDataAddCard.textareaDate:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaName)
+			case av.v.pageData.pageDataAddCard.textareaName:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaCVC2)
+			case av.v.pageData.pageDataAddCard.textareaCVC2:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaPIN)
+			case av.v.pageData.pageDataAddCard.textareaPIN:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaBank)
+			case av.v.pageData.pageDataAddCard.textareaBank:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaDesc)
+			case av.v.pageData.pageDataAddCard.textareaDesc:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.buttonAdd)
+			case av.v.pageData.pageDataAddCard.buttonAdd:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.buttonCancel)
+			case av.v.pageData.pageDataAddCard.buttonCancel:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaNumber)
+			}
+			return nil
+		}
+		return event
+	}
+
 }

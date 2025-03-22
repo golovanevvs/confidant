@@ -14,8 +14,8 @@ type pageDataAddNote struct {
 	textareaTitle  *tview.TextArea
 	buttonAdd      *tview.Button
 	buttonCancel   *tview.Button
-	gridButtons    *tview.Grid
 	gridData       *tview.Grid
+	gridButtons    *tview.Grid
 	grid           *tview.Grid
 	inputCapture   func(event *tcell.EventKey) *tcell.EventKey
 	page           *tview.Pages
@@ -31,8 +31,8 @@ func newPageDataAddNote() *pageDataAddNote {
 		textareaTitle:  tview.NewTextArea(),
 		buttonAdd:      tview.NewButton("Добавить"),
 		buttonCancel:   tview.NewButton("Отмена"),
-		gridButtons:    tview.NewGrid(),
 		gridData:       tview.NewGrid(),
+		gridButtons:    tview.NewGrid(),
 		grid:           tview.NewGrid(),
 		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 			return event
@@ -43,8 +43,7 @@ func newPageDataAddNote() *pageDataAddNote {
 
 func (av *appView) vDataAddNote() {
 
-	//! note label
-
+	//! label names
 	av.v.pageData.pageDataAddNote.textviewNoteL.SetText("Заметка:").
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataAddNote.textviewDescL.SetText("Описание:").
@@ -52,8 +51,7 @@ func (av *appView) vDataAddNote() {
 	av.v.pageData.pageDataAddNote.textviewTitleL.SetText("Название:").
 		SetTextColor(av.v.pageApp.colorTitle)
 
-	//! add note page data grid
-
+	//! data grid
 	av.v.pageData.pageDataAddNote.gridData.
 		SetBorders(true).
 		SetRows(0, 4, 1).
@@ -77,8 +75,7 @@ func (av *appView) vDataAddNote() {
 		av.v.pageMain.messageBoxR.Clear()
 	})
 
-	//! add note page buttons grid
-
+	//! buttons grid
 	av.v.pageData.pageDataAddNote.gridButtons.
 		SetBorders(false).
 		SetRows(1).
@@ -87,8 +84,7 @@ func (av *appView) vDataAddNote() {
 		AddItem(av.v.pageData.pageDataAddNote.buttonAdd, 0, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddNote.buttonCancel, 0, 1, 1, 1, 0, 0, true)
 
-	//! add note page grid
-
+	//! grid
 	av.v.pageData.pageDataAddNote.grid.
 		SetBorders(false).
 		SetRows(0, 1).
@@ -96,6 +92,7 @@ func (av *appView) vDataAddNote() {
 		AddItem(av.v.pageData.pageDataAddNote.gridData, 0, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddNote.gridButtons, 1, 0, 1, 1, 0, 0, true)
 
+	//! inputCapture
 	av.v.pageData.pageDataAddNote.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
