@@ -10,20 +10,40 @@ import (
 )
 
 type pageDataAddFile struct {
-	treeview     *tview.TreeView
-	buttonAdd    *tview.Button
-	buttonCancel *tview.Button
-	grid         *tview.Grid
-	inputCapture func(event *tcell.EventKey) *tcell.EventKey
-	page         *tview.Pages
+	treeview          *tview.TreeView
+	textviewFileNameL *tview.TextView
+	textviewFileSizeL *tview.TextView
+	textviewFileDateL *tview.TextView
+	textviewTitleL    *tview.TextView
+	textviewFileName  *tview.TextView
+	textviewFileSize  *tview.TextView
+	textviewFileDate  *tview.TextView
+	textareaTitle     *tview.TextArea
+	buttonAdd         *tview.Button
+	buttonCancel      *tview.Button
+	gridData          *tview.Grid
+	gridButtons       *tview.Grid
+	grid              *tview.Grid
+	inputCapture      func(event *tcell.EventKey) *tcell.EventKey
+	page              *tview.Pages
 }
 
 func newDataAddFile() *pageDataAddFile {
 	return &pageDataAddFile{
-		treeview:     tview.NewTreeView(),
-		buttonAdd:    tview.NewButton("Добавить"),
-		buttonCancel: tview.NewButton("Отмена"),
-		grid:         tview.NewGrid(),
+		treeview:          tview.NewTreeView(),
+		textviewFileNameL: tview.NewTextView(),
+		textviewFileSizeL: tview.NewTextView(),
+		textviewFileDateL: tview.NewTextView(),
+		textviewTitleL:    tview.NewTextView(),
+		textviewFileName:  tview.NewTextView(),
+		textviewFileSize:  tview.NewTextView(),
+		textviewFileDate:  tview.NewTextView(),
+		textareaTitle:     tview.NewTextArea(),
+		buttonAdd:         tview.NewButton("Добавить"),
+		buttonCancel:      tview.NewButton("Отмена"),
+		gridData:          tview.NewGrid(),
+		gridButtons:       tview.NewGrid(),
+		grid:              tview.NewGrid(),
 		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
 			return event
 		},
@@ -78,11 +98,11 @@ func (av *appView) VDataAddFile() {
 	av.v.pageData.pageDataAddFile.treeview.SetSelectedFunc(func(node *tview.TreeNode) {
 		reference := node.GetReference()
 		if reference == nil {
-			return // Выбор корневого узла ничего не делает
+			return // nothing happens when selecting a mountain node
 		}
 		path := reference.(string)
 
-		// Проверяем, является ли узел директорией
+		// checking whether a node is a directory
 		info, err := os.Stat(path)
 		if err != nil {
 			return
@@ -91,21 +111,88 @@ func (av *appView) VDataAddFile() {
 		if info.IsDir() {
 			children := node.GetChildren()
 			if len(children) == 0 {
-				// Загружаем и отображаем содержимое директории
+				// displaying the contents of a directory
 				add(node, path)
 			} else {
-				// Сворачиваем, если видно, разворачиваем, если свернуто
+				// folding, unfolding
 				node.SetExpanded(!node.IsExpanded())
 			}
 		} else {
-			// Обработка выбора файла
+			// file selection processing
 		}
 	})
+
+	//! label names
+	av.v.pageData.pageDataAddFile.textviewFileNameL.SetText("Выбран файл:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataAddFile.textviewFileSizeL.SetText("Размер:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataAddFile.textviewFileDateL.SetText("Дата изменения:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataAddFile.textviewTitleL.SetText("Название:").
+		SetTextColor(av.v.pageApp.colorTitle)
+
+	//! Добавить
+
+	//! Отмена
+	av.v.pageData.pageDataAddFile.buttonCancel.SetSelectedFunc(func() {
+		av.v.pageData.pages.SwitchToPage("data_view_card_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewCard.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+		av.v.pageMain.messageBoxL.Clear()
+		av.v.pageMain.messageBoxR.Clear()
+	})
+
+	//! data grid
+	av.v.pageData.pageDataAddFile.gridData.
+		SetBorders(true).
+		SetRows(0, 1, 1, 1).
+		SetColumns(15, 15, 15, 0).
+		SetGap(1, 0).
+		AddItem(av.v.pageData.pageDataAddFile.treeview, 0, 0, 1, 4, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewFileNameL, 1, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewFileName, 1, 1, 1, 3, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewFileSizeL, 2, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewFileSize, 2, 1, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewFileDateL, 2, 2, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewFileDate, 2, 3, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewTitleL, 3, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textareaTitle, 3, 1, 1, 3, 0, 0, true)
+
+	//! buttons grid
+	av.v.pageData.pageDataAddFile.gridButtons.
+		SetBorders(false).
+		SetRows(1).
+		SetColumns(10, 10).
+		SetGap(0, 1).
+		AddItem(av.v.pageData.pageDataAddFile.buttonAdd, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.buttonCancel, 0, 1, 1, 1, 0, 0, true)
 
 	//! grid
 	av.v.pageData.pageDataAddFile.grid.
 		SetBorders(false).
-		SetRows(0).
+		SetRows(0, 1).
 		SetColumns(0).
-		AddItem(av.v.pageData.pageDataAddFile.treeview, 0, 0, 1, 1, 0, 0, true)
+		AddItem(av.v.pageData.pageDataAddFile.gridData, 0, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.gridButtons, 1, 0, 1, 1, 0, 0, true)
+
+	//! inputCapture
+	av.v.pageData.pageDataAddFile.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTAB {
+			currentFocus := av.v.pageApp.app.GetFocus()
+			switch currentFocus {
+			case av.v.pageData.pageDataAddFile.treeview:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.textareaTitle)
+			case av.v.pageData.pageDataAddFile.textareaTitle:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.buttonAdd)
+			case av.v.pageData.pageDataAddFile.buttonAdd:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.buttonCancel)
+			case av.v.pageData.pageDataAddFile.buttonCancel:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.treeview)
+			}
+			return nil
+		}
+		return event
+	}
 }

@@ -13,6 +13,7 @@ type pageDataAddCard struct {
 	textviewPINL    *tview.TextView
 	textviewBankL   *tview.TextView
 	textviewDescL   *tview.TextView
+	textviewTitleL  *tview.TextView
 	textareaNumber  *tview.TextArea
 	textareaDate    *tview.TextArea
 	textareaName    *tview.TextArea
@@ -20,6 +21,7 @@ type pageDataAddCard struct {
 	textareaPIN     *tview.TextArea
 	textareaBank    *tview.TextArea
 	textareaDesc    *tview.TextArea
+	textareaTitle   *tview.TextArea
 	buttonAdd       *tview.Button
 	buttonCancel    *tview.Button
 	gridData        *tview.Grid
@@ -38,6 +40,7 @@ func newPageDataAddCard() *pageDataAddCard {
 		textviewPINL:    tview.NewTextView(),
 		textviewBankL:   tview.NewTextView(),
 		textviewDescL:   tview.NewTextView(),
+		textviewTitleL:  tview.NewTextView(),
 		textareaNumber:  tview.NewTextArea(),
 		textareaDate:    tview.NewTextArea(),
 		textareaName:    tview.NewTextArea(),
@@ -45,6 +48,7 @@ func newPageDataAddCard() *pageDataAddCard {
 		textareaPIN:     tview.NewTextArea(),
 		textareaBank:    tview.NewTextArea(),
 		textareaDesc:    tview.NewTextArea(),
+		textareaTitle:   tview.NewTextArea(),
 		buttonAdd:       tview.NewButton("Добавить"),
 		buttonCancel:    tview.NewButton("Отмена"),
 		gridData:        tview.NewGrid(),
@@ -73,11 +77,13 @@ func (av *appView) vDataAddCard() {
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataAddCard.textviewDescL.SetText("Описание:").
 		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataAddCard.textviewTitleL.SetText("Название:").
+		SetTextColor(av.v.pageApp.colorTitle)
 
 	//! data grid
 	av.v.pageData.pageDataAddCard.gridData.
 		SetBorders(true).
-		SetRows(1, 1, 1, 1, 0).
+		SetRows(1, 1, 1, 1, 0, 1).
 		SetColumns(9, 15, 4, 0).
 		SetGap(1, 0).
 		AddItem(av.v.pageData.pageDataAddCard.textviewNumberL, 0, 0, 1, 1, 0, 0, true).
@@ -93,7 +99,9 @@ func (av *appView) vDataAddCard() {
 		AddItem(av.v.pageData.pageDataAddCard.textareaCVC2, 2, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddCard.textareaPIN, 2, 3, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddCard.textareaBank, 3, 1, 1, 3, 0, 0, true).
-		AddItem(av.v.pageData.pageDataAddCard.textareaDesc, 4, 1, 1, 3, 0, 0, true)
+		AddItem(av.v.pageData.pageDataAddCard.textareaDesc, 4, 1, 1, 3, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddCard.textviewTitleL, 5, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddCard.textareaTitle, 5, 1, 1, 3, 0, 0, true)
 
 	//! Добавить
 
@@ -142,6 +150,8 @@ func (av *appView) vDataAddCard() {
 			case av.v.pageData.pageDataAddCard.textareaBank:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaDesc)
 			case av.v.pageData.pageDataAddCard.textareaDesc:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.textareaTitle)
+			case av.v.pageData.pageDataAddCard.textareaTitle:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.buttonAdd)
 			case av.v.pageData.pageDataAddCard.buttonAdd:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddCard.buttonCancel)

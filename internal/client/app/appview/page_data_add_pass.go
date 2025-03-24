@@ -9,9 +9,11 @@ type pageDataAddPass struct {
 	textviewLoginL *tview.TextView
 	textviewPassL  *tview.TextView
 	textviewDescL  *tview.TextView
+	textviewTitleL *tview.TextView
 	textareaLogin  *tview.TextArea
 	textareaPass   *tview.TextArea
 	textareaDesc   *tview.TextArea
+	textareaTitle  *tview.TextArea
 	buttonAdd      *tview.Button
 	buttonCancel   *tview.Button
 	gridData       *tview.Grid
@@ -26,9 +28,11 @@ func newPageDataAddPass() *pageDataAddPass {
 		textviewLoginL: tview.NewTextView(),
 		textviewPassL:  tview.NewTextView(),
 		textviewDescL:  tview.NewTextView(),
+		textviewTitleL: tview.NewTextView(),
 		textareaLogin:  tview.NewTextArea(),
 		textareaPass:   tview.NewTextArea(),
 		textareaDesc:   tview.NewTextArea(),
+		textareaTitle:  tview.NewTextArea(),
 		buttonAdd:      tview.NewButton("Добавить"),
 		buttonCancel:   tview.NewButton("Отмена"),
 		gridData:       tview.NewGrid(),
@@ -49,11 +53,13 @@ func (av *appView) vDataAddPass() {
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataAddPass.textviewDescL.SetText("Описание:").
 		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataAddPass.textviewTitleL.SetText("Название:").
+		SetTextColor(av.v.pageApp.colorTitle)
 
 	//! data grid
 	av.v.pageData.pageDataAddPass.gridData.
 		SetBorders(true).
-		SetRows(1, 1, 0).
+		SetRows(1, 1, 0, 1).
 		SetColumns(9, 0).
 		SetGap(1, 0).
 		AddItem(av.v.pageData.pageDataAddPass.textviewLoginL, 0, 0, 1, 1, 0, 0, true).
@@ -61,7 +67,9 @@ func (av *appView) vDataAddPass() {
 		AddItem(av.v.pageData.pageDataAddPass.textviewDescL, 2, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddPass.textareaLogin, 0, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddPass.textareaPass, 1, 1, 1, 1, 0, 0, true).
-		AddItem(av.v.pageData.pageDataAddPass.textareaDesc, 2, 1, 1, 1, 0, 0, true)
+		AddItem(av.v.pageData.pageDataAddPass.textareaDesc, 2, 1, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddPass.textviewTitleL, 3, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddPass.textareaTitle, 3, 1, 1, 1, 0, 0, true)
 
 	//! Добавить
 
@@ -102,6 +110,8 @@ func (av *appView) vDataAddPass() {
 			case av.v.pageData.pageDataAddPass.textareaPass:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.textareaDesc)
 			case av.v.pageData.pageDataAddPass.textareaDesc:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.textareaTitle)
+			case av.v.pageData.pageDataAddPass.textareaTitle:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.buttonAdd)
 			case av.v.pageData.pageDataAddPass.buttonAdd:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddPass.buttonCancel)
