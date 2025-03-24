@@ -70,7 +70,7 @@ func (av *appView) vData() {
 	av.v.pageData.listTitles.SetBorder(true)
 	av.v.pageData.listTitles.SetHighlightFullLine(true)
 	for i := 0; i < 10; i++ {
-		av.v.pageData.listTitles.AddItem(fmt.Sprintf("Title %d", i), "", 0, nil)
+		av.v.pageData.listTitles.AddItem(fmt.Sprintf("%c Title %d", '\U0001F449', i), "", 0, nil)
 	}
 
 	av.v.pageData.listTitles.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {

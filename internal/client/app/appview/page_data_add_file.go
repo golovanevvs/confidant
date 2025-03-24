@@ -1,6 +1,7 @@
 package appview
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,10 +15,12 @@ type pageDataAddFile struct {
 	textviewFileNameL *tview.TextView
 	textviewFileSizeL *tview.TextView
 	textviewFileDateL *tview.TextView
+	textviewDescL     *tview.TextView
 	textviewTitleL    *tview.TextView
 	textviewFileName  *tview.TextView
 	textviewFileSize  *tview.TextView
 	textviewFileDate  *tview.TextView
+	textareaDesc      *tview.TextArea
 	textareaTitle     *tview.TextArea
 	buttonAdd         *tview.Button
 	buttonCancel      *tview.Button
@@ -34,10 +37,12 @@ func newDataAddFile() *pageDataAddFile {
 		textviewFileNameL: tview.NewTextView(),
 		textviewFileSizeL: tview.NewTextView(),
 		textviewFileDateL: tview.NewTextView(),
+		textviewDescL:     tview.NewTextView(),
 		textviewTitleL:    tview.NewTextView(),
 		textviewFileName:  tview.NewTextView(),
 		textviewFileSize:  tview.NewTextView(),
 		textviewFileDate:  tview.NewTextView(),
+		textareaDesc:      tview.NewTextArea(),
 		textareaTitle:     tview.NewTextArea(),
 		buttonAdd:         tview.NewButton("Добавить"),
 		buttonCancel:      tview.NewButton("Отмена"),
@@ -119,7 +124,17 @@ func (av *appView) VDataAddFile() {
 			}
 		} else {
 			// file selection processing
+			av.v.pageData.pageDataAddFile.textviewFileName.SetText(info.Name())
+			av.v.pageData.pageDataAddFile.textviewFileSize.SetText(fmt.Sprintf("%d байт", info.Size()))
+			av.v.pageData.pageDataAddFile.textviewFileDate.SetText(info.ModTime().Format("02.01.2006 15:04:05"))
 		}
+	})
+
+	// processing changes to a dedicated node
+	av.v.pageData.pageDataAddFile.treeview.SetChangedFunc(func(node *tview.TreeNode) {
+		av.v.pageData.pageDataAddFile.textviewFileName.SetText("")
+		av.v.pageData.pageDataAddFile.textviewFileSize.SetText("")
+		av.v.pageData.pageDataAddFile.textviewFileDate.SetText("")
 	})
 
 	//! label names
@@ -128,6 +143,8 @@ func (av *appView) VDataAddFile() {
 	av.v.pageData.pageDataAddFile.textviewFileSizeL.SetText("Размер:").
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataAddFile.textviewFileDateL.SetText("Дата изменения:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataAddFile.textviewDescL.SetText("Описание:").
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataAddFile.textviewTitleL.SetText("Название:").
 		SetTextColor(av.v.pageApp.colorTitle)
@@ -147,7 +164,7 @@ func (av *appView) VDataAddFile() {
 	//! data grid
 	av.v.pageData.pageDataAddFile.gridData.
 		SetBorders(true).
-		SetRows(0, 1, 1, 1).
+		SetRows(0, 1, 1, 1, 1).
 		SetColumns(15, 15, 15, 0).
 		SetGap(1, 0).
 		AddItem(av.v.pageData.pageDataAddFile.treeview, 0, 0, 1, 4, 0, 0, true).
@@ -157,8 +174,10 @@ func (av *appView) VDataAddFile() {
 		AddItem(av.v.pageData.pageDataAddFile.textviewFileSize, 2, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddFile.textviewFileDateL, 2, 2, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataAddFile.textviewFileDate, 2, 3, 1, 1, 0, 0, true).
-		AddItem(av.v.pageData.pageDataAddFile.textviewTitleL, 3, 0, 1, 1, 0, 0, true).
-		AddItem(av.v.pageData.pageDataAddFile.textareaTitle, 3, 1, 1, 3, 0, 0, true)
+		AddItem(av.v.pageData.pageDataAddFile.textviewDescL, 3, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textareaDesc, 3, 1, 1, 3, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textviewTitleL, 4, 0, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataAddFile.textareaTitle, 4, 1, 1, 3, 0, 0, true)
 
 	//! buttons grid
 	av.v.pageData.pageDataAddFile.gridButtons.
@@ -183,6 +202,8 @@ func (av *appView) VDataAddFile() {
 			currentFocus := av.v.pageApp.app.GetFocus()
 			switch currentFocus {
 			case av.v.pageData.pageDataAddFile.treeview:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.textareaDesc)
+			case av.v.pageData.pageDataAddFile.textareaDesc:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.textareaTitle)
 			case av.v.pageData.pageDataAddFile.textareaTitle:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.buttonAdd)
