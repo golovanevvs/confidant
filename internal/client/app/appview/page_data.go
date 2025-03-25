@@ -7,15 +7,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-// type pageViewPassword struct {
-// }
-
-// type pageViewCard struct {
-// }
-
-// type pageViewFile struct {
-// }
-
 type pageData struct {
 	listTitles         *tview.List
 	buttonAdd          *tview.Button
@@ -27,10 +18,11 @@ type pageData struct {
 	gridMain           *tview.Grid
 	pageDataSelectType *pageDataSelectType
 	pageDataViewNote   *pageDataViewNote
-	pageDataAddNote    *pageDataAddNote
 	pageDataViewPass   *pageDataViewPass
-	pageDataAddPass    *pageDataAddPass
 	pageDataViewCard   *pageDataViewCard
+	pageDataViewFile   *pageDataViewFile
+	pageDataAddNote    *pageDataAddNote
+	pageDataAddPass    *pageDataAddPass
 	pageDataAddCard    *pageDataAddCard
 	pageDataAddFile    *pageDataAddFile
 	pages              *tview.Pages
@@ -50,10 +42,11 @@ func newPageData() *pageData {
 		gridMain:           tview.NewGrid(),
 		pageDataSelectType: newPageDataSelectType(),
 		pageDataViewNote:   newPageDataViewNote(),
-		pageDataAddNote:    newPageDataAddNote(),
 		pageDataViewPass:   newPageDataViewPass(),
-		pageDataAddPass:    newPageDataAddPass(),
 		pageDataViewCard:   newPageDataViewCard(),
+		pageDataViewFile:   newDataViewFile(),
+		pageDataAddNote:    newPageDataAddNote(),
+		pageDataAddPass:    newPageDataAddPass(),
 		pageDataAddCard:    newPageDataAddCard(),
 		pageDataAddFile:    newDataAddFile(),
 		pages:              tview.NewPages(),
@@ -151,11 +144,13 @@ func (av *appView) vData() {
 
 	//! adding pages
 	av.v.pageData.pages.AddPage("data_select_type", av.v.pageData.pageDataSelectType.grid, true, true)
-	av.v.pageData.pages.AddPage("data_add_note_page", av.v.pageData.pageDataAddNote.grid, true, true)
-	av.v.pageData.pages.AddPage("data_add_pass_page", av.v.pageData.pageDataAddPass.grid, true, true)
-	av.v.pageData.pages.AddPage("data_add_card_page", av.v.pageData.pageDataAddCard.grid, true, true)
 	av.v.pageData.pages.AddPage("data_view_note_page", av.v.pageData.pageDataViewNote.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_pass_page", av.v.pageData.pageDataViewPass.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_card_page", av.v.pageData.pageDataViewCard.gridData, true, true)
+	av.v.pageData.pages.AddPage("data_view_file_page", av.v.pageData.pageDataViewFile.grid, true, true)
+	av.v.pageData.pages.AddPage("data_add_note_page", av.v.pageData.pageDataAddNote.grid, true, true)
+	av.v.pageData.pages.AddPage("data_add_pass_page", av.v.pageData.pageDataAddPass.grid, true, true)
+	av.v.pageData.pages.AddPage("data_add_card_page", av.v.pageData.pageDataAddCard.grid, true, true)
+
 	av.v.pageData.pages.AddPage("data_add_file_page", av.v.pageData.pageDataAddFile.grid, true, true)
 }
