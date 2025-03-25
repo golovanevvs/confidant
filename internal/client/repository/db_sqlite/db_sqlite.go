@@ -61,6 +61,42 @@ func New() (*SQLite, error) {
 				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 
+			CREATE TABLE IF NOT EXISTS note(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				id_on_server INTEGER DEFAULT -1,
+				groups_id INTEGER,
+				title TEXT NOT NULL,
+				desc TEXT,
+				note TEXT NOT NULL,
+				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+			);
+
+			CREATE TABLE IF NOT EXISTS pass(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				id_on_server INTEGER DEFAULT -1,
+				groups_id INTEGER,
+				title TEXT NOT NULL,
+				desc TEXT,
+				login TEXT NOT NULL,
+				pass TEXT,
+				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+			);
+
+			CREATE TABLE IF NOT EXISTS card(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				id_on_server INTEGER DEFAULT -1,
+				groups_id INTEGER,
+				title TEXT NOT NULL,
+				desc TEXT,
+				number TEXT NOT NULL,
+				date TEXT,
+				name TEXT,
+				cvc2 TEXT,
+				pin TEXT,
+				bank TEXT,
+				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+			);
+
 		`)
 		if err != nil {
 			return nil, err
