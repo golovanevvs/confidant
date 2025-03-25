@@ -122,14 +122,16 @@ func (av *appView) vRegister() {
 
 						// updating groups list
 						av.v.pageGroups.listGroups.Clear()
-						for _, group := range av.groups {
-							av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
-						}
+						if len(av.groups) > 0 {
+							for _, group := range av.groups {
+								av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
+							}
 
-						// updating e-mails
-						av.v.pageGroups.listEmails.Clear()
-						for _, email := range av.groups[0].Emails {
-							av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
+							// updating e-mails
+							av.v.pageGroups.listEmails.Clear()
+							for _, email := range av.groups[0].Emails {
+								av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
+							}
 						}
 
 						av.v.pageMain.pages.SwitchToPage("groups_page")

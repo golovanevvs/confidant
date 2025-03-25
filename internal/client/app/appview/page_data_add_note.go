@@ -1,7 +1,10 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/rivo/tview"
 )
 
@@ -65,11 +68,23 @@ func (av *appView) vDataAddNote() {
 
 	//! Добавить
 	av.v.pageData.pageDataAddNote.buttonAdd.SetSelectedFunc(func() {
+		title := av.v.pageData.pageDataAddNote.textareaTitle.GetText()
+		desc := av.v.pageData.pageDataAddNote.textareaDesc.GetText()
+		note := av.v.pageData.pageDataAddNote.textareaNote.GetText()
+		data := &model.NoteDec{
+			Desc:  desc,
+			Note:  note,
+			Title: title,
+		}
+		err := av.sv.AddNote(context.Background(), data)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		}
 		av.v.pageData.pages.SwitchToPage("data_view_note_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewNote.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-		av.v.pageMain.messageBoxL.Clear()
+		// av.v.pageMain.messageBoxL.Clear()
 		av.v.pageMain.messageBoxR.Clear()
 	})
 

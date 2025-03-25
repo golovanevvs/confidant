@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-var key = []byte("lakjsghpoiurKJwgo2435-23n")
+var key = []byte("32-char-long-secret-key-12345678")
 
 func (sv *ServiceSecurity) Encrypt(data []byte) (encryptedData []byte, err error) {
 	action := "encrypt"
