@@ -34,9 +34,6 @@ func (av *appView) vGroups() {
 	av.v.pageGroups.listGroups.SetBorder(true)
 	av.v.pageGroups.listGroups.SetHighlightFullLine(true)
 	av.v.pageGroups.listGroups.SetTitle(" Список групп ")
-	for i := 0; i < 10; i++ {
-		av.v.pageGroups.listGroups.AddItem(fmt.Sprintf("Group %d", i), "", 0, nil)
-	}
 
 	av.v.pageGroups.listGroups.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
@@ -50,7 +47,11 @@ func (av *appView) vGroups() {
 	})
 
 	av.v.pageGroups.listGroups.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		av.v.pageMain.messageBoxL.SetText(mainText)
+		// updating e-mails
+		av.v.pageGroups.listEmails.Clear()
+		for _, email := range av.groups[0].Emails {
+			av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
+		}
 	})
 
 	//! Main grid

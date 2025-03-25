@@ -48,7 +48,7 @@ func New() (*SQLite, error) {
 
 			CREATE TABLE IF NOT EXISTS groups(
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
-				id_on_server INTEGER,
+				id_on_server INTEGER DEFAULT -1,
    				title TEXT NOT NULL,
     			account_id INTEGER,
     			FOREIGN KEY (account_id) REFERENCES account (id) ON DELETE CASCADE

@@ -16,7 +16,7 @@ type IServiceAccount interface {
 }
 
 type IServiceGroups interface {
-	// GetGroups(ctx context.Context)
+	GetGroups(ctx context.Context, accountID int) (groups []model.Group, err error)
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
 }
 
@@ -46,6 +46,7 @@ type appView struct {
 	accessToken  string
 	refreshToken string
 	account      model.Account
+	groups       []model.Group
 }
 
 func New(sv IService, lg *zap.SugaredLogger) *appView {
@@ -66,6 +67,7 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 			ID:    -1,
 			Email: "",
 		},
+		groups: []model.Group{},
 	}
 }
 

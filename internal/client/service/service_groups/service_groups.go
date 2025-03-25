@@ -11,6 +11,7 @@ type ITransportGroups interface {
 
 type IRepositoryGroups interface {
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
+	GetGroups(ctx context.Context, accountID int) (groups []model.Group, err error)
 }
 
 type ServiceGroups struct {
