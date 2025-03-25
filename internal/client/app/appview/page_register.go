@@ -114,6 +114,8 @@ func (av *appView) vRegister() {
 
 					//? OK
 					case accountResp.Error == "":
+						av.account.ID = accountResp.AccountID
+						av.account.Email = email
 						av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
 						av.v.pageMain.messageBoxL.Clear()
 						av.v.pageMain.messageBoxR.Clear()

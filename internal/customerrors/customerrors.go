@@ -58,6 +58,8 @@ var (
 	ErrLoadActiveAccount     = errors.New("load active account error")
 	ErrLoadEmail             = errors.New("load email error")
 	ErrLogout                = errors.New("logout error")
+	ErrAddGroup              = errors.New("group is already exists")
+	ErrAddEmailInGroup       = errors.New("add e-email in group error")
 )
 
 const (

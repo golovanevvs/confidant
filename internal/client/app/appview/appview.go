@@ -16,16 +16,18 @@ type IServiceAccount interface {
 }
 
 type IServiceGroups interface {
-	GetGroups(ctx context.Context)
+	// GetGroups(ctx context.Context)
+	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
 }
 
-type IServiceStatusServer interface {
+type IServiceManage interface {
 	GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error)
 }
 
 type IService interface {
 	IServiceAccount
-	IServiceStatusServer
+	IServiceManage
+	IServiceGroups
 }
 
 type view struct {

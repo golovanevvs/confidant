@@ -3,6 +3,7 @@ package model
 type TrResponse struct {
 	HTTPStatusCode     int
 	HTTPStatus         string
+	AccountID          int
 	AuthHeader         string
 	RefreshTokenHeader string
 	ResponseBody       []byte

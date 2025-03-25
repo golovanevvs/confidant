@@ -12,6 +12,7 @@ import (
 type SQLite struct {
 	*sqliteManage
 	*sqliteAccount
+	*sqliteGroups
 }
 
 func New() (*SQLite, error) {
@@ -84,5 +85,6 @@ func New() (*SQLite, error) {
 	return &SQLite{
 		sqliteManage:  NewSQLiteManage(db),
 		sqliteAccount: NewSQLiteAccount(db),
+		sqliteGroups:  NewSQLiteGroups(db),
 	}, nil
 }

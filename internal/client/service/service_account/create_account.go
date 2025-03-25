@@ -163,6 +163,7 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		HTTPStatus:         trResponse.HTTPStatus,
 		AccessTokenString:  authHeaderSplit[1],
 		RefreshTokenString: refreshTokenHeader,
+		AccountID:          account.ID,
 		Error:              "",
 	}, nil
 }

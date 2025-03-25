@@ -1,6 +1,8 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -42,6 +44,10 @@ func (av *appView) vGroupsAddGroup() {
 	av.v.pageGroups.pageGroupsAddGroup.formGroupsAddGroup.inputName = av.v.pageGroups.pageGroupsAddGroup.formGroupsAddGroup.form.GetFormItem(0).(*tview.InputField)
 
 	//! "Создать группу"
+	av.v.pageGroups.pageGroupsAddGroup.buttonNew.SetSelectedFunc(func() {
+		title := av.v.pageGroups.pageGroupsAddGroup.formGroupsAddGroup.inputName.GetText()
+		av.sv.AddGroup(context.Background(), &av.account, title)
+	})
 
 	//! "Назад"
 	av.v.pageGroups.pageGroupsAddGroup.buttonExit.SetSelectedFunc(func() {

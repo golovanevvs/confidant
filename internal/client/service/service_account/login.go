@@ -172,6 +172,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 				HTTPStatus:         trResponse.HTTPStatus,
 				AccessTokenString:  authHeaderSplit[1],
 				RefreshTokenString: refreshTokenHeader,
+				AccountID:          account.ID,
 				Error:              "",
 			}, nil
 		} else {
