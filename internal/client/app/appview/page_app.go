@@ -45,7 +45,7 @@ func (av *appView) vApp() error {
 				av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
 			}
 
-			// updating e-mails
+			// updating e-mails list
 			av.v.pageGroups.listEmails.Clear()
 			for _, email := range av.groups[0].Emails {
 				av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)

@@ -64,6 +64,14 @@ func (av *appView) vDataAddNote() {
 		AddItem(av.v.pageData.pageDataAddNote.textareaTitle, 2, 1, 1, 1, 0, 0, true)
 
 	//! Добавить
+	av.v.pageData.pageDataAddNote.buttonAdd.SetSelectedFunc(func() {
+		av.v.pageData.pages.SwitchToPage("data_view_note_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewNote.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+		av.v.pageMain.messageBoxL.Clear()
+		av.v.pageMain.messageBoxR.Clear()
+	})
 
 	//! Отмена
 	av.v.pageData.pageDataAddNote.buttonCancel.SetSelectedFunc(func() {

@@ -106,6 +106,18 @@ func (av *appView) vLogin() {
 				av.v.pageMain.messageBoxL.Clear()
 				av.v.pageMain.messageBoxR.Clear()
 
+				// updating groups list
+				av.v.pageGroups.listGroups.Clear()
+				for _, group := range av.groups {
+					av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
+				}
+
+				// updating e-mails list
+				av.v.pageGroups.listEmails.Clear()
+				for _, email := range av.groups[0].Emails {
+					av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
+				}
+
 				// switch
 				av.v.pageMain.pages.SwitchToPage("groups_page")
 				av.v.pageGroups.pages.SwitchToPage("select_page")

@@ -71,7 +71,7 @@ func (av *appView) vRegister() {
 				// error
 				if err != nil {
 					av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-					av.v.pageMain.messageBoxL.SetText("[red]Возникла критическая ошибка.")
+					av.v.pageMain.messageBoxL.SetText("[red]Ошибка.")
 					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 
 					// no error
@@ -119,6 +119,19 @@ func (av *appView) vRegister() {
 						av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
 						av.v.pageMain.messageBoxL.Clear()
 						av.v.pageMain.messageBoxR.Clear()
+
+						// updating groups list
+						av.v.pageGroups.listGroups.Clear()
+						for _, group := range av.groups {
+							av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
+						}
+
+						// updating e-mails
+						av.v.pageGroups.listEmails.Clear()
+						for _, email := range av.groups[0].Emails {
+							av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
+						}
+
 						av.v.pageMain.pages.SwitchToPage("groups_page")
 						av.v.pageGroups.pages.SwitchToPage("select_page")
 						av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)

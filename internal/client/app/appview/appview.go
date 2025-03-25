@@ -15,19 +15,24 @@ type IServiceAccount interface {
 	Logout(ctx context.Context) (err error)
 }
 
+type IServiceManage interface {
+	GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error)
+}
+
 type IServiceGroups interface {
 	GetGroups(ctx context.Context, accountID int) (groups []model.Group, err error)
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
 }
 
-type IServiceManage interface {
-	GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error)
+type IServiceData interface {
+	AddNote(ctx context.Context, data *model.NoteDec) (err error)
 }
 
 type IService interface {
 	IServiceAccount
 	IServiceManage
 	IServiceGroups
+	IServiceData
 }
 
 type view struct {

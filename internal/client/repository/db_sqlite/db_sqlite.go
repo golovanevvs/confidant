@@ -13,6 +13,7 @@ type SQLite struct {
 	*sqliteManage
 	*sqliteAccount
 	*sqliteGroups
+	*sqliteData
 }
 
 func New() (*SQLite, error) {
@@ -65,9 +66,9 @@ func New() (*SQLite, error) {
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
 				groups_id INTEGER,
-				title TEXT NOT NULL,
-				desc TEXT,
-				note TEXT NOT NULL,
+				title BLOB NOT NULL,
+				desc BLOB,
+				note BLOB NOT NULL,
 				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 
@@ -122,5 +123,6 @@ func New() (*SQLite, error) {
 		sqliteManage:  NewSQLiteManage(db),
 		sqliteAccount: NewSQLiteAccount(db),
 		sqliteGroups:  NewSQLiteGroups(db),
+		sqliteData:    NewSQLiteData(db),
 	}, nil
 }

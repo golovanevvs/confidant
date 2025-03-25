@@ -32,6 +32,7 @@ func (rp *sqliteGroups) AddGroup(ctx context.Context, account *model.Account, ti
 		RETURNING id;
 
 	`, title, account.ID)
+
 	var groupID int
 	err = row.Scan(&groupID)
 	if err != nil {
