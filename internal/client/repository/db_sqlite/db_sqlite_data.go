@@ -59,6 +59,8 @@ func (rp *sqliteData) GetDataTitles(ctx context.Context, groupID int) (dataTitle
 	return dataTitles, nil
 }
 
+func (rp *sqliteData) GetDataType(ctx context.Context)
+
 func (rp *sqliteData) AddNote(ctx context.Context, data *model.NoteEnc) (err error) {
 	action := "add note"
 
