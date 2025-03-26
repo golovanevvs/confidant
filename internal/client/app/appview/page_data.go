@@ -1,8 +1,6 @@
 package appview
 
 import (
-	"fmt"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -62,16 +60,16 @@ func (av *appView) vData() {
 	av.v.pageData.listTitles.ShowSecondaryText(false)
 	av.v.pageData.listTitles.SetBorder(true)
 	av.v.pageData.listTitles.SetHighlightFullLine(true)
-	for i := 0; i < 10; i++ {
-		av.v.pageData.listTitles.AddItem(fmt.Sprintf("%c Title %d", '\U0001F449', i), "", 0, nil)
-	}
+	// for i := 0; i < 10; i++ {
+	// 	av.v.pageData.listTitles.AddItem(fmt.Sprintf("%c Title %d", '\U0001F449', i), "", 0, nil)
+	// }
 
 	av.v.pageData.listTitles.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
+		// av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
 	})
 
 	av.v.pageData.listTitles.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		av.v.pageMain.messageBoxL.SetText(mainText)
+		// av.v.pageMain.messageBoxL.SetText(mainText)
 	})
 
 	//! "Добавить"

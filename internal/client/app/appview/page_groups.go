@@ -1,6 +1,7 @@
 package appview
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/rivo/tview"
@@ -36,12 +37,29 @@ func (av *appView) vGroups() {
 	av.v.pageGroups.listGroups.SetTitle(" Список групп ")
 
 	av.v.pageGroups.listGroups.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
-		av.v.pageData.listTitles.SetTitle(fmt.Sprintf(" %s ", mainText))
-		av.v.pageMain.pages.SwitchToPage("data_page")
-		av.v.pageData.pages.SwitchToPage("data_view_note_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+		av.v.pageMain.messageBoxL.Clear()
+		av.v.pageMain.messageBoxR.Clear()
+
+		// get data titles list
+		var err error
+		av.dataTitles, err = av.sv.GetDataTitles(context.Background(), av.account.ID, mainText)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		} else {
+			av.v.pageData.listTitles.Clear()
+			if len(av.dataTitles) > 0 {
+				for _, dataTitle := range av.dataTitles {
+					av.v.pageData.listTitles.AddItem(dataTitle, "", 0, nil)
+				}
+			}
+			av.titleGroup = mainText
+			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("index: %d, mainText: %s, len: %d, accountID: %d", index, mainText, len(av.dataTitles), av.account.ID))
+			av.v.pageData.listTitles.SetTitle(fmt.Sprintf(" %s ", mainText))
+			av.v.pageMain.pages.SwitchToPage("data_page")
+			av.v.pageData.pages.SwitchToPage("data_view_note_page")
+			av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+			av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+		}
 	})
 
 	av.v.pageGroups.listGroups.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {

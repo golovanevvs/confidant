@@ -20,12 +20,13 @@ type IServiceManage interface {
 }
 
 type IServiceGroups interface {
-	GetGroups(ctx context.Context, accountID int) (groups []model.Group, err error)
+	GetGroups(ctx context.Context, email string) (groups []model.Group, err error)
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
 }
 
 type IServiceData interface {
-	AddNote(ctx context.Context, data *model.NoteDec) (err error)
+	GetDataTitles(ctx context.Context, accountID int, titleData string) (dataTitles []string, err error)
+	AddNote(ctx context.Context, data *model.NoteDec, accountID int, titleGroup string) (err error)
 }
 
 type IService interface {
@@ -52,6 +53,9 @@ type appView struct {
 	refreshToken string
 	account      model.Account
 	groups       []model.Group
+	groupID      int
+	titleGroup   string
+	dataTitles   []string
 }
 
 func New(sv IService, lg *zap.SugaredLogger) *appView {
@@ -72,7 +76,10 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 			ID:    -1,
 			Email: "",
 		},
-		groups: []model.Group{},
+		groups:     []model.Group{},
+		groupID:    -1,
+		titleGroup: "",
+		dataTitles: []string{},
 	}
 }
 

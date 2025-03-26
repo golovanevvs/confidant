@@ -55,38 +55,47 @@ func New() (*SQLite, error) {
     			FOREIGN KEY (account_id) REFERENCES account (id) ON DELETE CASCADE
 			);
 
-			CREATE TABLE IF NOT EXISTS emails_in_groups(
+			CREATE TABLE IF NOT EXISTS email_in_groups(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				email TEXT NOT NULL,
-				groups_id INTEGER,
-				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+				group_id INTEGER,
+				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 
-			CREATE TABLE IF NOT EXISTS note(
+			CREATE TABLE IF NOT EXISTS data(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
-				groups_id INTEGER,
+				group_id INTEGER,
+				data_type TEXT NOT NULL,
 				title BLOB NOT NULL,
 				desc BLOB,
-				note BLOB NOT NULL,
-				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
-
-			CREATE TABLE IF NOT EXISTS pass(
+			
+			CREATE TABLE IF NOT EXISTS data_note(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
-				groups_id INTEGER,
+				data_id INTEGER,
+				desc BLOB,
+				note BLOB NOT NULL,
+				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
+			);
+
+			CREATE TABLE IF NOT EXISTS data_pass(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				id_on_server INTEGER DEFAULT -1,
+				group_id INTEGER,
 				title TEXT NOT NULL,
 				desc TEXT,
 				login TEXT NOT NULL,
 				pass TEXT,
-				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 
-			CREATE TABLE IF NOT EXISTS card(
+			CREATE TABLE IF NOT EXISTS data_card(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
-				groups_id INTEGER,
+				group_id INTEGER,
 				title TEXT NOT NULL,
 				desc TEXT,
 				number TEXT NOT NULL,
@@ -95,7 +104,7 @@ func New() (*SQLite, error) {
 				cvc2 TEXT,
 				pin TEXT,
 				bank TEXT,
-				FOREIGN KEY (groups_id) REFERENCES groups (id) ON DELETE CASCADE
+				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 
 		`)

@@ -31,7 +31,7 @@ func (av *appView) vApp() error {
 	av.account.ID, av.account.Email, av.refreshToken, loginAtStartErr = av.sv.LoginAtStart(context.Background())
 	if loginAtStartErr == nil {
 		var err error
-		av.groups, err = av.sv.GetGroups(context.Background(), av.account.ID)
+		av.groups, err = av.sv.GetGroups(context.Background(), av.account.Email)
 		if err != nil {
 			// error
 			av.v.pageMain.statusBar.cellResponseStatus.SetText("")

@@ -8,11 +8,21 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec) (err error) {
+func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec, accountID int, titleGroup string) (err error) {
 	action := "add note"
 
+	groupID, err := sv.rp.GetGroupID(ctx, accountID, titleGroup)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.ClientServiceErr,
+			action,
+			err,
+		)
+	}
+
 	dataEnc := &model.NoteEnc{
-		GroupsID: data.GroupsID,
+		GroupID: groupID,
 	}
 
 	dataEnc.Title, err = sv.ss.Encrypt([]byte(data.Title))

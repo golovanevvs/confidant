@@ -3,7 +3,8 @@ package model
 type NoteDec struct {
 	ID         int
 	IDOnServer int
-	GroupsID   int
+	GroupID    int
+	Type       string
 	Title      string
 	Desc       string
 	Note       string
@@ -12,7 +13,8 @@ type NoteDec struct {
 type NoteEnc struct {
 	ID         int
 	IDOnServer int
-	GroupsID   int
+	GroupID    int
+	Type       string
 	Title      []byte
 	Desc       []byte
 	Note       []byte
