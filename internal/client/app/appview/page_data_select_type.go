@@ -34,6 +34,9 @@ func newPageDataSelectType() *pageDataSelectType {
 func (av *appView) vDataSelectType() {
 	//! "Заметка"
 	av.v.pageData.pageDataSelectType.buttonNote.SetSelectedFunc(func() {
+		av.v.pageData.pageDataAddNote.textareaDesc.SetText("", false)
+		av.v.pageData.pageDataAddNote.textareaNote.SetText("", false)
+		av.v.pageData.pageDataAddNote.textareaTitle.SetText("", false)
 		av.v.pageData.pages.SwitchToPage("data_add_note_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddNote.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddNote.textareaNote)

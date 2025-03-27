@@ -71,7 +71,7 @@ func (av *appView) vDataAddNote() {
 		title := av.v.pageData.pageDataAddNote.textareaTitle.GetText()
 		desc := av.v.pageData.pageDataAddNote.textareaDesc.GetText()
 		note := av.v.pageData.pageDataAddNote.textareaNote.GetText()
-		data := &model.NoteDec{
+		data := model.NoteDec{
 			Desc:  desc,
 			Note:  note,
 			Title: title,

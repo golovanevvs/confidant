@@ -67,7 +67,7 @@ func New() (*SQLite, error) {
 				id_on_server INTEGER DEFAULT -1,
 				group_id INTEGER,
 				data_type TEXT NOT NULL,
-				title BLOB NOT NULL,
+				title TEXT NOT NULL,
 				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 			

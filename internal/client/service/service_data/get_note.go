@@ -21,16 +21,6 @@ func (sv *ServiceData) GetNote(ctx context.Context, dataID int) (data *model.Not
 		)
 	}
 
-	titleDec, err := sv.ss.Decrypt(dataEnc.Title)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %w",
-			customerrors.ClientServiceErr,
-			action,
-			err,
-		)
-	}
-
 	descDec, err := sv.ss.Decrypt(dataEnc.Desc)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -53,7 +43,7 @@ func (sv *ServiceData) GetNote(ctx context.Context, dataID int) (data *model.Not
 
 	return &model.NoteDec{
 		ID:    dataEnc.ID,
-		Title: string(titleDec),
+		Title: dataEnc.Title,
 		Desc:  string(descDec),
 		Note:  string(noteDec),
 	}, nil

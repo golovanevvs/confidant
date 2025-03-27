@@ -10,7 +10,7 @@ import (
 func (sv *ServiceData) GetDataTitles(ctx context.Context, accountID int, groupID int) (dataTitles []string, err error) {
 	action := "get data titles"
 
-	dataTitlesEnc, err := sv.rp.GetDataTitles(ctx, groupID)
+	dataTitlesB, err := sv.rp.GetDataTitles(ctx, groupID)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w",
@@ -20,18 +20,22 @@ func (sv *ServiceData) GetDataTitles(ctx context.Context, accountID int, groupID
 		)
 	}
 
-	for _, dataTitleEnc := range dataTitlesEnc {
-		dataTitleDec, err := sv.ss.Decrypt(dataTitleEnc)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w",
-				customerrors.ClientServiceErr,
-				action,
-				err,
-			)
-		}
-		dataTitles = append(dataTitles, string(dataTitleDec))
+	for _, data := range dataTitlesB {
+		dataTitles = append(dataTitles, string(data))
 	}
+
+	// for _, dataTitleEnc := range dataTitlesEnc {
+	// 	dataTitleDec, err := sv.ss.Decrypt(dataTitleEnc)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf(
+	// 			"%s: %s: %w",
+	// 			customerrors.ClientServiceErr,
+	// 			action,
+	// 			err,
+	// 		)
+	// 	}
+	// 	dataTitles = append(dataTitles, string(dataTitleDec))
+	// }
 
 	return dataTitles, nil
 }

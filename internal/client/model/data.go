@@ -15,7 +15,7 @@ type NoteEnc struct {
 	IDOnServer int
 	GroupID    int
 	Type       string
-	Title      []byte
+	Title      string
 	Desc       []byte
 	Note       []byte
 }

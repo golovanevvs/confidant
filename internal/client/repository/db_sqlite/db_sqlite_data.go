@@ -59,11 +59,11 @@ func (rp *sqliteData) GetDataTitles(ctx context.Context, groupID int) (dataTitle
 	return dataTitles, nil
 }
 
-func (rp *sqliteData) GetDataIDAndType(ctx context.Context, groupID int, dataTitle []byte) (dataID int, dataType string, err error) {
-	action := "get data ID and  data type"
+func (rp *sqliteData) GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error) {
+	action := "get data ID and data type"
 
 	row := rp.db.QueryRowContext(ctx, `
-	
+
 		SELECT
 			id, data_type
 		FROM
@@ -86,7 +86,7 @@ func (rp *sqliteData) GetDataIDAndType(ctx context.Context, groupID int, dataTit
 	return dataID, dataType, nil
 }
 
-func (rp *sqliteData) AddNote(ctx context.Context, data *model.NoteEnc) (err error) {
+func (rp *sqliteData) AddNote(ctx context.Context, data model.NoteEnc) (err error) {
 	action := "add note"
 
 	row := rp.db.QueryRowContext(ctx, `
@@ -132,12 +132,10 @@ func (rp *sqliteData) AddNote(ctx context.Context, data *model.NoteEnc) (err err
 	return nil
 }
 
-func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data *model.NoteEnc, err error) {
+func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data model.NoteEnc, err error) {
 	action := "get note"
 
-	newData := &model.NoteEnc{
-		Type: "note",
-	}
+	data.Type = "note"
 
 	row := rp.db.QueryRowContext(ctx, `
 	
@@ -154,8 +152,8 @@ func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data *model.Note
 
 	`, dataID)
 
-	if err = row.Scan(&newData.ID, &newData.Desc, &newData.Note); err != nil {
-		return nil, fmt.Errorf(
+	if err = row.Scan(&data.ID, &data.Desc, &data.Note); err != nil {
+		return model.NoteEnc{}, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
@@ -164,5 +162,5 @@ func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data *model.Note
 		)
 	}
 
-	return newData, nil
+	return data, nil
 }

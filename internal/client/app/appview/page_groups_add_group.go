@@ -47,6 +47,7 @@ func (av *appView) vGroupsAddGroup() {
 	av.v.pageGroups.pageGroupsAddGroup.buttonNew.SetSelectedFunc(func() {
 		title := av.v.pageGroups.pageGroupsAddGroup.formGroupsAddGroup.inputName.GetText()
 		av.sv.AddGroup(context.Background(), &av.account, title)
+		av.aPageGroupsSwitch()
 	})
 
 	//! "Назад"

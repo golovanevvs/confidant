@@ -28,7 +28,7 @@ type IServiceGroups interface {
 type IServiceData interface {
 	GetDataTitles(ctx context.Context, accountID int, groupID int) (dataTitles []string, err error)
 	GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error)
-	AddNote(ctx context.Context, data *model.NoteDec, accountID int, groupID int) (err error)
+	AddNote(ctx context.Context, data model.NoteDec, accountID int, groupID int) (err error)
 	GetNote(ctx context.Context, dataID int) (data *model.NoteDec, err error)
 }
 
