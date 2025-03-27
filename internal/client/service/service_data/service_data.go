@@ -12,8 +12,9 @@ type ITransportData interface {
 
 type IRepositoryData interface {
 	GetDataTitles(ctx context.Context, groupID int) (dataTitles [][]byte, err error)
+	GetDataIDAndType(ctx context.Context, groupID int, dataTitle []byte) (dataID int, dataType string, err error)
 	AddNote(ctx context.Context, data *model.NoteEnc) (err error)
-	GetGroupID(ctx context.Context, accountID int, titleGroup string) (groupID int, err error)
+	GetNote(ctx context.Context, dataID int) (data *model.NoteEnc, err error)
 }
 
 type IServiceSecurity interface {

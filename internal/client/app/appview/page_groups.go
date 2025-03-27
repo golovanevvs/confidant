@@ -2,7 +2,6 @@ package appview
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rivo/tview"
 )
@@ -36,38 +35,16 @@ func (av *appView) vGroups() {
 	av.v.pageGroups.listGroups.SetHighlightFullLine(true)
 	av.v.pageGroups.listGroups.SetTitle(" Список групп ")
 
+	//! groups list selected
 	av.v.pageGroups.listGroups.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		av.v.pageMain.messageBoxL.Clear()
-		av.v.pageMain.messageBoxR.Clear()
-
-		// get data titles list
-		var err error
-		av.dataTitles, err = av.sv.GetDataTitles(context.Background(), av.account.ID, mainText)
-		if err != nil {
-			av.v.pageMain.messageBoxL.SetText(err.Error())
-		} else {
-			av.v.pageData.listTitles.Clear()
-			if len(av.dataTitles) > 0 {
-				for _, dataTitle := range av.dataTitles {
-					av.v.pageData.listTitles.AddItem(dataTitle, "", 0, nil)
-				}
-			}
-			av.titleGroup = mainText
-			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("index: %d, mainText: %s, len: %d, accountID: %d", index, mainText, len(av.dataTitles), av.account.ID))
-			av.v.pageData.listTitles.SetTitle(fmt.Sprintf(" %s ", mainText))
-			av.v.pageMain.pages.SwitchToPage("data_page")
-			av.v.pageData.pages.SwitchToPage("data_view_note_page")
-			av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
-			av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
-		}
+		av.groupTitle = mainText
+		av.aPageDataSwitch()
 	})
 
+	//! group list changed
 	av.v.pageGroups.listGroups.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		// updating e-mails
-		av.v.pageGroups.listEmails.Clear()
-		for _, email := range av.groups[0].Emails {
-			av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
-		}
+		av.aPageGroupsUpdateListEmails(index)
 	})
 
 	//! Main grid
@@ -83,4 +60,38 @@ func (av *appView) vGroups() {
 	av.v.pageGroups.pages.AddPage("select_page", av.v.pageGroups.pageGroupsSelect.grid, true, true)
 	av.v.pageGroups.pages.AddPage("add_group_page", av.v.pageGroups.pageGroupsAddGroup.grid, true, true)
 	av.v.pageGroups.pages.AddPage("edit_emails_page", av.v.pageGroups.pageGroupsEditEmails.grid, true, true)
+}
+
+func (av *appView) aPageGroupsUpdateListEmails(groupIndex int) {
+	av.v.pageGroups.listEmails.Clear()
+	for _, email := range av.groups[groupIndex].Emails {
+		av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
+	}
+}
+
+func (av *appView) aPageGroupsUpdateListGroups() {
+	// updating groups list
+	av.v.pageGroups.listGroups.Clear()
+	if len(av.groups) > 0 {
+		for _, group := range av.groups {
+			av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
+		}
+		// updating e-mails
+		av.aPageGroupsUpdateListEmails(0)
+	}
+}
+
+func (av *appView) aPageGroupsSwitch() {
+	var err error
+	// getting available groups
+	av.groups, err = av.sv.GetGroups(context.Background(), av.account.Email)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+	} else {
+		av.aPageGroupsUpdateListGroups()
+		av.v.pageMain.pages.SwitchToPage("groups_page")
+		av.v.pageGroups.pages.SwitchToPage("select_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+	}
 }

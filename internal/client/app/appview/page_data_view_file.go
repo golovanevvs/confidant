@@ -51,7 +51,7 @@ func newDataViewFile() *pageDataViewFile {
 	}
 }
 
-func (av *appView) VDataViewFile() {
+func (av *appView) vDataViewFile() {
 	//! treeview
 	var roots []string
 	if runtime.GOOS == "windows" {

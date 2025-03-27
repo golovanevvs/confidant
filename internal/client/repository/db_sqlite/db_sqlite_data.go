@@ -59,7 +59,32 @@ func (rp *sqliteData) GetDataTitles(ctx context.Context, groupID int) (dataTitle
 	return dataTitles, nil
 }
 
-func (rp *sqliteData) GetDataType(ctx context.Context)
+func (rp *sqliteData) GetDataIDAndType(ctx context.Context, groupID int, dataTitle []byte) (dataID int, dataType string, err error) {
+	action := "get data ID and  data type"
+
+	row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			id, data_type
+		FROM
+			data
+		WHERE
+			group_id = ? AND title = ?;
+
+	`, groupID, dataTitle)
+
+	if err = row.Scan(&dataID, &dataType); err != nil {
+		return -1, "", fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return dataID, dataType, nil
+}
 
 func (rp *sqliteData) AddNote(ctx context.Context, data *model.NoteEnc) (err error) {
 	action := "add note"
@@ -107,29 +132,37 @@ func (rp *sqliteData) AddNote(ctx context.Context, data *model.NoteEnc) (err err
 	return nil
 }
 
-func (rp *sqliteData) GetGroupID(ctx context.Context, accountID int, titleGroup string) (groupID int, err error) {
-	action := "get group ID"
+func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data *model.NoteEnc, err error) {
+	action := "get note"
+
+	newData := &model.NoteEnc{
+		Type: "note",
+	}
 
 	row := rp.db.QueryRowContext(ctx, `
 	
 		SELECT
-			id
+			data_note.id, data_note.desc, data_note.note
 		FROM
-			groups
+			data_note
+		INNER JOIN
+			data
+		ON
+			data_note.data_id = data.id
 		WHERE
-			account_id = ? AND title = ?;
-	
-	`, accountID, titleGroup)
+			data_id = ?
 
-	if err = row.Scan(&groupID); err != nil {
-		return -1, fmt.Errorf(
+	`, dataID)
+
+	if err = row.Scan(&newData.ID, &newData.Desc, &newData.Note); err != nil {
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
-			customerrors.ErrAddEmailInGroup,
+			customerrors.ErrDBInternalError500,
 			err,
 		)
 	}
 
-	return groupID, nil
+	return newData, nil
 }

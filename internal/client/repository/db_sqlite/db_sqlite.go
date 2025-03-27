@@ -68,7 +68,6 @@ func New() (*SQLite, error) {
 				group_id INTEGER,
 				data_type TEXT NOT NULL,
 				title BLOB NOT NULL,
-				desc BLOB,
 				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 			
@@ -84,18 +83,18 @@ func New() (*SQLite, error) {
 			CREATE TABLE IF NOT EXISTS data_pass(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
-				group_id INTEGER,
+				data_id INTEGER,
 				title TEXT NOT NULL,
 				desc TEXT,
 				login TEXT NOT NULL,
 				pass TEXT,
-				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
+				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 			);
 
 			CREATE TABLE IF NOT EXISTS data_card(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
-				group_id INTEGER,
+				data_id INTEGER,
 				title TEXT NOT NULL,
 				desc TEXT,
 				number TEXT NOT NULL,
@@ -104,7 +103,7 @@ func New() (*SQLite, error) {
 				cvc2 TEXT,
 				pin TEXT,
 				bank TEXT,
-				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
+				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 			);
 
 		`)

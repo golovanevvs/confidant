@@ -49,7 +49,7 @@ func newPageDataViewCard() *pageDataViewCard {
 	}
 }
 
-func (av *appView) VDataViewCard() {
+func (av *appView) vDataViewCard() {
 	av.v.pageData.pageDataViewCard.textviewNumberL.SetText("Номер:").
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataViewCard.textviewDateL.SetText("Годна до:").

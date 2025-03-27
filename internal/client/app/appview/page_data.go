@@ -1,6 +1,9 @@
 package appview
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -15,6 +18,7 @@ type pageData struct {
 	gridButtons        *tview.Grid
 	gridMain           *tview.Grid
 	pageDataSelectType *pageDataSelectType
+	pageDataViewEmpty  *pageDataViewEmpty
 	pageDataViewNote   *pageDataViewNote
 	pageDataViewPass   *pageDataViewPass
 	pageDataViewCard   *pageDataViewCard
@@ -39,6 +43,7 @@ func newPageData() *pageData {
 		gridButtons:        tview.NewGrid(),
 		gridMain:           tview.NewGrid(),
 		pageDataSelectType: newPageDataSelectType(),
+		pageDataViewEmpty:  newPageDataViewEmpty(),
 		pageDataViewNote:   newPageDataViewNote(),
 		pageDataViewPass:   newPageDataViewPass(),
 		pageDataViewCard:   newPageDataViewCard(),
@@ -65,11 +70,11 @@ func (av *appView) vData() {
 	// }
 
 	av.v.pageData.listTitles.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		// av.v.pageMain.messageBoxL.SetText(mainText + secondaryText + string(shortcut))
 	})
 
 	av.v.pageData.listTitles.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		// av.v.pageMain.messageBoxL.SetText(mainText)
+		av.dataTitle = mainText
+		av.aPageDataUpdateDataView()
 	})
 
 	//! "Добавить"
@@ -81,13 +86,9 @@ func (av *appView) vData() {
 
 	//! "Назад"
 	av.v.pageData.buttonBack.SetSelectedFunc(func() {
-		av.v.pageMain.pages.SwitchToPage("groups_page")
-		av.v.pageGroups.pages.SwitchToPage("select_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
-		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-		av.v.pageMain.messageBoxL.Clear()
-		av.v.pageMain.messageBoxR.Clear()
+		av.vClearMessages()
+		av.groupID = -1
+		av.aPageGroupsSwitch()
 	})
 
 	//! "Выход"
@@ -142,6 +143,7 @@ func (av *appView) vData() {
 
 	//! adding pages
 	av.v.pageData.pages.AddPage("data_select_type", av.v.pageData.pageDataSelectType.grid, true, true)
+	av.v.pageData.pages.AddPage("data_view_empty_page", av.v.pageData.pageDataViewEmpty.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_note_page", av.v.pageData.pageDataViewNote.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_pass_page", av.v.pageData.pageDataViewPass.gridData, true, true)
 	av.v.pageData.pages.AddPage("data_view_card_page", av.v.pageData.pageDataViewCard.gridData, true, true)
@@ -151,4 +153,63 @@ func (av *appView) vData() {
 	av.v.pageData.pages.AddPage("data_add_card_page", av.v.pageData.pageDataAddCard.grid, true, true)
 
 	av.v.pageData.pages.AddPage("data_add_file_page", av.v.pageData.pageDataAddFile.grid, true, true)
+}
+
+func (av *appView) aPageDataSwitch() {
+	// clearing messages
+	av.vClearMessages()
+
+	av.v.pageData.listTitles.SetTitle(fmt.Sprintf(" %s ", av.groupTitle))
+
+	var err error
+
+	// getting group ID
+	av.groupID, err = av.sv.GetGroupID(context.Background(), av.account.ID, av.groupTitle)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+	} else {
+		av.v.pageMain.pages.SwitchToPage("data_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+
+		av.aPageDataUpdateListTitles()
+	}
+}
+
+func (av *appView) aPageDataUpdateListTitles() {
+	var err error
+
+	// getting data titles
+	av.dataTitles, err = av.sv.GetDataTitles(context.Background(), av.account.ID, av.groupID)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+	} else {
+		av.v.pageData.listTitles.Clear()
+
+		if len(av.dataTitles) > 0 {
+			//filling data list
+			for _, dataTitle := range av.dataTitles {
+				av.v.pageData.listTitles.AddItem(dataTitle, "", 0, nil)
+			}
+			av.dataTitle = av.dataTitles[0]
+			av.aPageDataUpdateDataView()
+		} else {
+			av.aPageDataViewEmptySwitch()
+		}
+	}
+}
+
+func (av *appView) aPageDataUpdateDataView() {
+	var err error
+
+	// getting data ID and data type
+	av.dataID, av.dataType, err = av.sv.GetDataIDAndType(context.Background(), av.groupID, av.dataTitle)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("groupID: %d, dataTitle: %s, err: %s", av.groupID, av.dataTitle, err.Error()))
+	} else {
+		switch av.dataType {
+		case "note":
+			av.vPageDataViewNoteUpdate()
+		}
+	}
 }

@@ -21,54 +21,35 @@ func newPageApp() *pageApp {
 	}
 }
 
-func (av *appView) vApp() error {
+func (av *appView) vApp() (err error) {
 	action := "run"
 
-	var loginAtStartErr error
-
+	//! set root
 	av.v.pageApp.app.SetRoot(av.v.pageMain.mainGrid, true)
 
+	//! get active account
+	var loginAtStartErr error
 	av.account.ID, av.account.Email, av.refreshToken, loginAtStartErr = av.sv.LoginAtStart(context.Background())
+
+	//! switch group page or login page
 	if loginAtStartErr == nil {
-		var err error
-		av.groups, err = av.sv.GetGroups(context.Background(), av.account.Email)
-		if err != nil {
-			// error
-			av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Ошибка: %s", err.Error()))
-			av.v.pageMain.messageBoxR.Clear()
+		// clearing messages
+		av.vClearMessages()
 
-		} else {
-			// updating groups list
-			av.v.pageGroups.listGroups.Clear()
-			if len(av.groups) > 0 {
-				for _, group := range av.groups {
-					av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
-				}
+		// setting active account to status bar
+		av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", av.account.Email))
 
-				// updating e-mails list
-				av.v.pageGroups.listEmails.Clear()
-				for _, email := range av.groups[0].Emails {
-					av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
-				}
-			}
-
-			// set active account to status bar
-			av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", av.account.Email))
-
-			// switch
-			av.v.pageMain.pages.SwitchToPage("groups_page")
-			av.v.pageGroups.pages.SwitchToPage("select_page")
-			av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
-			av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
-		}
+		// switching to groups page
+		av.aPageGroupsSwitch()
 	} else {
-		// switch
-		av.v.pageMain.pages.SwitchToPage("login_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageLogin.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputEmail)
+		// clearing messages
+		av.vClearMessages()
+
+		// switching to login page
+		av.vPageLoginSwitch()
 	}
 
+	//! run
 	if err := av.v.pageApp.app.Run(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %s: %w: %w",
@@ -78,5 +59,6 @@ func (av *appView) vApp() error {
 			customerrors.ErrRunAppView,
 			err)
 	}
+
 	return nil
 }

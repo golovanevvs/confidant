@@ -1,6 +1,8 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -36,9 +38,6 @@ func (av *appView) vDataViewNote() {
 	av.v.pageData.pageDataViewNote.textviewDescL.SetText("Описание:").
 		SetTextColor(av.v.pageApp.colorTitle)
 
-	av.v.pageData.pageDataViewNote.textviewNote.SetText("В Telegram-канале самой компании в 12:05 мск сообщили, что «Крок» продолжает свою работу в штатном режиме. Все бизнес-процессы, включая поддержку клиентов, функционируют в рамках установленных регламентов и осуществляются без перебоев. По данным из открытых источников, в 2021 году «Крок» занимала девятое место по выручке среди всех российских IT-компаний. Она специализируется на IT-услугах в области системной интеграции, Big Data, блокчейне, искусственном интеллекте, машинном обучении и других.")
-	av.v.pageData.pageDataViewNote.textviewDesc.SetText("Силовики приехали c обысками в офис одной из крупнейших IT-компаний «Крок» в Москве. Об этом ТАСС сообщили в оперативных службах.")
-
 	//! data grid
 
 	av.v.pageData.pageDataViewNote.gridData.
@@ -51,6 +50,7 @@ func (av *appView) vDataViewNote() {
 		AddItem(av.v.pageData.pageDataViewNote.textviewNote, 0, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewNote.textviewDesc, 1, 1, 1, 1, 0, 0, true)
 
+	//! inputCapture
 	av.v.pageData.pageDataViewNote.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
@@ -75,5 +75,21 @@ func (av *appView) vDataViewNote() {
 			return nil
 		}
 		return event
+	}
+}
+
+func (av *appView) vPageDataViewNoteUpdate() {
+	av.vClearMessages()
+
+	note, err := av.sv.GetNote(context.Background(), av.dataID)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+	} else {
+		av.v.pageData.pageDataViewNote.textviewNote.SetText(note.Note)
+		av.v.pageData.pageDataViewNote.textviewDesc.SetText(note.Desc)
+		av.v.pageMain.pages.SwitchToPage("data_page")
+		av.v.pageData.pages.SwitchToPage("data_view_note_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 	}
 }

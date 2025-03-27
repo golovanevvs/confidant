@@ -193,3 +193,30 @@ func (rp *sqliteGroups) getEmails(ctx context.Context, groupID int) (emails []st
 
 	return emails, nil
 }
+
+func (rp *sqliteData) GetGroupID(ctx context.Context, accountID int, titleGroup string) (groupID int, err error) {
+	action := "get group ID"
+
+	row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			id
+		FROM
+			groups
+		WHERE
+			account_id = ? AND title = ?;
+	
+	`, accountID, titleGroup)
+
+	if err = row.Scan(&groupID); err != nil {
+		return -1, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddEmailInGroup,
+			err,
+		)
+	}
+
+	return groupID, nil
+}

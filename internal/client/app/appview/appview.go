@@ -22,11 +22,14 @@ type IServiceManage interface {
 type IServiceGroups interface {
 	GetGroups(ctx context.Context, email string) (groups []model.Group, err error)
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
+	GetGroupID(ctx context.Context, accountID int, titleGroup string) (groupID int, err error)
 }
 
 type IServiceData interface {
-	GetDataTitles(ctx context.Context, accountID int, titleData string) (dataTitles []string, err error)
-	AddNote(ctx context.Context, data *model.NoteDec, accountID int, titleGroup string) (err error)
+	GetDataTitles(ctx context.Context, accountID int, groupID int) (dataTitles []string, err error)
+	GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error)
+	AddNote(ctx context.Context, data *model.NoteDec, accountID int, groupID int) (err error)
+	GetNote(ctx context.Context, dataID int) (data *model.NoteDec, err error)
 }
 
 type IService interface {
@@ -54,8 +57,15 @@ type appView struct {
 	account      model.Account
 	groups       []model.Group
 	groupID      int
-	titleGroup   string
+	groupTitle   string
 	dataTitles   []string
+	dataTitle    string
+	dataType     string
+	dataID       int
+	dataNoteID   int
+	dataPassID   int
+	dataCardID   int
+	dataFileID   int
 }
 
 func New(sv IService, lg *zap.SugaredLogger) *appView {
@@ -78,8 +88,15 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 		},
 		groups:     []model.Group{},
 		groupID:    -1,
-		titleGroup: "",
+		groupTitle: "",
 		dataTitles: []string{},
+		dataTitle:  "",
+		dataType:   "",
+		dataID:     -1,
+		dataPassID: -1,
+		dataCardID: -1,
+		dataFileID: -1,
+		dataNoteID: -1,
 	}
 }
 
@@ -94,14 +111,16 @@ func (av *appView) Run() error {
 	av.vGroupsEditEmails()
 	av.vData()
 	av.vDataSelectType()
+	av.vDataViewEmpty()
 	av.vDataViewNote()
 	av.vDataViewPass()
-	av.VDataViewCard()
-	av.VDataViewFile()
+	av.vDataViewCard()
+	av.vDataViewFile()
 	av.vDataAddNote()
 	av.vDataAddPass()
 	av.vDataAddCard()
-	av.VDataAddFile()
+	av.vDataAddFile()
+	av.vUpdateConnectionStatus()
 
 	return av.vApp()
 }

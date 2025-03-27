@@ -98,6 +98,7 @@ func (av *appView) vLogin() {
 				}
 			}
 
+			//? Ok
 			if accountResp.Error == "" {
 				av.account.ID = accountResp.AccountID
 				av.account.Email = email
@@ -106,25 +107,8 @@ func (av *appView) vLogin() {
 				av.v.pageMain.messageBoxL.Clear()
 				av.v.pageMain.messageBoxR.Clear()
 
-				// updating groups list
-				av.v.pageGroups.listGroups.Clear()
-				if len(av.groups) > 0 {
-					for _, group := range av.groups {
-						av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
-					}
-
-					// updating e-mails list
-					av.v.pageGroups.listEmails.Clear()
-					for _, email := range av.groups[0].Emails {
-						av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
-					}
-				}
-
-				// switch
-				av.v.pageMain.pages.SwitchToPage("groups_page")
-				av.v.pageGroups.pages.SwitchToPage("select_page")
-				av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
-				av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+				// switch to groups page
+				av.aPageGroupsSwitch()
 			}
 
 		}
@@ -133,17 +117,11 @@ func (av *appView) vLogin() {
 
 	//! "Регистрация"
 	av.v.pageLogin.buttonRegister.SetSelectedFunc(func() {
-		// switch
-		av.v.pageMain.pages.SwitchToPage("register_page")
-		// focus
-		av.v.pageApp.app.SetInputCapture(av.v.pageRegister.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
-		// clear
-		av.v.pageRegister.form.inputEmail.SetText("")
-		av.v.pageRegister.form.inputPassword.SetText("")
-		av.v.pageRegister.form.inputRPassword.SetText("")
-		// messageBox
-		av.v.pageMain.messageBoxL.SetText("Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
+		// clear messages
+		av.vClearMessages()
+
+		// switch to register page
+		av.vPageRegisterSwitch()
 	})
 
 	//! "Выход"
@@ -196,4 +174,12 @@ func (av *appView) vLogin() {
 
 		return event
 	}
+}
+
+func (av *appView) vPageLoginSwitch() {
+	av.v.pageLogin.form.inputEmail.SetText("")
+	av.v.pageLogin.form.inputPassword.SetText("")
+	av.v.pageMain.pages.SwitchToPage("login_page")
+	av.v.pageApp.app.SetInputCapture(av.v.pageLogin.inputCapture)
+	av.v.pageApp.app.SetFocus(av.v.pageLogin.form.inputEmail)
 }

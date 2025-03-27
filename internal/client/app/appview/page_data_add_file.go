@@ -56,7 +56,7 @@ func newDataAddFile() *pageDataAddFile {
 	}
 }
 
-func (av *appView) VDataAddFile() {
+func (av *appView) vDataAddFile() {
 	//! treeview
 	var roots []string
 	if runtime.GOOS == "windows" {

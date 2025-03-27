@@ -76,16 +76,11 @@ func (av *appView) vDataAddNote() {
 			Note:  note,
 			Title: title,
 		}
-		err := av.sv.AddNote(context.Background(), data, av.account.ID, av.titleGroup)
+		err := av.sv.AddNote(context.Background(), data, av.account.ID, av.groupID)
 		if err != nil {
 			av.v.pageMain.messageBoxL.SetText(err.Error())
 		} else {
-			av.v.pageData.pages.SwitchToPage("data_view_note_page")
-			av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewNote.inputCapture)
-			av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
-			av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-			av.v.pageMain.messageBoxL.Clear()
-			av.v.pageMain.messageBoxR.Clear()
+			av.aPageDataSwitch()
 		}
 	})
 

@@ -8,17 +8,12 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec, accountID int, groupID int) (err error) {
-	action := "add note"
+func (sv *ServiceData) GetNote(ctx context.Context, dataID int) (data *model.NoteDec, err error) {
+	action := "get note"
 
-	dataEnc := &model.NoteEnc{
-		GroupID: groupID,
-		Type:    "note",
-	}
-
-	dataEnc.Title, err = sv.ss.Encrypt([]byte(data.Title))
+	dataEnc, err := sv.rp.GetNote(ctx, dataID)
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.ClientServiceErr,
 			action,
@@ -26,9 +21,9 @@ func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec, account
 		)
 	}
 
-	dataEnc.Desc, err = sv.ss.Encrypt([]byte(data.Desc))
+	titleDec, err := sv.ss.Decrypt(dataEnc.Title)
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.ClientServiceErr,
 			action,
@@ -36,9 +31,9 @@ func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec, account
 		)
 	}
 
-	dataEnc.Note, err = sv.ss.Encrypt([]byte(data.Note))
+	descDec, err := sv.ss.Decrypt(dataEnc.Desc)
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.ClientServiceErr,
 			action,
@@ -46,9 +41,9 @@ func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec, account
 		)
 	}
 
-	err = sv.rp.AddNote(ctx, dataEnc)
+	noteDec, err := sv.ss.Decrypt(dataEnc.Note)
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.ClientServiceErr,
 			action,
@@ -56,5 +51,10 @@ func (sv *ServiceData) AddNote(ctx context.Context, data *model.NoteDec, account
 		)
 	}
 
-	return nil
+	return &model.NoteDec{
+		ID:    dataEnc.ID,
+		Title: string(titleDec),
+		Desc:  string(descDec),
+		Note:  string(noteDec),
+	}, nil
 }

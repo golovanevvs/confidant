@@ -117,27 +117,10 @@ func (av *appView) vRegister() {
 						av.account.ID = accountResp.AccountID
 						av.account.Email = email
 						av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
-						av.v.pageMain.messageBoxL.Clear()
-						av.v.pageMain.messageBoxR.Clear()
 
-						// updating groups list
-						av.v.pageGroups.listGroups.Clear()
-						if len(av.groups) > 0 {
-							for _, group := range av.groups {
-								av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
-							}
+						av.vClearMessages()
 
-							// updating e-mails
-							av.v.pageGroups.listEmails.Clear()
-							for _, email := range av.groups[0].Emails {
-								av.v.pageGroups.listEmails.AddItem(email, "", 0, nil)
-							}
-						}
-
-						av.v.pageMain.pages.SwitchToPage("groups_page")
-						av.v.pageGroups.pages.SwitchToPage("select_page")
-						av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
-						av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
+						av.aPageGroupsSwitch()
 
 						av.accessToken = accountResp.AccessTokenString
 
@@ -227,4 +210,18 @@ func (av *appView) vRegister() {
 
 		return event
 	}
+}
+
+func (av *appView) vPageRegisterSwitch() {
+	// switch
+	av.v.pageMain.pages.SwitchToPage("register_page")
+	// focus
+	av.v.pageApp.app.SetInputCapture(av.v.pageRegister.inputCapture)
+	av.v.pageApp.app.SetFocus(av.v.pageRegister.form.inputEmail)
+	// clear
+	av.v.pageRegister.form.inputEmail.SetText("")
+	av.v.pageRegister.form.inputPassword.SetText("")
+	av.v.pageRegister.form.inputRPassword.SetText("")
+	// messageBox
+	av.v.pageMain.messageBoxL.SetText("Пароль должен содержать минимум 8 символов, состоять из заглавных и строчных букв латинского алфавита, цифр и символов.")
 }
