@@ -22,7 +22,8 @@ type IServiceManage interface {
 type IServiceGroups interface {
 	GetGroups(ctx context.Context, email string) (groups []model.Group, err error)
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
-	GetGroupID(ctx context.Context, accountID int, titleGroup string) (groupID int, err error)
+	GetGroupID(ctx context.Context, email string, titleGroup string) (groupID int, err error)
+	AddEmail(ctx context.Context, groupID int, email string) (err error)
 }
 
 type IServiceData interface {

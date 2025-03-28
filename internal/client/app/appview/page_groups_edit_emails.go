@@ -1,6 +1,8 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -44,19 +46,25 @@ func (av *appView) vGroupsEditEmails() {
 	av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.inputEmail = av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.form.GetFormItem(0).(*tview.InputField)
 
 	//! "Добавить e-mail"
-	// av.v.pageGroups.PageEdit.ButtonAddEmail = tview.NewButton("Добавить e-mail")
+	av.v.pageGroups.pageGroupsEditEmails.buttonAdd.SetSelectedFunc(func() {
+		email := av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.inputEmail.GetText()
+		err := av.sv.AddEmail(context.Background(), av.groupID, email)
+		if err != nil {
+			av.vClearMessages()
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		} else {
+			av.vClearMessages()
+			av.aPageGroupsSwitch()
+		}
+	})
 
 	//! "Удалить e-mail"
 	// av.v.pageGroups.PageEdit.ButtonDeleteEmail = tview.NewButton("Удалить e-mail")
 
 	//! "Назад"
 	av.v.pageGroups.pageGroupsEditEmails.buttonEхit.SetSelectedFunc(func() {
-		av.v.pageGroups.pages.SwitchToPage("select_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsSelect.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageGroups.listGroups)
-		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-		av.v.pageMain.messageBoxL.Clear()
-		av.v.pageMain.messageBoxR.Clear()
+		av.vClearMessages()
+		av.aPageGroupsSwitch()
 	})
 
 	//! "EditEMailsButtonsGrid"

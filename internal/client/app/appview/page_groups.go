@@ -43,11 +43,16 @@ func (av *appView) vGroups() {
 
 	//! group list changed
 	av.v.pageGroups.listGroups.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		// updating e-mails
-		av.aPageGroupsUpdateListEmails(index)
+		av.groupTitle = mainText
+		err := av.aSaveGroupID()
+		if err != nil {
+		} else {
+			// updating e-mails
+			av.aPageGroupsUpdateListEmails(index)
+		}
 	})
 
-	//! Main grid
+	//! main grid
 	av.v.pageGroups.gridMain.
 		SetRows(0).
 		SetColumns(0, 30, 20, 30, 0).
@@ -76,9 +81,23 @@ func (av *appView) aPageGroupsUpdateListGroups() {
 		for _, group := range av.groups {
 			av.v.pageGroups.listGroups.AddItem(group.Title, "", 0, nil)
 		}
-		// updating e-mails
-		av.aPageGroupsUpdateListEmails(0)
+		av.groupTitle = av.groups[0].Title
+		err := av.aSaveGroupID()
+		if err != nil {
+		} else {
+			// updating e-mails
+			av.aPageGroupsUpdateListEmails(0)
+		}
 	}
+}
+
+func (av *appView) aSaveGroupID() (err error) {
+	av.groupID, err = av.sv.GetGroupID(context.Background(), av.account.Email, av.groupTitle)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+		return err
+	}
+	return nil
 }
 
 func (av *appView) aPageGroupsSwitch() {

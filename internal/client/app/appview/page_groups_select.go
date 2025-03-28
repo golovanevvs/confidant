@@ -51,10 +51,7 @@ func (av *appView) vGroupsSelect() {
 
 	//! "Настроить группу"
 	av.v.pageGroups.pageGroupsSelect.buttonSettings.SetSelectedFunc(func() {
-		av.v.pageGroups.pages.SwitchToPage("edit_emails_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsEditEmails.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageGroups.listEmails)
-		av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.inputEmail.SetText("")
+		av.aPageGroupsEditEmailsSwitch()
 	})
 
 	//! "Удалить группу"
@@ -130,4 +127,12 @@ func (av *appView) vGroupsSelect() {
 		}
 		return event
 	}
+}
+
+func (av *appView) aPageGroupsEditEmailsSwitch() {
+	av.vClearMessages()
+	av.v.pageGroups.pages.SwitchToPage("edit_emails_page")
+	av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsEditEmails.inputCapture)
+	av.v.pageApp.app.SetFocus(av.v.pageGroups.listEmails)
+	av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.inputEmail.SetText("")
 }

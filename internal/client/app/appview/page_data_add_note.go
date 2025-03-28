@@ -86,12 +86,7 @@ func (av *appView) vDataAddNote() {
 
 	//! Отмена
 	av.v.pageData.pageDataAddNote.buttonCancel.SetSelectedFunc(func() {
-		av.v.pageData.pages.SwitchToPage("data_view_note_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewNote.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
-		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-		av.v.pageMain.messageBoxL.Clear()
-		av.v.pageMain.messageBoxR.Clear()
+		av.aPageDataSwitch()
 	})
 
 	//! buttons grid

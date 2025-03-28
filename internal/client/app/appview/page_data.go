@@ -164,7 +164,7 @@ func (av *appView) aPageDataSwitch() {
 	var err error
 
 	// getting group ID
-	av.groupID, err = av.sv.GetGroupID(context.Background(), av.account.ID, av.groupTitle)
+	av.groupID, err = av.sv.GetGroupID(context.Background(), av.account.Email, av.groupTitle)
 	if err != nil {
 		av.v.pageMain.messageBoxL.SetText(err.Error())
 	} else {
