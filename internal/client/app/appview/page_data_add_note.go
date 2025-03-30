@@ -72,9 +72,9 @@ func (av *appView) vDataAddNote() {
 		desc := av.v.pageData.pageDataAddNote.textareaDesc.GetText()
 		note := av.v.pageData.pageDataAddNote.textareaNote.GetText()
 		data := model.NoteDec{
+			Title: title,
 			Desc:  desc,
 			Note:  note,
-			Title: title,
 		}
 		err := av.sv.AddNote(context.Background(), data, av.account.ID, av.groupID)
 		if err != nil {

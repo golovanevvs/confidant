@@ -31,6 +31,8 @@ type IServiceData interface {
 	GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error)
 	AddNote(ctx context.Context, data model.NoteDec, accountID int, groupID int) (err error)
 	GetNote(ctx context.Context, dataID int) (data *model.NoteDec, err error)
+	AddPass(ctx context.Context, data model.PassDec, accountID int, groupID int) (err error)
+	GetPass(ctx context.Context, dataID int) (data *model.PassDec, err error)
 }
 
 type IService interface {

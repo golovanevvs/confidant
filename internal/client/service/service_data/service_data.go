@@ -15,6 +15,8 @@ type IRepositoryData interface {
 	GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error)
 	AddNote(ctx context.Context, data model.NoteEnc) (err error)
 	GetNote(ctx context.Context, dataID int) (data model.NoteEnc, err error)
+	AddPass(ctx context.Context, data model.PassEnc) (err error)
+	GetPass(ctx context.Context, dataID int) (data model.PassEnc, err error)
 }
 
 type IServiceSecurity interface {

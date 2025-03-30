@@ -157,7 +157,86 @@ func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data model.NoteE
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
-			customerrors.ErrDBInternalError500,
+			customerrors.ErrGetNote,
+			err,
+		)
+	}
+
+	return data, nil
+}
+
+func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err error) {
+	action := "add password"
+
+	row := rp.db.QueryRowContext(ctx, `
+		
+		INSERT INTO data
+			(group_id, data_type, title)
+		VALUES
+			(?, ?, ?)
+		RETURNING id;
+	
+	`, data.GroupID, data.Type, data.Title)
+
+	var dataID int
+	err = row.Scan(&dataID)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddPAss,
+			err,
+		)
+	}
+
+	_, err = rp.db.ExecContext(ctx, `
+	
+		INSERT INTO data_pass
+			(data_id, desc, login, pass)
+		VALUES
+			(?, ?, ?, ?);
+	
+	`, dataID, data.Desc, data.Login, data.Pass)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddPAss,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (rp *sqliteData) GetPass(ctx context.Context, dataID int) (data model.PassEnc, err error) {
+	action := "get password"
+
+	data.Type = "pass"
+
+	row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			data_pass.id, data_pass.desc, data_pass.login, data_pass.pass
+		FROM
+			data_pass
+		INNER JOIN
+			data
+		ON
+			data_pass.data_id = data.id
+		WHERE
+			data_id = ?
+
+	`, dataID)
+
+	if err = row.Scan(&data.ID, &data.Desc, &data.Login, &data.Pass); err != nil {
+		return model.PassEnc{}, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrGetPass,
 			err,
 		)
 	}

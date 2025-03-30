@@ -60,7 +60,10 @@ var (
 	ErrLogout                = errors.New("logout error")
 	ErrAddGroup              = errors.New("group is already exists")
 	ErrAddEmailInGroup       = errors.New("add e-email in group error")
-	ErrAddNote               = errors.New("add note errors")
+	ErrAddNote               = errors.New("add note error")
+	ErrAddPAss               = errors.New("add password error")
+	ErrGetNote               = errors.New("get note error")
+	ErrGetPass               = errors.New("get password error")
 )
 
 const (

@@ -210,6 +210,8 @@ func (av *appView) aPageDataUpdateDataView() {
 		switch av.dataType {
 		case "note":
 			av.vPageDataViewNoteUpdate()
+		case "pass":
+			av.vPageDataViewPassUpdate()
 		}
 	}
 }

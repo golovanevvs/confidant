@@ -1,7 +1,10 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/rivo/tview"
 )
 
@@ -72,6 +75,24 @@ func (av *appView) vDataAddPass() {
 		AddItem(av.v.pageData.pageDataAddPass.textareaTitle, 3, 1, 1, 1, 0, 0, true)
 
 	//! Добавить
+	av.v.pageData.pageDataAddPass.buttonAdd.SetSelectedFunc(func() {
+		title := av.v.pageData.pageDataAddPass.textareaTitle.GetText()
+		desc := av.v.pageData.pageDataAddPass.textareaDesc.GetText()
+		login := av.v.pageData.pageDataAddPass.textareaLogin.GetText()
+		pass := av.v.pageData.pageDataAddPass.textareaPass.GetText()
+		data := model.PassDec{
+			Title: title,
+			Desc:  desc,
+			Login: login,
+			Pass:  pass,
+		}
+		err := av.sv.AddPass(context.Background(), data, av.account.ID, av.groupID)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		} else {
+			av.aPageDataSwitch()
+		}
+	})
 
 	//! Отмена
 	av.v.pageData.pageDataAddPass.buttonCancel.SetSelectedFunc(func() {
