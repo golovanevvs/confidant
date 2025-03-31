@@ -59,6 +59,46 @@ func (rp *sqliteData) GetDataTitles(ctx context.Context, groupID int) (dataTitle
 	return dataTitles, nil
 }
 
+func (rp *sqliteData) GetDataTypes(ctx context.Context, groupID int) (dataTypes []string, err error) {
+	action := "get data types"
+
+	rows, err := rp.db.QueryContext(ctx, `
+	
+		SELECT
+			data_type
+		FROM
+			data
+		WHERE
+			group_id = ?;
+	
+	`, groupID)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+	var dataType string
+	for rows.Next() {
+		if err = rows.Scan(&dataType); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		dataTypes = append(dataTypes, dataType)
+	}
+
+	return dataTypes, nil
+}
+
 func (rp *sqliteData) GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error) {
 	action := "get data ID and data type"
 
@@ -185,7 +225,7 @@ func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err erro
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
-			customerrors.ErrAddPAss,
+			customerrors.ErrAddPass,
 			err,
 		)
 	}
@@ -203,7 +243,7 @@ func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err erro
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
-			customerrors.ErrAddPAss,
+			customerrors.ErrAddPass,
 			err,
 		)
 	}
@@ -237,6 +277,85 @@ func (rp *sqliteData) GetPass(ctx context.Context, dataID int) (data model.PassE
 			customerrors.DBErr,
 			action,
 			customerrors.ErrGetPass,
+			err,
+		)
+	}
+
+	return data, nil
+}
+
+func (rp *sqliteData) AddCard(ctx context.Context, data model.CardEnc) (err error) {
+	action := "add card"
+
+	row := rp.db.QueryRowContext(ctx, `
+		
+		INSERT INTO data
+			(group_id, data_type, title)
+		VALUES
+			(?, ?, ?)
+		RETURNING id;
+	
+	`, data.GroupID, data.Type, data.Title)
+
+	var dataID int
+	err = row.Scan(&dataID)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddCard,
+			err,
+		)
+	}
+
+	_, err = rp.db.ExecContext(ctx, `
+	
+		INSERT INTO data_card
+			(data_id, desc, number, date, name, cvc2, pin, bank)
+		VALUES
+			(?, ?, ?, ?, ?, ?, ?, ?);
+	
+	`, dataID, data.Desc, data.Number, data.Date, data.Name, data.CVC2, data.PIN, data.Bank)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddCard,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (rp *sqliteData) GetCard(ctx context.Context, dataID int) (data model.CardEnc, err error) {
+	action := "get card"
+
+	data.Type = "card"
+
+	row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			data_card.id, data_card.desc, data_card.number, data_card.date, data_card.name, data_card.cvc2, data_card.pin, data_card.bank
+		FROM
+			data_card
+		INNER JOIN
+			data
+		ON
+			data_card.data_id = data.id
+		WHERE
+			data_id = ?
+
+	`, dataID)
+
+	if err = row.Scan(&data.ID, &data.Desc, &data.Number, &data.Date, &data.Name, &data.CVC2, &data.PIN, &data.Bank); err != nil {
+		return model.CardEnc{}, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrGetCard,
 			err,
 		)
 	}

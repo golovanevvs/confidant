@@ -28,11 +28,14 @@ type IServiceGroups interface {
 
 type IServiceData interface {
 	GetDataTitles(ctx context.Context, accountID int, groupID int) (dataTitles []string, err error)
+	GetDataTypes(ctx context.Context, accountID int, groupID int) (dataTypes []string, err error)
 	GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error)
 	AddNote(ctx context.Context, data model.NoteDec, accountID int, groupID int) (err error)
 	GetNote(ctx context.Context, dataID int) (data *model.NoteDec, err error)
 	AddPass(ctx context.Context, data model.PassDec, accountID int, groupID int) (err error)
 	GetPass(ctx context.Context, dataID int) (data *model.PassDec, err error)
+	AddCard(ctx context.Context, data model.CardDec, accountID int, groupID int) (err error)
+	GetCard(ctx context.Context, dataID int) (data *model.CardDec, err error)
 }
 
 type IService interface {
@@ -62,6 +65,7 @@ type appView struct {
 	groupID      int
 	groupTitle   string
 	dataTitles   []string
+	dataTypes    []string
 	dataTitle    string
 	dataType     string
 	dataID       int
@@ -93,6 +97,7 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 		groupID:    -1,
 		groupTitle: "",
 		dataTitles: []string{},
+		dataTypes:  []string{},
 		dataTitle:  "",
 		dataType:   "",
 		dataID:     -1,

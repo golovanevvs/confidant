@@ -1,7 +1,10 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/rivo/tview"
 )
 
@@ -104,7 +107,32 @@ func (av *appView) vDataAddCard() {
 		AddItem(av.v.pageData.pageDataAddCard.textareaTitle, 5, 1, 1, 3, 0, 0, true)
 
 	//! Добавить
-
+	av.v.pageData.pageDataAddCard.buttonAdd.SetSelectedFunc(func() {
+		title := av.v.pageData.pageDataAddCard.textareaTitle.GetText()
+		desc := av.v.pageData.pageDataAddCard.textareaDesc.GetText()
+		number := av.v.pageData.pageDataAddCard.textareaNumber.GetText()
+		date := av.v.pageData.pageDataAddCard.textareaDate.GetText()
+		name := av.v.pageData.pageDataAddCard.textareaName.GetText()
+		cvc2 := av.v.pageData.pageDataAddCard.textareaCVC2.GetText()
+		pin := av.v.pageData.pageDataAddCard.textareaPIN.GetText()
+		bank := av.v.pageData.pageDataAddCard.textareaBank.GetText()
+		data := model.CardDec{
+			Title:  title,
+			Desc:   desc,
+			Number: number,
+			Date:   date,
+			Name:   name,
+			CVC2:   cvc2,
+			PIN:    pin,
+			Bank:   bank,
+		}
+		err := av.sv.AddCard(context.Background(), data, av.account.ID, av.groupID)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		} else {
+			av.aPageDataSwitch()
+		}
+	})
 	//! Отмена
 	av.v.pageData.pageDataAddCard.buttonCancel.SetSelectedFunc(func() {
 		av.aPageDataSwitch()

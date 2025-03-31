@@ -3,6 +3,7 @@ package appview
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -73,7 +74,7 @@ func (av *appView) vData() {
 	})
 
 	av.v.pageData.listTitles.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		av.dataTitle = mainText
+		av.dataTitle = mainText[strings.Index(mainText, " ")+1:]
 		av.aPageDataUpdateDataView()
 	})
 
@@ -185,16 +186,32 @@ func (av *appView) aPageDataUpdateListTitles() {
 		av.v.pageMain.messageBoxL.SetText(err.Error())
 	} else {
 		av.v.pageData.listTitles.Clear()
-
-		if len(av.dataTitles) > 0 {
-			//filling data list
-			for _, dataTitle := range av.dataTitles {
-				av.v.pageData.listTitles.AddItem(dataTitle, "", 0, nil)
-			}
-			av.dataTitle = av.dataTitles[0]
-			av.aPageDataUpdateDataView()
+		av.dataTypes, err = av.sv.GetDataTypes(context.Background(), av.account.ID, av.groupID)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
 		} else {
-			av.aPageDataViewEmptySwitch()
+			av.v.pageData.listTitles.Clear()
+
+			if len(av.dataTitles) > 0 {
+				//filling data list
+				for i, dataTitle := range av.dataTitles {
+					switch av.dataTypes[i] {
+					case "note":
+						dataTitle = fmt.Sprintf("🔒 %s", dataTitle)
+					case "pass":
+						dataTitle = fmt.Sprintf("🔒 %s", dataTitle)
+					case "card":
+						dataTitle = fmt.Sprintf("🔒 %s", dataTitle)
+					}
+					av.v.pageData.listTitles.AddItem(dataTitle, "", 0, nil)
+
+				}
+				av.dataTitle = av.dataTitles[0]
+				av.aPageDataUpdateDataView()
+			} else {
+				av.aPageDataViewEmptySwitch()
+			}
+
 		}
 	}
 }
@@ -212,6 +229,8 @@ func (av *appView) aPageDataUpdateDataView() {
 			av.vPageDataViewNoteUpdate()
 		case "pass":
 			av.vPageDataViewPassUpdate()
+		case "card":
+			av.vPageDataViewCardUpdate()
 		}
 	}
 }

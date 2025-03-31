@@ -12,11 +12,14 @@ type ITransportData interface {
 
 type IRepositoryData interface {
 	GetDataTitles(ctx context.Context, groupID int) (dataTitles [][]byte, err error)
+	GetDataTypes(ctx context.Context, groupID int) (dataTypes []string, err error)
 	GetDataIDAndType(ctx context.Context, groupID int, dataTitle string) (dataID int, dataType string, err error)
 	AddNote(ctx context.Context, data model.NoteEnc) (err error)
 	GetNote(ctx context.Context, dataID int) (data model.NoteEnc, err error)
 	AddPass(ctx context.Context, data model.PassEnc) (err error)
 	GetPass(ctx context.Context, dataID int) (data model.PassEnc, err error)
+	AddCard(ctx context.Context, data model.CardEnc) (err error)
+	GetCard(ctx context.Context, dataID int) (data model.CardEnc, err error)
 }
 
 type IServiceSecurity interface {

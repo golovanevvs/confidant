@@ -1,6 +1,8 @@
 package appview
 
 import (
+	"context"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -111,4 +113,25 @@ func (av *appView) vDataViewCard() {
 		return event
 	}
 
+}
+
+func (av *appView) vPageDataViewCardUpdate() {
+	av.vClearMessages()
+
+	data, err := av.sv.GetCard(context.Background(), av.dataID)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+	} else {
+		av.v.pageData.pageDataViewCard.textviewDesc.SetText(data.Desc)
+		av.v.pageData.pageDataViewCard.textviewNumber.SetText(data.Number)
+		av.v.pageData.pageDataViewCard.textviewDate.SetText(data.Date)
+		av.v.pageData.pageDataViewCard.textviewName.SetText(data.Name)
+		av.v.pageData.pageDataViewCard.textviewCVC2.SetText(data.CVC2)
+		av.v.pageData.pageDataViewCard.textviewPIN.SetText(data.PIN)
+		av.v.pageData.pageDataViewCard.textviewBank.SetText(data.Bank)
+		av.v.pageMain.pages.SwitchToPage("data_page")
+		av.v.pageData.pages.SwitchToPage("data_view_card_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
+	}
 }
