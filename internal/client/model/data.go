@@ -71,3 +71,29 @@ type CardEnc struct {
 	PIN        []byte
 	Bank       []byte
 }
+
+type FileDec struct {
+	ID         int
+	IDOnServer int
+	GroupID    int
+	Type       string
+	Title      string
+	Desc       string
+	Filename   string
+	Filesize   string
+	Filedate   string
+	File       []byte
+}
+
+type FileEnc struct {
+	ID         int
+	IDOnServer int
+	GroupID    int
+	Type       string
+	Title      string
+	Desc       []byte
+	Filename   []byte
+	Filesize   []byte
+	Filedate   []byte
+	File       []byte
+}

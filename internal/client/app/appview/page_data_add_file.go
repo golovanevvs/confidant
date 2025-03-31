@@ -1,12 +1,14 @@
 package appview
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/rivo/tview"
 )
 
@@ -124,6 +126,8 @@ func (av *appView) vDataAddFile() {
 			}
 		} else {
 			// file selection processing
+			av.dataFilename = info.Name()
+			av.dataFilepath = path
 			av.v.pageData.pageDataAddFile.textviewFileName.SetText(info.Name())
 			av.v.pageData.pageDataAddFile.textviewFileSize.SetText(fmt.Sprintf("%d байт", info.Size()))
 			av.v.pageData.pageDataAddFile.textviewFileDate.SetText(info.ModTime().Format("02.01.2006 15:04:05"))
@@ -132,6 +136,8 @@ func (av *appView) vDataAddFile() {
 
 	// processing changes to a dedicated node
 	av.v.pageData.pageDataAddFile.treeview.SetChangedFunc(func(node *tview.TreeNode) {
+		av.dataFilename = ""
+		av.dataFilepath = ""
 		av.v.pageData.pageDataAddFile.textviewFileName.SetText("")
 		av.v.pageData.pageDataAddFile.textviewFileSize.SetText("")
 		av.v.pageData.pageDataAddFile.textviewFileDate.SetText("")
@@ -150,6 +156,25 @@ func (av *appView) vDataAddFile() {
 		SetTextColor(av.v.pageApp.colorTitle)
 
 	//! Добавить
+	av.v.pageData.pageDataAddFile.buttonAdd.SetSelectedFunc(func() {
+		title := av.v.pageData.pageDataAddFile.textareaTitle.GetText()
+		desc := av.v.pageData.pageDataAddFile.textareaDesc.GetText()
+		filesize := av.v.pageData.pageDataAddFile.textviewFileSize.GetText(false)
+		filedate := av.v.pageData.pageDataAddFile.textviewFileDate.GetText(false)
+		data := model.FileDec{
+			Title:    title,
+			Desc:     desc,
+			Filename: av.dataFilename,
+			Filesize: filesize,
+			Filedate: filedate,
+		}
+		err := av.sv.AddFile(context.Background(), data, av.account.ID, av.groupID, av.dataFilepath)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		} else {
+			av.aPageDataSwitch()
+		}
+	})
 
 	//! Отмена
 	av.v.pageData.pageDataAddFile.buttonCancel.SetSelectedFunc(func() {

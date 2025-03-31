@@ -63,9 +63,11 @@ var (
 	ErrAddNote               = errors.New("add note error")
 	ErrAddPass               = errors.New("add password error")
 	ErrAddCard               = errors.New("add card error")
+	ErrAddFile               = errors.New("add file error")
 	ErrGetNote               = errors.New("get note error")
 	ErrGetPass               = errors.New("get password error")
 	ErrGetCard               = errors.New("get card error")
+	ErrGetFile               = errors.New("get file error")
 )
 
 const (

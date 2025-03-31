@@ -85,13 +85,13 @@ func (av *appView) vDataViewPass() {
 func (av *appView) vPageDataViewPassUpdate() {
 	av.vClearMessages()
 
-	pass, err := av.sv.GetPass(context.Background(), av.dataID)
+	data, err := av.sv.GetPass(context.Background(), av.dataID)
 	if err != nil {
 		av.v.pageMain.messageBoxL.SetText(err.Error())
 	} else {
-		av.v.pageData.pageDataViewPass.textviewLogin.SetText(pass.Login)
-		av.v.pageData.pageDataViewPass.textviewPass.SetText(pass.Pass)
-		av.v.pageData.pageDataViewPass.textviewDesc.SetText(pass.Desc)
+		av.v.pageData.pageDataViewPass.textviewLogin.SetText(data.Login)
+		av.v.pageData.pageDataViewPass.textviewPass.SetText(data.Pass)
+		av.v.pageData.pageDataViewPass.textviewDesc.SetText(data.Desc)
 		av.v.pageMain.pages.SwitchToPage("data_page")
 		av.v.pageData.pages.SwitchToPage("data_view_pass_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)

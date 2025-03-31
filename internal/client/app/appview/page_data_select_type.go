@@ -58,6 +58,8 @@ func (av *appView) vDataSelectType() {
 
 	//! "Файл"
 	av.v.pageData.pageDataSelectType.buttonFile.SetSelectedFunc(func() {
+		av.dataFilepath = ""
+		av.dataFilename = ""
 		av.v.pageData.pages.SwitchToPage("data_add_file_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataAddFile.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.pageDataAddFile.treeview)

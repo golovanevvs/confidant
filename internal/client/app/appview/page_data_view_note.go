@@ -81,12 +81,12 @@ func (av *appView) vDataViewNote() {
 func (av *appView) vPageDataViewNoteUpdate() {
 	av.vClearMessages()
 
-	note, err := av.sv.GetNote(context.Background(), av.dataID)
+	data, err := av.sv.GetNote(context.Background(), av.dataID)
 	if err != nil {
 		av.v.pageMain.messageBoxL.SetText(err.Error())
 	} else {
-		av.v.pageData.pageDataViewNote.textviewNote.SetText(note.Note)
-		av.v.pageData.pageDataViewNote.textviewDesc.SetText(note.Desc)
+		av.v.pageData.pageDataViewNote.textviewNote.SetText(data.Note)
+		av.v.pageData.pageDataViewNote.textviewDesc.SetText(data.Desc)
 		av.v.pageMain.pages.SwitchToPage("data_page")
 		av.v.pageData.pages.SwitchToPage("data_view_note_page")
 		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)

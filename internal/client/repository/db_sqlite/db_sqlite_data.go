@@ -362,3 +362,82 @@ func (rp *sqliteData) GetCard(ctx context.Context, dataID int) (data model.CardE
 
 	return data, nil
 }
+
+func (rp *sqliteData) AddFile(ctx context.Context, data model.FileEnc) (err error) {
+	action := "add file"
+
+	row := rp.db.QueryRowContext(ctx, `
+		
+		INSERT INTO data
+			(group_id, data_type, title)
+		VALUES
+			(?, ?, ?)
+		RETURNING id;
+	
+	`, data.GroupID, data.Type, data.Title)
+
+	var dataID int
+	err = row.Scan(&dataID)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddFile,
+			err,
+		)
+	}
+
+	_, err = rp.db.ExecContext(ctx, `
+	
+		INSERT INTO data_file
+			(data_id, desc, filename, filesize, filedate, file)
+		VALUES
+			(?, ?, ?, ?, ?, ?);
+	
+	`, dataID, data.Desc, data.Filename, data.Filesize, data.Filedate, data.File)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddFile,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (rp *sqliteData) GetFile(ctx context.Context, dataID int) (data model.FileEnc, err error) {
+	action := "get file"
+
+	data.Type = "file"
+
+	row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			data_file.id, data_file.desc, data_file.filename, data_file.filesize, data_file.filedate
+		FROM
+			data_file
+		INNER JOIN
+			data
+		ON
+			data_file.data_id = data.id
+		WHERE
+			data_id = ?
+
+	`, dataID)
+
+	if err = row.Scan(&data.ID, &data.Desc, &data.Filename, &data.Filesize, &data.Filedate); err != nil {
+		return model.FileEnc{}, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrGetFile,
+			err,
+		)
+	}
+
+	return data, nil
+}

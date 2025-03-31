@@ -20,6 +20,8 @@ type IRepositoryData interface {
 	GetPass(ctx context.Context, dataID int) (data model.PassEnc, err error)
 	AddCard(ctx context.Context, data model.CardEnc) (err error)
 	GetCard(ctx context.Context, dataID int) (data model.CardEnc, err error)
+	AddFile(ctx context.Context, data model.FileEnc) (err error)
+	GetFile(ctx context.Context, dataID int) (data model.FileEnc, err error)
 }
 
 type IServiceSecurity interface {

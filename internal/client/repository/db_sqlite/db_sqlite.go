@@ -73,7 +73,6 @@ func New() (*SQLite, error) {
 			
 			CREATE TABLE IF NOT EXISTS data_note(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				id_on_server INTEGER DEFAULT -1,
 				data_id INTEGER,
 				desc BLOB,
 				note BLOB NOT NULL,
@@ -82,25 +81,34 @@ func New() (*SQLite, error) {
 
 			CREATE TABLE IF NOT EXISTS data_pass(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				id_on_server INTEGER DEFAULT -1,
 				data_id INTEGER,
-				desc TEXT,
-				login TEXT NOT NULL,
-				pass TEXT,
+				desc BLOB,
+				login BLOB NOT NULL,
+				pass BLOB,
 				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 			);
 
 			CREATE TABLE IF NOT EXISTS data_card(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				id_on_server INTEGER DEFAULT -1,
+				data_id INTEGER,
+				desc BLOB,
+				number BLOB NOT NULL,
+				date BLOB,
+				name BLOB,
+				cvc2 BLOB,
+				pin BLOB,
+				bank BLOB,
+				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
+			);
+
+			CREATE TABLE IF NOT EXISTS data_file(
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				data_id INTEGER,
 				desc TEXT,
-				number TEXT NOT NULL,
-				date TEXT,
-				name TEXT,
-				cvc2 TEXT,
-				pin TEXT,
-				bank TEXT,
+				filename BLOB NOT NULL,
+				filesize BLOB,
+				filedate BLOB,
+				file BLOB,
 				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 			);
 

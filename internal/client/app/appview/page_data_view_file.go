@@ -1,6 +1,7 @@
 package appview
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -145,12 +146,7 @@ func (av *appView) vDataViewFile() {
 
 	//! Отмена
 	av.v.pageData.pageDataViewFile.buttonCancel.SetSelectedFunc(func() {
-		av.v.pageData.pages.SwitchToPage("data_view_card_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewCard.inputCapture)
-		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
-		av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-		av.v.pageMain.messageBoxL.Clear()
-		av.v.pageMain.messageBoxR.Clear()
+		av.aPageDataSwitch()
 	})
 
 	//! data grid
@@ -201,5 +197,23 @@ func (av *appView) vDataViewFile() {
 			return nil
 		}
 		return event
+	}
+}
+
+func (av *appView) vPageDataViewFileUpdate() {
+	av.vClearMessages()
+
+	data, err := av.sv.GetFile(context.Background(), av.dataID)
+	if err != nil {
+		av.v.pageMain.messageBoxL.SetText(err.Error())
+	} else {
+		av.v.pageData.pageDataViewFile.textviewFileName.SetText(data.Filename)
+		av.v.pageData.pageDataViewFile.textviewDesc.SetText(data.Desc)
+		av.v.pageData.pageDataViewFile.textviewFileSize.SetText(data.Filesize)
+		av.v.pageData.pageDataViewFile.textviewFileDate.SetText(data.Filedate)
+		av.v.pageMain.pages.SwitchToPage("data_page")
+		av.v.pageData.pages.SwitchToPage("data_view_file_page")
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 	}
 }

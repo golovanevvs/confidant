@@ -233,6 +233,8 @@ func (av *appView) aPageDataUpdateDataView() {
 			av.vPageDataViewPassUpdate()
 		case "card":
 			av.vPageDataViewCardUpdate()
+		case "file":
+			av.vPageDataViewFileUpdate()
 		}
 	}
 }

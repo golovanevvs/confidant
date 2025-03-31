@@ -36,6 +36,8 @@ type IServiceData interface {
 	GetPass(ctx context.Context, dataID int) (data *model.PassDec, err error)
 	AddCard(ctx context.Context, data model.CardDec, accountID int, groupID int) (err error)
 	GetCard(ctx context.Context, dataID int) (data *model.CardDec, err error)
+	AddFile(ctx context.Context, data model.FileDec, accountID int, groupID int, filepath string) (err error)
+	GetFile(ctx context.Context, dataID int) (data *model.FileDec, err error)
 }
 
 type IService interface {
@@ -73,6 +75,8 @@ type appView struct {
 	dataPassID   int
 	dataCardID   int
 	dataFileID   int
+	dataFilepath string
+	dataFilename string
 }
 
 func New(sv IService, lg *zap.SugaredLogger) *appView {
@@ -93,18 +97,20 @@ func New(sv IService, lg *zap.SugaredLogger) *appView {
 			ID:    -1,
 			Email: "",
 		},
-		groups:     []model.Group{},
-		groupID:    -1,
-		groupTitle: "",
-		dataTitles: []string{},
-		dataTypes:  []string{},
-		dataTitle:  "",
-		dataType:   "",
-		dataID:     -1,
-		dataPassID: -1,
-		dataCardID: -1,
-		dataFileID: -1,
-		dataNoteID: -1,
+		groups:       []model.Group{},
+		groupID:      -1,
+		groupTitle:   "",
+		dataTitles:   []string{},
+		dataTypes:    []string{},
+		dataTitle:    "",
+		dataType:     "",
+		dataID:       -1,
+		dataPassID:   -1,
+		dataCardID:   -1,
+		dataFileID:   -1,
+		dataNoteID:   -1,
+		dataFilepath: "",
+		dataFilename: "",
 	}
 }
 
