@@ -18,10 +18,10 @@ type pageDataSelectType struct {
 
 func newPageDataSelectType() *pageDataSelectType {
 	return &pageDataSelectType{
-		buttonNote:   tview.NewButton("Заметка"),
-		buttonPass:   tview.NewButton("Пароль"),
-		buttonCard:   tview.NewButton("Карта"),
-		buttonFile:   tview.NewButton("Файл"),
+		buttonNote:   tview.NewButton("📝 Заметка"),
+		buttonPass:   tview.NewButton("🔒 Пароль"),
+		buttonCard:   tview.NewButton("💳 Карта"),
+		buttonFile:   tview.NewButton("📁 Файл"),
 		buttonCancel: tview.NewButton("Отмена"),
 		grid:         tview.NewGrid(),
 		inputCapture: func(event *tcell.EventKey) *tcell.EventKey {
