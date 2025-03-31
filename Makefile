@@ -32,14 +32,16 @@ build_client:
 	go build ./cmd/confidant_client
 	@echo "Building client completed"
 
+# start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_server; exec bash"
 run_server:
 	@echo "Running server..."
-	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_server; exec bash"
+	start "./confidant_server"
 	@echo "Running server completed"
 
+# start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_client; exec bash"
 run_client:
 	@echo "Running client..."
-	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_client; exec bash"
+	start "./confidant_client"
 	@echo "Running client completed"
 
 build_run_server: build_server run_server

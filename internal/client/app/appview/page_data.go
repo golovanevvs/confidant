@@ -197,11 +197,13 @@ func (av *appView) aPageDataUpdateListTitles() {
 				for i, dataTitle := range av.dataTitles {
 					switch av.dataTypes[i] {
 					case "note":
-						dataTitle = fmt.Sprintf("🔒 %s", dataTitle)
+						dataTitle = fmt.Sprintf("📝 %s", dataTitle)
 					case "pass":
 						dataTitle = fmt.Sprintf("🔒 %s", dataTitle)
 					case "card":
-						dataTitle = fmt.Sprintf("🔒 %s", dataTitle)
+						dataTitle = fmt.Sprintf("💳 %s", dataTitle)
+					case "file":
+						dataTitle = fmt.Sprintf("📁 %s", dataTitle)
 					}
 					av.v.pageData.listTitles.AddItem(dataTitle, "", 0, nil)
 
