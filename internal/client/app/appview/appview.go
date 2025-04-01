@@ -38,6 +38,7 @@ type IServiceData interface {
 	GetCard(ctx context.Context, dataID int) (data *model.CardDec, err error)
 	AddFile(ctx context.Context, data model.FileDec, accountID int, groupID int, filepath string) (err error)
 	GetFile(ctx context.Context, dataID int) (data *model.FileDec, err error)
+	SaveToFile(ctx context.Context, dataID int, filepath string) (err error)
 }
 
 type IService interface {

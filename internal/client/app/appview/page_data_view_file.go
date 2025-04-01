@@ -13,10 +13,12 @@ import (
 type pageDataViewFile struct {
 	treeview          *tview.TreeView
 	textviewFileNameL *tview.TextView
+	textviewFilePathL *tview.TextView
 	textviewFileSizeL *tview.TextView
 	textviewFileDateL *tview.TextView
 	textviewDescL     *tview.TextView
 	textviewFileName  *tview.TextView
+	textviewFilePath  *tview.TextView
 	textviewFileSize  *tview.TextView
 	textviewFileDate  *tview.TextView
 	textviewDesc      *tview.TextView
@@ -33,10 +35,12 @@ func newDataViewFile() *pageDataViewFile {
 	return &pageDataViewFile{
 		treeview:          tview.NewTreeView(),
 		textviewFileNameL: tview.NewTextView(),
+		textviewFilePathL: tview.NewTextView(),
 		textviewFileSizeL: tview.NewTextView(),
 		textviewFileDateL: tview.NewTextView(),
 		textviewDescL:     tview.NewTextView(),
 		textviewFileName:  tview.NewTextView(),
+		textviewFilePath:  tview.NewTextView(),
 		textviewFileSize:  tview.NewTextView(),
 		textviewFileDate:  tview.NewTextView(),
 		textviewDesc:      tview.NewTextView(),
@@ -116,7 +120,7 @@ func (av *appView) vDataViewFile() {
 				// folding, unfolding
 				node.SetExpanded(!node.IsExpanded())
 			}
-			av.v.pageData.pageDataViewFile.textviewFileName.SetText(path)
+			av.v.pageData.pageDataViewFile.textviewFilePath.SetText(path)
 		} else {
 			// file selection processing
 			// av.v.pageData.pageDataViewFile.textviewFileName.SetText(info.Name())
@@ -127,13 +131,15 @@ func (av *appView) vDataViewFile() {
 
 	// processing changes to a dedicated node
 	av.v.pageData.pageDataViewFile.treeview.SetChangedFunc(func(node *tview.TreeNode) {
-		av.v.pageData.pageDataViewFile.textviewFileName.SetText("")
+		av.v.pageData.pageDataViewFile.textviewFilePath.SetText("")
 		av.v.pageData.pageDataViewFile.textviewFileSize.SetText("")
 		av.v.pageData.pageDataViewFile.textviewFileDate.SetText("")
 	})
 
 	//! label names
-	av.v.pageData.pageDataViewFile.textviewFileNameL.SetText("Выбран файл:").
+	av.v.pageData.pageDataViewFile.textviewFileNameL.SetText("Имя файла:").
+		SetTextColor(av.v.pageApp.colorTitle)
+	av.v.pageData.pageDataViewFile.textviewFilePathL.SetText("Выбран путь:").
 		SetTextColor(av.v.pageApp.colorTitle)
 	av.v.pageData.pageDataViewFile.textviewFileSizeL.SetText("Размер:").
 		SetTextColor(av.v.pageApp.colorTitle)
@@ -142,7 +148,18 @@ func (av *appView) vDataViewFile() {
 	av.v.pageData.pageDataViewFile.textviewDescL.SetText("Описание:").
 		SetTextColor(av.v.pageApp.colorTitle)
 
-	//! Добавить
+	//! Сохранить
+	av.v.pageData.pageDataViewFile.buttonSave.SetSelectedFunc(func() {
+		path := av.v.pageData.pageDataViewFile.textviewFilePath.GetText(false)
+		filename := av.v.pageData.pageDataViewFile.textviewFileName.GetText(false)
+		fp := filepath.Join(path, filename)
+		err := av.sv.SaveToFile(context.Background(), av.dataID, fp)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(err.Error())
+		} else {
+			av.aPageDataSwitch()
+		}
+	})
 
 	//! Отмена
 	av.v.pageData.pageDataViewFile.buttonCancel.SetSelectedFunc(func() {
@@ -153,11 +170,13 @@ func (av *appView) vDataViewFile() {
 	av.v.pageData.pageDataViewFile.gridData.
 		SetBorders(true).
 		SetRows(0, 1, 1, 1).
-		SetColumns(15, 15, 15, 0).
+		SetColumns(15, 20, 15, 0).
 		SetGap(1, 0).
 		AddItem(av.v.pageData.pageDataViewFile.treeview, 0, 0, 1, 4, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewFile.textviewFileNameL, 1, 0, 1, 1, 0, 0, true).
-		AddItem(av.v.pageData.pageDataViewFile.textviewFileName, 1, 1, 1, 3, 0, 0, true).
+		AddItem(av.v.pageData.pageDataViewFile.textviewFileName, 1, 1, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataViewFile.textviewFilePathL, 1, 2, 1, 1, 0, 0, true).
+		AddItem(av.v.pageData.pageDataViewFile.textviewFilePath, 1, 3, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewFile.textviewFileSizeL, 2, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewFile.textviewFileSize, 2, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pageDataViewFile.textviewFileDateL, 2, 2, 1, 1, 0, 0, true).
@@ -187,12 +206,24 @@ func (av *appView) vDataViewFile() {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
 			switch currentFocus {
+			case av.v.pageData.listTitles:
+				av.v.pageApp.app.SetFocus(av.v.pageData.buttonAdd)
+			case av.v.pageData.buttonAdd:
+				av.v.pageApp.app.SetFocus(av.v.pageData.buttonEdit)
+			case av.v.pageData.buttonEdit:
+				av.v.pageApp.app.SetFocus(av.v.pageData.buttonDelete)
+			case av.v.pageData.buttonDelete:
+				av.v.pageApp.app.SetFocus(av.v.pageData.buttonBack)
+			case av.v.pageData.buttonBack:
+				av.v.pageApp.app.SetFocus(av.v.pageData.buttonExit)
+			case av.v.pageData.buttonExit:
+				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewFile.treeview)
 			case av.v.pageData.pageDataViewFile.treeview:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewFile.buttonSave)
 			case av.v.pageData.pageDataViewFile.buttonSave:
 				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewFile.buttonCancel)
 			case av.v.pageData.pageDataViewFile.buttonCancel:
-				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewFile.treeview)
+				av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 			}
 			return nil
 		}
@@ -213,7 +244,7 @@ func (av *appView) vPageDataViewFileUpdate() {
 		av.v.pageData.pageDataViewFile.textviewFileDate.SetText(data.Filedate)
 		av.v.pageMain.pages.SwitchToPage("data_page")
 		av.v.pageData.pages.SwitchToPage("data_view_file_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewFile.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 	}
 }

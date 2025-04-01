@@ -108,7 +108,7 @@ func (av *appView) vData() {
 		AddItem(av.v.pageData.buttonBack, 4, 0, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.buttonExit, 5, 0, 1, 1, 0, 0, true)
 
-	//! Main grid
+	//! main grid
 	av.v.pageData.gridMain.
 		SetRows(0).
 		SetColumns(30, 20, 0).
@@ -116,6 +116,7 @@ func (av *appView) vData() {
 		AddItem(av.v.pageData.gridButtons, 0, 1, 1, 1, 0, 0, true).
 		AddItem(av.v.pageData.pages, 0, 2, 1, 1, 0, 0, true)
 
+	//! inputCapture
 	av.v.pageData.inputCapture = func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyTAB {
 			currentFocus := av.v.pageApp.app.GetFocus()
@@ -131,10 +132,10 @@ func (av *appView) vData() {
 			case av.v.pageData.buttonBack:
 				av.v.pageApp.app.SetFocus(av.v.pageData.buttonExit)
 			case av.v.pageData.buttonExit:
-				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewNote.textviewNote)
-			case av.v.pageData.pageDataViewNote.textviewNote:
-				av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewNote.textviewDesc)
-			case av.v.pageData.pageDataViewNote.textviewDesc:
+				// 	av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewNote.textviewNote)
+				// case av.v.pageData.pageDataViewNote.textviewNote:
+				// 	av.v.pageApp.app.SetFocus(av.v.pageData.pageDataViewNote.textviewDesc)
+				// case av.v.pageData.pageDataViewNote.textviewDesc:
 				av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 			}
 			return nil

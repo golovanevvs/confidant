@@ -94,7 +94,7 @@ func (av *appView) vPageDataViewPassUpdate() {
 		av.v.pageData.pageDataViewPass.textviewDesc.SetText(data.Desc)
 		av.v.pageMain.pages.SwitchToPage("data_page")
 		av.v.pageData.pages.SwitchToPage("data_view_pass_page")
-		av.v.pageApp.app.SetInputCapture(av.v.pageData.inputCapture)
+		av.v.pageApp.app.SetInputCapture(av.v.pageData.pageDataViewPass.inputCapture)
 		av.v.pageApp.app.SetFocus(av.v.pageData.listTitles)
 	}
 }

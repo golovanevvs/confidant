@@ -22,6 +22,7 @@ type IRepositoryData interface {
 	GetCard(ctx context.Context, dataID int) (data model.CardEnc, err error)
 	AddFile(ctx context.Context, data model.FileEnc) (err error)
 	GetFile(ctx context.Context, dataID int) (data model.FileEnc, err error)
+	GetFileForSave(ctx context.Context, dataID int) (data []byte, err error)
 }
 
 type IServiceSecurity interface {

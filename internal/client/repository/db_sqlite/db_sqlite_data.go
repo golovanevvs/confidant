@@ -441,3 +441,30 @@ func (rp *sqliteData) GetFile(ctx context.Context, dataID int) (data model.FileE
 
 	return data, nil
 }
+
+func (rp *sqliteData) GetFileForSave(ctx context.Context, dataID int) (dataEnc []byte, err error) {
+	action := "get file for save"
+
+	row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			file
+		FROM
+			data_file
+		WHERE
+			data_id = ?
+	
+	`, dataID)
+
+	if err = row.Scan(&dataEnc); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrGetFileForSave,
+			err,
+		)
+	}
+
+	return dataEnc, nil
+}
