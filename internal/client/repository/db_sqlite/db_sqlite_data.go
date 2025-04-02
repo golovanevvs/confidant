@@ -56,6 +56,16 @@ func (rp *sqliteData) GetDataTitles(ctx context.Context, groupID int) (dataTitle
 		dataTitles = append(dataTitles, dataTitle)
 	}
 
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
 	return dataTitles, nil
 }
 

@@ -6,25 +6,75 @@ CREATE TABLE IF NOT EXISTS account(
     password_hash BYTEA NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS refresh_tokens(
+CREATE TABLE IF NOT EXISTS refresh_token(
     id SERIAL PRIMARY KEY,
-    account_id INT REFERENCES account(id) ON DELETE CASCADE,
+    account_id,
     token_hash BYTEA NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     revoked BOOLEAN DEFAULT FALSE
+    FOREIGN KEY (account_id) REFERENCES account (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS groups(
     id SERIAL PRIMARY KEY,
     title VARCHAR(250),
-    account_id INT,
+    account_id INT
     FOREIGN KEY (account_id) REFERENCES account (id)
 );
 
-CREATE TABLE IF NOT EXISTS emails_of_groups(
+CREATE TABLE IF NOT EXISTS email_in_groups(
     id SERIAL PRIMARY KEY,
-    group_id INT REFERENCES groups(id) ON DELETE CASCADE,
+    group_id,
     email VARCHAR(250) NOT NULL
+    FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS data(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	group_id INTEGER,
+	data_type TEXT NOT NULL,
+	title TEXT NOT NULL,
+	FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS data_note(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+	data_id INTEGER,
+	desc BLOB,
+	note BLOB NOT NULL,
+	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS data_pass(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	data_id INTEGER,
+	desc BLOB,
+	login BLOB NOT NULL,
+	pass BLOB,
+	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS data_card(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	data_id INTEGER,
+	desc BLOB,
+	number BLOB NOT NULL,
+	date BLOB,
+	name BLOB,
+	cvc2 BLOB,
+	pin BLOB,
+	bank BLOB,
+	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS data_file(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	data_id INTEGER,
+	desc TEXT,
+	filename BLOB NOT NULL,
+	filesize BLOB,
+	filedate BLOB,
+	file BLOB,
+	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 );
 
 COMMIT;

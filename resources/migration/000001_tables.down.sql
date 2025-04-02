@@ -1,6 +1,11 @@
 BEGIN;
 
-DROP TABLE IF EXISTS emails_of_groups;
+DROP TABLE IF EXISTS data_note;
+DROP TABLE IF EXISTS data_pass;
+DROP TABLE IF EXISTS data_card;
+DROP TABLE IF EXISTS data_file;
+DROP TABLE IF EXISTS data;
+DROP TABLE IF EXISTS email_in_groups;
 DROP TABLE IF EXISTS groups;
 DROP TABLE IF EXISTS refresh_tokens;
 DROP TABLE IF EXISTS account;
