@@ -10,6 +10,7 @@ import (
 type ITransport interface {
 	service_account.ITransportAccount
 	service_manage.ITransportManage
+	service_groups.ITransportGroups
 }
 
 type IRepository interface {

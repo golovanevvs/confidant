@@ -18,7 +18,12 @@ type IServiceManage interface {
 	PingDB() (err error)
 }
 
+type IServiceGroups interface {
+	GetGroupIDs(ctx context.Context, accountID int) (groupIDs map[int]struct{}, err error)
+}
+
 type IService interface {
 	IServiceAccount
 	IServiceManage
+	IServiceGroups
 }

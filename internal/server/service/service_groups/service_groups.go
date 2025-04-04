@@ -1,4 +1,4 @@
-package service_account
+package service_groups
 
 import (
 	"context"

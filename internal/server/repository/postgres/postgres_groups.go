@@ -13,16 +13,14 @@ type postgresGroups struct {
 	db *sqlx.DB
 }
 
-func NewPostgresGroups(db *sqlx.DB) *postgresManage {
-	return &postgresManage{
+func NewPostgresGroups(db *sqlx.DB) *postgresGroups {
+	return &postgresGroups{
 		db: db,
 	}
 }
 
 func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (groupIDs map[int]struct{}, err error) {
-	action := "get groups"
-
-	groupIDs = make(map[int]struct{})
+	action := "get group IDs"
 
 	row := rp.db.QueryRowContext(ctx, `
 	
@@ -58,9 +56,9 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 	`, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return groupIDs, nil
 		} else {
-			return nil, fmt.Errorf(
+			return groupIDs, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
 				action,
@@ -86,7 +84,7 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf(
+		return groupIDs, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,

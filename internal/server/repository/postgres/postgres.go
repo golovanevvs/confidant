@@ -10,6 +10,7 @@ import (
 type Postgres struct {
 	*postgresManage
 	*postgresAccount
+	*postgresGroups
 }
 
 func New(databaseURI string) (*Postgres, error) {
@@ -26,5 +27,6 @@ func New(databaseURI string) (*Postgres, error) {
 	return &Postgres{
 		NewPostgresManage(db),
 		NewPostgresAccount(db),
+		NewPostgresGroups(db),
 	}, nil
 }

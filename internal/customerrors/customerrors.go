@@ -80,6 +80,7 @@ const (
 	HandlerErr        = "transport HTTP"
 	AccountServiceErr = "account service"
 	ManageServiceErr  = "manage service"
+	GroupsServiceErr  = "groups service"
 	DBErr             = "DB"
 )
 

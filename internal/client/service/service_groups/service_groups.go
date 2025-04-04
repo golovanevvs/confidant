@@ -7,6 +7,7 @@ import (
 )
 
 type ITransportGroups interface {
+	GetGroupIDs(ctx context.Context, accessToken string) (groupIDs map[int]struct{}, err error)
 }
 
 type IRepositoryGroups interface {
