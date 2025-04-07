@@ -24,7 +24,6 @@ type IServiceGroups interface {
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
 	GetGroupID(ctx context.Context, email string, titleGroup string) (groupID int, err error)
 	AddEmail(ctx context.Context, groupID int, email string) (err error)
-	GetGroupIDs(ctx context.Context, email string) (groupServerIDs map[int]struct{}, groupNoServerIDs map[int]struct{}, err error)
 }
 
 type IServiceData interface {
@@ -42,11 +41,16 @@ type IServiceData interface {
 	SaveToFile(ctx context.Context, dataID int, filepath string) (err error)
 }
 
+type IServiceSync interface {
+	SyncGroups(ctx context.Context, accessToken string, email string) (err error)
+}
+
 type IService interface {
 	IServiceAccount
 	IServiceManage
 	IServiceGroups
 	IServiceData
+	IServiceSync
 }
 
 type view struct {

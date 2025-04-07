@@ -6,18 +6,19 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (groupIDs map[int]struct{}, err error) {
-	action := "get group IDs"
+func (tr *trHTTP) GetGroups(ctx context.Context, accessToken string, groupIDs map[int]struct{}) (groupsFromServer []model.Group, err error) {
+	action := "get groups"
 
 	//! Request
-	endpoint := fmt.Sprintf("http://%s/api/groupids", tr.addr)
+	endpoint := fmt.Sprintf("http://%s/api/groups", tr.addr)
 
 	request, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
@@ -31,7 +32,7 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (groupIDs
 	//! Response
 	response, err := tr.cl.Do(request)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
@@ -41,9 +42,9 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (groupIDs
 	}
 	defer response.Body.Close()
 
-	err = json.NewDecoder(response.Body).Decode(&groupIDs)
+	err = json.NewDecoder(response.Body).Decode(&groupsFromServer)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
@@ -52,5 +53,5 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (groupIDs
 		)
 	}
 
-	return groupIDs, nil
+	return groupsFromServer, nil
 }

@@ -314,3 +314,62 @@ func (rp *sqliteGroups) GetGroupIDs(ctx context.Context, email string) (groupSer
 
 	return groupServerIDs, groupNoServerIDs, nil
 }
+
+func (rp *sqliteGroups) AddGroupBySync(ctx context.Context, group model.Group) (err error) {
+	action := "add group by sync"
+
+	row := rp.db.QueryRowContext(ctx, `
+
+		INSERT INTO groups
+			(id_on_server, title, account_id)
+		VALUES
+			(?, ?, ?)
+		RETURNING id;
+
+	`, group.IDOnServer, group.Title, group.AccountID)
+
+	var groupID int
+	err = row.Scan(&groupID)
+	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrAddGroup,
+				err,
+			)
+		} else {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+
+	for _, email := range group.Emails {
+
+		_, err = rp.db.ExecContext(ctx, `
+	
+		INSERT INTO email_in_groups
+			(email, group_id)
+		VALUES
+			(?, ?);
+
+	`, email, groupID)
+		if err != nil {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrAddEmailInGroup,
+				err,
+			)
+		}
+	}
+
+	return nil
+}
