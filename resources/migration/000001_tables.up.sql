@@ -40,29 +40,29 @@ CREATE TABLE IF NOT EXISTS data(
 CREATE TABLE IF NOT EXISTS data_note(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 	data_id INTEGER,
-	desc BLOB,
-	note BLOB NOT NULL,
+	desc BYTEA,
+	note BYTEA NOT NULL,
 	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS data_pass(
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	data_id INTEGER,
-	desc BLOB,
-	login BLOB NOT NULL,
-	pass BLOB,
+	desc BYTEA,
+	login BYTEA NOT NULL,
+	pass BYTEA,
 	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS data_card(
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	data_id INTEGER,
-	desc BLOB,
-	number BLOB NOT NULL,
-	date BLOB,
-	name BLOB,
-	cvc2 BLOB,
-	pin BLOB,
-	bank BLOB,
+	desc BYTEA,
+	number BYTEA NOT NULL,
+	date BYTEA,
+	name BYTEA,
+	cvc2 BYTEA,
+	pin BYTEA,
+	bank BYTEA,
 	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 );
 
@@ -70,10 +70,10 @@ CREATE TABLE IF NOT EXISTS data_file(
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	data_id INTEGER,
 	desc TEXT,
-	filename BLOB NOT NULL,
-	filesize BLOB,
-	filedate BLOB,
-	file BLOB,
+	filename BYTEA NOT NULL,
+	filesize BYTEA,
+	filedate BYTEA,
+	file BYTEA,
 	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 );
 

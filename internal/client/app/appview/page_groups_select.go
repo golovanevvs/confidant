@@ -40,6 +40,14 @@ func newPageGroupsSelect() *pageGroupsSelect {
 
 func (av *appView) vGroupsSelect() {
 	//! "Синхронизировать"
+	av.v.pageGroups.pageGroupsSelect.buttonSync.SetSelectedFunc(func() {
+		groupServerIDs, groupNoServerIDs, err := av.sv.GetGroupIDs(context.Background(), av.account.Email)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[res]%s", err.Error()))
+		} else {
+			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("groupServerIDs: %v\ngroupNoServerIDs: %v", groupServerIDs, groupNoServerIDs))
+		}
+	})
 
 	//! "Создать группу"
 	av.v.pageGroups.pageGroupsSelect.buttonNew.SetSelectedFunc(func() {

@@ -2,6 +2,7 @@ package db_sqlite
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -246,4 +247,70 @@ func (rp *sqliteGroups) AddEmail(ctx context.Context, groupID int, email string)
 	}
 
 	return nil
+}
+
+func (rp *sqliteGroups) GetGroupIDs(ctx context.Context, email string) (groupServerIDs map[int]struct{}, groupNoServerIDs map[int]struct{}, err error) {
+	action := "get group IDs"
+
+	rows, err := rp.db.QueryContext(ctx, `
+	
+		SELECT
+			groups.id, groups.id_on_server
+		FROM
+			groups
+		INNER JOIN
+			email_in_groups
+		ON
+			groups.id = email_on_groups.group_id
+		WHERE
+			email_in_groups.email = ?
+		GROUP BY
+			groups.id;
+	
+	`, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return groupServerIDs, groupNoServerIDs, nil
+		} else {
+			return groupServerIDs, groupNoServerIDs, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var groupID, groupServerID int
+		if err = rows.Scan(&groupID, &groupServerID); err != nil {
+			return groupServerIDs, groupNoServerIDs, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		if groupServerID == -1 {
+			groupNoServerIDs[groupID] = struct{}{}
+		} else {
+			groupServerIDs[groupServerID] = struct{}{}
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		return groupServerIDs, groupNoServerIDs, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return groupServerIDs, groupNoServerIDs, nil
 }

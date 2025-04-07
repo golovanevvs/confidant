@@ -51,7 +51,9 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 		FROM
 			email_in_groups
 		WHERE
-			email = $1;
+			email = $1
+		GROUP BY
+			group_id;
 	
 	`, email)
 	if err != nil {
