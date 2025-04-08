@@ -263,9 +263,7 @@ func (rp *sqliteGroups) GetGroupIDs(ctx context.Context, email string) (groupSer
 		ON
 			groups.id = email_on_groups.group_id
 		WHERE
-			email_in_groups.email = ?
-		GROUP BY
-			groups.id;
+			email_in_groups.email = ?;
 	
 	`, email)
 	if err != nil {
