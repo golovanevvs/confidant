@@ -18,7 +18,7 @@ type IServiceGroups interface {
 }
 
 type ITransportSync interface {
-	GetGroupIDs(ctx context.Context, accessToken string) (trResponse model.GroupSyncResp, err error)
+	GetGroupIDs(ctx context.Context, accessToken string) (trResponse *model.GroupSyncResp, err error)
 	GetGroups(ctx context.Context, accessToken string, groupIDs []int) (groupsFromServer []model.Group, err error)
 	SendGroups(ctx context.Context, accessToken string, groups []model.Group) (groupIDs map[int]int, err error)
 }

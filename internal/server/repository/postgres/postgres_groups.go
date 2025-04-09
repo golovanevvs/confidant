@@ -23,6 +23,8 @@ func NewPostgresGroups(db *sqlx.DB) *postgresGroups {
 func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (groupIDs map[int]struct{}, err error) {
 	action := "get group IDs"
 
+	groupIDs = make(map[int]struct{})
+
 	row := rp.db.QueryRowContext(ctx, `
 	
 		SELECT
@@ -30,7 +32,7 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 		FROM
 			account
 		WHERE
-			account_id = $1;
+			id = $1;
 	
 	`, accountID)
 
@@ -59,9 +61,9 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 	`, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return groupIDs, nil
+			return nil, nil
 		} else {
-			return groupIDs, fmt.Errorf(
+			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
 				action,
@@ -87,7 +89,7 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 	}
 
 	if err = rows.Err(); err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,

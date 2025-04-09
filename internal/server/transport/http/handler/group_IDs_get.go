@@ -11,7 +11,7 @@ import (
 func (hd *handler) GroupIDsGet(w http.ResponseWriter, r *http.Request) {
 	action := fmt.Sprintf("get group IDs, url: %s, method: %s", r.URL.String(), r.Method)
 
-	accountID := r.Context().Value("accountID").(int)
+	accountID := r.Context().Value(AccountIDContextKey).(int)
 	groupIDs, err := hd.sv.GetGroupIDs(r.Context(), accountID)
 	if err != nil {
 		resErr := fmt.Errorf(
@@ -26,8 +26,9 @@ func (hd *handler) GroupIDsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var responseJSON []byte
 	if groupIDs != nil {
-		responseJSON, err := json.MarshalIndent(groupIDs, "", " ")
+		responseJSON, err = json.MarshalIndent(groupIDs, "", " ")
 		if err != nil {
 			resErr := fmt.Errorf(
 				"%s: %s: %s: %w: %w",
@@ -41,12 +42,11 @@ func (hd *handler) GroupIDsGet(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, resErr.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		// writing the headers and response
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(responseJSON))
 	} else {
-
+		responseJSON = []byte("{}")
 	}
+	// writing the headers and response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(responseJSON))
 }

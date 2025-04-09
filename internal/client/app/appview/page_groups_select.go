@@ -41,11 +41,25 @@ func newPageGroupsSelect() *pageGroupsSelect {
 func (av *appView) vGroupsSelect() {
 	//! "Синхронизировать"
 	av.v.pageGroups.pageGroupsSelect.buttonSync.SetSelectedFunc(func() {
-		err := av.sv.SyncGroups(context.Background(), av.accessToken, av.account.Email)
+		syncResp, err := av.sv.SyncGroups(context.Background(), av.accessToken, av.account.Email)
+
+		// error
 		if err != nil {
-			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]%s", err.Error()))
+			av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+			av.v.pageMain.messageBoxL.SetText("[red]Ошибка.")
+			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+
+			// no error
 		} else {
-			av.aPageGroupsSwitch()
+			// setting status
+			if syncResp.HTTPStatusCode == 200 {
+				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", syncResp.HTTPStatus))
+			} else {
+				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", syncResp.HTTPStatus))
+				av.v.pageMain.messageBoxL.SetText("[red]Ошибка.")
+				av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", syncResp.Error))
+				av.aPageGroupsSwitch()
+			}
 		}
 	})
 

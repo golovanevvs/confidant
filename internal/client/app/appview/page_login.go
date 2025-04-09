@@ -102,6 +102,7 @@ func (av *appView) vLogin() {
 			if accountResp.Error == "" {
 				av.account.ID = accountResp.AccountID
 				av.account.Email = email
+				av.accessToken = accountResp.AccessTokenString
 				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", accountResp.HTTPStatus))
 				av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", email))
 				av.v.pageMain.messageBoxL.Clear()

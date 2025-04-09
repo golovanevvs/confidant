@@ -307,7 +307,7 @@ func (rp *sqliteGroups) GetGroupIDs(ctx context.Context, email string) (groupSer
 		INNER JOIN
 			email_in_groups
 		ON
-			groups.id = email_on_groups.group_id
+			groups.id = email_in_groups.group_id
 		WHERE
 			email_in_groups.email = ?;
 	

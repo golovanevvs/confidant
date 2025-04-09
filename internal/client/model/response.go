@@ -22,6 +22,7 @@ type GroupSyncResp struct {
 	HTTPStatusCode int
 	HTTPStatus     string
 	Error          string
+	ResponseBody   []byte
 	GroupIDs       map[int]struct{}
 }
 

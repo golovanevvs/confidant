@@ -74,6 +74,8 @@ build_run_client_clear: deldb build_client run_client
 
 run_client_clear: deldb run_client
 
+build_run_server_client: build_server run_server build_client run_client
+
 build_run_server_client_clear: migrate_down migrate_up build_server run_server deldb build_client run_client
 
 run_server_client: run_server run_client

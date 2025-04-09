@@ -7,7 +7,7 @@ import (
 )
 
 type ITransportGroups interface {
-	GetGroupIDs(ctx context.Context, accessToken string) (trResponse model.GroupSyncResp, err error)
+	GetGroupIDs(ctx context.Context, accessToken string) (trResponse *model.GroupSyncResp, err error)
 }
 
 type IRepositoryGroups interface {

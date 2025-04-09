@@ -42,7 +42,7 @@ type IServiceData interface {
 }
 
 type IServiceSync interface {
-	SyncGroups(ctx context.Context, accessToken string, email string) (err error)
+	SyncGroups(ctx context.Context, accessToken string, email string) (syncResp *model.SyncResp, err error)
 }
 
 type IService interface {
