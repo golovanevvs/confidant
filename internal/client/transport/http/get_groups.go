@@ -1,6 +1,7 @@
 package trhttp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,13 +11,24 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) GetGroups(ctx context.Context, accessToken string, groupIDs map[int]struct{}) (groupsFromServer []model.Group, err error) {
+func (tr *trHTTP) GetGroups(ctx context.Context, accessToken string, groupIDs []int) (groupsFromServer []model.Group, err error) {
 	action := "get groups"
 
 	//! Request
 	endpoint := fmt.Sprintf("http://%s/api/groups", tr.addr)
 
-	request, err := http.NewRequest("GET", endpoint, nil)
+	groupIDsJSON, err := json.Marshal(groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrEncodeJSON500,
+			err,
+		)
+	}
+
+	request, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(groupIDsJSON))
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -27,6 +39,7 @@ func (tr *trHTTP) GetGroups(ctx context.Context, accessToken string, groupIDs ma
 		)
 	}
 
+	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	//! Response

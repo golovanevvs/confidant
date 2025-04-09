@@ -8,7 +8,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (hd *handler) GroupsGet(w http.ResponseWriter, r *http.Request) {
+func (hd *handler) GroupIDsGet(w http.ResponseWriter, r *http.Request) {
 	action := fmt.Sprintf("get group IDs, url: %s, method: %s", r.URL.String(), r.Method)
 
 	accountID := r.Context().Value("accountID").(int)

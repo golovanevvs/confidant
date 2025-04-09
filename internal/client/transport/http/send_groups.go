@@ -1,6 +1,7 @@
 package trhttp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,15 +11,26 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trResponse model.GroupSyncResp, err error) {
-	action := "get group IDs"
+func (tr *trHTTP) SendGroups(ctx context.Context, accessToken string, groups []model.Group) (groupIDs map[int]int, err error) {
+	action := "send groups"
 
 	//! Request
-	endpoint := fmt.Sprintf("http://%s/api/groupids", tr.addr)
+	endpoint := fmt.Sprintf("http://%s/api/groups", tr.addr)
 
-	request, err := http.NewRequest("GET", endpoint, nil)
+	groupsJSON, err := json.Marshal(groups)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrEncodeJSON500,
+			err,
+		)
+	}
+
+	request, err := http.NewRequest("PUT", endpoint, bytes.NewBuffer(groupsJSON))
+	if err != nil {
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
@@ -27,12 +39,13 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trRespon
 		)
 	}
 
+	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	//! Response
 	response, err := tr.cl.Do(request)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
@@ -44,7 +57,7 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trRespon
 
 	err = json.NewDecoder(response.Body).Decode(&groupIDs)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.ClientHTTPErr,
 			action,
@@ -52,9 +65,6 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trRespon
 			err,
 		)
 	}
-
-	//! Result
-	trResponse
 
 	return groupIDs, nil
 }

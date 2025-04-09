@@ -18,6 +18,19 @@ type AccountResp struct {
 	Error              string
 }
 
+type GroupSyncResp struct {
+	HTTPStatusCode int
+	HTTPStatus     string
+	Error          string
+	GroupIDs       map[int]struct{}
+}
+
+type SyncResp struct {
+	HTTPStatusCode int
+	HTTPStatus     string
+	Error          string
+}
+
 // type AccountRegisterResp struct {
 // 	AccountID string `json:"account_id"`
 // }

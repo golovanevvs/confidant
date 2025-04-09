@@ -36,7 +36,9 @@ func (hd *handler) InitRoutes() http.Handler {
 		r.Post("/register", hd.accountRegisterPost)
 		r.Post("/login", hd.loginPost)
 		r.Get("/status", hd.getStatus)
-		r.With(hd.authByJWT).Get("/groupids", hd.GroupsGet)
+		r.With(hd.authByJWT).Get("/groupids", hd.GroupIDsGet)
+		r.With(hd.authByJWT).Post("/groups", hd.GroupsPost)
+		r.With(hd.authByJWT).Put("/groups", hd.GroupsPut)
 	})
 
 	// rt.Route("/api/user", func(r chi.Router) {

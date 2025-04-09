@@ -41,12 +41,12 @@ func newPageGroupsSelect() *pageGroupsSelect {
 func (av *appView) vGroupsSelect() {
 	//! "Синхронизировать"
 	av.v.pageGroups.pageGroupsSelect.buttonSync.SetSelectedFunc(func() {
-		// err := av.sv.SyncGroups(context.Background(), av.account.ID, av.account.Email)
-		// if err != nil {
-		// 	av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]%s", err.Error()))
-		// } else {
-
-		// }
+		err := av.sv.SyncGroups(context.Background(), av.accessToken, av.account.Email)
+		if err != nil {
+			av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]%s", err.Error()))
+		} else {
+			av.aPageGroupsSwitch()
+		}
 	})
 
 	//! "Создать группу"

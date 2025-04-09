@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS data_file;
 DROP TABLE IF EXISTS data;
 DROP TABLE IF EXISTS email_in_groups;
 DROP TABLE IF EXISTS groups;
-DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS refresh_token;
 DROP TABLE IF EXISTS account;
 
 COMMIT;

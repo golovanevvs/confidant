@@ -20,6 +20,8 @@ type IServiceManage interface {
 
 type IServiceGroups interface {
 	GetGroupIDs(ctx context.Context, accountID int) (groupIDs map[int]struct{}, err error)
+	GetGroups(ctx context.Context, accountID int, groupIDs []int) (groups []model.Group, err error)
+	AddGroups(ctx context.Context, groups []model.Group) (groupIDs map[int]int, err error)
 }
 
 type IService interface {

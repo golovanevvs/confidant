@@ -146,6 +146,52 @@ func (rp *sqliteGroups) GetGroups(ctx context.Context, email string) (groups []m
 	return groups, nil
 }
 
+func (rp *sqliteGroups) GetGroupsByIDs(ctx context.Context, groupIDs []int) (groups []model.Group, err error) {
+	action := "get groups"
+
+	for _, groupID := range groupIDs {
+		row := rp.db.QueryRowContext(ctx, `
+	
+		SELECT
+			id, title, account_id
+		FROM
+			groups
+		WHERE
+			id = ?;
+
+	`, groupID)
+
+		var group model.Group
+		if err = row.Scan(&group.ID, &group.Title, &group.AccountID); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		emails, err := rp.getEmails(ctx, groupID)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		group.Emails = emails
+		group.ID = groupID
+
+		groups = append(groups, group)
+	}
+
+	return groups, nil
+}
+
 func (rp *sqliteData) GetGroupID(ctx context.Context, email string, titleGroup string) (groupID int, err error) {
 	action := "get group ID"
 
@@ -367,6 +413,34 @@ func (rp *sqliteGroups) AddGroupBySync(ctx context.Context, group model.Group) (
 				err,
 			)
 		}
+	}
+
+	return nil
+}
+
+func (rp *sqliteGroups) UpdateGroupIDsOnServer(ctx context.Context, newGroupIDs map[int]int) (err error) {
+	action := "update group IDsOnServer"
+
+	for groupID, groupIDOnServer := range newGroupIDs {
+		_, err = rp.db.ExecContext(ctx, `
+
+		UPDATE
+			groups
+		SET
+			id_on_server = $1
+		WHERE
+			id = $2;
+
+	`, groupIDOnServer, groupID)
+	}
+
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.DBErr,
+			action,
+			err,
+		)
 	}
 
 	return nil
