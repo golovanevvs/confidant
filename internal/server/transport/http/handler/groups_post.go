@@ -26,7 +26,7 @@ func (hd *handler) GroupsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountID := r.Context().Value("accountID").(int)
+	accountID := r.Context().Value(AccountIDContextKey).(int)
 
 	// deserializing JSON in account
 	var groupIDs []int

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
@@ -38,8 +39,10 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 		}, nil
 	}
 
-	var groupIDs map[int]struct{}
-	err = json.Unmarshal(trResponse.ResponseBody, &groupIDs)
+	response := struct {
+		IDs []int `json:"ids"`
+	}{}
+	err = json.Unmarshal(trResponse.ResponseBody, &response)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -49,6 +52,7 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 			err,
 		)
 	}
+	trResponse.GroupIDs = response.IDs
 
 	groupIDsFromServer := trResponse.GroupIDs
 
@@ -65,30 +69,16 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 	}
 
 	// getting group IDs for copy to client from server
-	groupIDsForCopyFromServer := make([]int, 0)
-	for groupIDFromServer := range groupIDsFromServer {
-		if _, inMap := groupServerIDs[groupIDFromServer]; !inMap {
-			groupIDsForCopyFromServer = append(groupIDsForCopyFromServer, groupIDFromServer)
+	if len(groupIDsFromServer) > 0 {
+		groupIDsForCopyFromServer := make([]int, 0)
+		for _, groupIDFromServer := range groupIDsFromServer {
+			if !slices.Contains(groupServerIDs, groupIDFromServer) {
+				groupIDsForCopyFromServer = append(groupIDsForCopyFromServer, groupIDFromServer)
+			}
 		}
-	}
 
-	// getting groups from server
-	groupsFromServer, err := sv.tr.GetGroups(ctx, accessToken, groupIDsForCopyFromServer)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %s: %w",
-			customerrors.ClientMsg,
-			customerrors.ClientServiceErr,
-			action,
-			err,
-		)
-	}
-
-	//TODO: добавить проверку совпадения title
-
-	// adding group to client DB
-	for _, groupFromServer := range groupsFromServer {
-		err = sv.sg.AddGroupBySync(ctx, groupFromServer)
+		// getting groups from server
+		groupsFromServer, err := sv.tr.GetGroups(ctx, accessToken, groupIDsForCopyFromServer)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %s: %w",
@@ -98,47 +88,61 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 				err,
 			)
 		}
+
+		//TODO: добавить проверку совпадения title
+
+		// adding group to client DB
+		for _, groupFromServer := range groupsFromServer {
+			err = sv.sg.AddGroupBySync(ctx, groupFromServer)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+		}
 	}
 
 	// getting groups from client
-	groupIDsForCopyToServer := make([]int, 0)
-	for groupNoServerID := range groupNoServerIDs {
-		groupIDsForCopyToServer = append(groupIDsForCopyToServer, groupNoServerID)
-	}
+	if len(groupNoServerIDs) > 0 {
+		groupsForCopyToServer, err := sv.sg.GetGroupsByIDs(ctx, groupNoServerIDs)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w: groupNoServerIDs: %v",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+				groupNoServerIDs,
+			)
+		}
 
-	groupsForCopyToServer, err := sv.sg.GetGroupsByIDs(ctx, groupIDsForCopyToServer)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %s: %w",
-			customerrors.ClientMsg,
-			customerrors.ClientServiceErr,
-			action,
-			err,
-		)
-	}
+		// sending groups to server
+		newGroupIDsFromServer, err := sv.tr.SendGroups(ctx, accessToken, groupsForCopyToServer)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
 
-	// sending groups to server
-	newGroupIDsFromServer, err := sv.tr.SendGroups(ctx, accessToken, groupsForCopyToServer)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %s: %w",
-			customerrors.ClientMsg,
-			customerrors.ClientServiceErr,
-			action,
-			err,
-		)
-	}
-
-	// updating IDsOnServer
-	err = sv.sg.UpdateGroupIDsOnServer(ctx, newGroupIDsFromServer)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %s: %w",
-			customerrors.ClientMsg,
-			customerrors.ClientServiceErr,
-			action,
-			err,
-		)
+		// updating IDsOnServer
+		err = sv.sg.UpdateGroupIDsOnServer(ctx, newGroupIDsFromServer)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
 	}
 
 	return &model.SyncResp{

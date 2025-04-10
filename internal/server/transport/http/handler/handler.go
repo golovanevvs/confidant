@@ -36,22 +36,11 @@ func (hd *handler) InitRoutes() http.Handler {
 		r.Post("/register", hd.accountRegisterPost)
 		r.Post("/login", hd.loginPost)
 		r.Get("/status", hd.getStatus)
-		r.With(hd.authByJWT).Get("/groupids", hd.GroupIDsGet)
+		r.Post("/refresh_access", hd.refreshAccessTokenPost)
+		r.With(hd.authByJWT).Get("/group_ids", hd.GroupIDsGet)
 		r.With(hd.authByJWT).Post("/groups", hd.GroupsPost)
 		r.With(hd.authByJWT).Put("/groups", hd.GroupsPut)
 	})
-
-	// rt.Route("/api/user", func(r chi.Router) {
-	// r.Post("/register", hd.accountRegister)
-	// 	r.Post("/login", hd.userLogin)
-	// 	r.With(hd.authByJWT).Post("/orders", hd.userUploadOrder)
-	// 	r.With(hd.authByJWT).Get("/orders", hd.getOrders)
-	// 	r.With(hd.authByJWT).Get("/withdrawals", hd.withDrawals)
-	// 	r.With(hd.authByJWT).Route("/balance", func(r chi.Router) {
-	// 		r.Get("/", hd.getBalance)
-	// 		r.Post("/withdraw", hd.withDraw)
-	// 	})
-	// })
 
 	return rt
 }

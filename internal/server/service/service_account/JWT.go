@@ -148,3 +148,30 @@ func (sv *ServiceAccount) GetAccountIDFromJWT(tokenString string) (int, error) {
 
 	return claims.AccountID, nil
 }
+
+func (sv *ServiceAccount) RefreshAccessJWT(ctx context.Context, refreshToken string) (accessTokenString string, err error) {
+	action := "refresh access JWT"
+
+	var accountID int
+	accountID, err = sv.GetAccountIDFromJWT(refreshToken)
+	if err != nil {
+		return "", fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.AccountServiceErr,
+			action,
+			err,
+		)
+	}
+
+	accessTokenString, err = sv.BuildAccessJWTString(ctx, accountID)
+	if err != nil {
+		return "", fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.AccountServiceErr,
+			action,
+			err,
+		)
+	}
+
+	return accessTokenString, err
+}

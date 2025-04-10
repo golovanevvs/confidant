@@ -13,6 +13,7 @@ type IServiceAccount interface {
 	Login(ctx context.Context, email, password string) (registerAccountResp *model.AccountResp, err error)
 	LoginAtStart(ctx context.Context) (accountID int, email string, refreshTokenString string, err error)
 	Logout(ctx context.Context) (err error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (refreshAccessTokenResp *model.RefreshAccessTokenResp, err error)
 }
 
 type IServiceManage interface {

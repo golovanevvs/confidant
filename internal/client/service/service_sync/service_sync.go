@@ -12,7 +12,7 @@ type IServiceGroups interface {
 	AddGroup(ctx context.Context, account *model.Account, title string) (err error)
 	GetGroupID(ctx context.Context, email string, titleGroup string) (groupID int, err error)
 	AddEmail(ctx context.Context, groupID int, email string) (err error)
-	GetGroupIDs(ctx context.Context, email string) (groupServerIDs map[int]struct{}, groupNoServerIDs map[int]struct{}, err error)
+	GetGroupIDs(ctx context.Context, email string) (groupServerIDs []int, groupNoServerIDs []int, err error)
 	AddGroupBySync(ctx context.Context, group model.Group) (err error)
 	UpdateGroupIDsOnServer(ctx context.Context, newGroupIDs map[int]int) (err error)
 }

@@ -124,11 +124,11 @@ func (av *appView) vData() {
 			case av.v.pageData.listTitles:
 				av.v.pageApp.app.SetFocus(av.v.pageData.buttonAdd)
 			case av.v.pageData.buttonAdd:
-				av.v.pageApp.app.SetFocus(av.v.pageData.buttonEdit)
-			case av.v.pageData.buttonEdit:
-				av.v.pageApp.app.SetFocus(av.v.pageData.buttonDelete)
-			case av.v.pageData.buttonDelete:
 				av.v.pageApp.app.SetFocus(av.v.pageData.buttonBack)
+			// case av.v.pageData.buttonEdit:
+			// 	av.v.pageApp.app.SetFocus(av.v.pageData.buttonDelete)
+			// case av.v.pageData.buttonDelete:
+			// 	av.v.pageApp.app.SetFocus(av.v.pageData.buttonBack)
 			case av.v.pageData.buttonBack:
 				av.v.pageApp.app.SetFocus(av.v.pageData.buttonExit)
 			case av.v.pageData.buttonExit:

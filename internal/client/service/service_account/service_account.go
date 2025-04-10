@@ -9,6 +9,7 @@ import (
 type ITransportAccount interface {
 	CreateAccount(ctx context.Context, email, password string) (trResponse *model.TrResponse, err error)
 	Login(ctx context.Context, email, password string) (trResponse *model.TrResponse, err error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (trResponse *model.TrResponse, err error)
 }
 
 type IRepositoryAccount interface {

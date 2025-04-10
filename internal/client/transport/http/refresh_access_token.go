@@ -1,6 +1,7 @@
 package trhttp
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -10,13 +11,13 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trResponse *model.GroupSyncResp, err error) {
-	action := "get group IDs"
+func (tr *trHTTP) RefreshAccessToken(ctx context.Context, refreshToken string) (trResponse *model.TrResponse, err error) {
+	action := "refresh access token"
 
 	//! Request
-	endpoint := fmt.Sprintf("http://%s/api/group_ids", tr.addr)
+	endpoint := fmt.Sprintf("http://%s/api/refresh_access", tr.addr)
 
-	request, err := http.NewRequest("GET", endpoint, nil)
+	request, err := http.NewRequest("POST", endpoint, bytes.NewBuffer([]byte(refreshToken)))
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -27,7 +28,7 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trRespon
 		)
 	}
 
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	request.Header.Set("Content-Type", "text/plain")
 
 	//! Response
 	response, err := tr.cl.Do(request)
@@ -53,9 +54,15 @@ func (tr *trHTTP) GetGroupIDs(ctx context.Context, accessToken string) (trRespon
 		)
 	}
 
-	return &model.GroupSyncResp{
+	authHeader := response.Header.Get("Authorization")
+
+	//! Result
+	trResponse = &model.TrResponse{
 		HTTPStatusCode: response.StatusCode,
 		HTTPStatus:     response.Status,
+		AuthHeader:     authHeader,
 		ResponseBody:   responseBody,
-	}, nil
+	}
+
+	return trResponse, nil
 }

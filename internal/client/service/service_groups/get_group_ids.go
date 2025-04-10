@@ -7,7 +7,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceGroups) GetGroupIDs(ctx context.Context, email string) (groupServerIDs map[int]struct{}, groupNoServerIDs map[int]struct{}, err error) {
+func (sv *ServiceGroups) GetGroupIDs(ctx context.Context, email string) (groupServerIDs []int, groupNoServerIDs []int, err error) {
 	action := "get group IDs"
 
 	groupServerIDs, groupNoServerIDs, err = sv.rp.GetGroupIDs(ctx, email)
@@ -20,8 +20,6 @@ func (sv *ServiceGroups) GetGroupIDs(ctx context.Context, email string) (groupSe
 			err,
 		)
 	}
-
-	//TODO: добавить запрос на сервер для получения групп и сравнение групп
 
 	return groupServerIDs, groupNoServerIDs, nil
 }

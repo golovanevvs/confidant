@@ -7,7 +7,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceGroups) GetGroupIDs(ctx context.Context, accountID int) (groupIDs map[int]struct{}, err error) {
+func (sv *ServiceGroups) GetGroupIDs(ctx context.Context, accountID int) (groupIDs []int, err error) {
 	action := "get group IDs"
 
 	groupIDs, err = sv.rp.GetGroupIDs(ctx, accountID)

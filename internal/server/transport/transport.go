@@ -12,6 +12,7 @@ type IServiceAccount interface {
 	BuildAccessJWTString(ctx context.Context, accountID int) (accessTokenString string, err error)
 	BuildRefreshJWTString(ctx context.Context, accountID int) (refreshTokenString string, err error)
 	GetAccountIDFromJWT(tokenString string) (int, error)
+	RefreshAccessJWT(ctx context.Context, refreshToken string) (accessTokenString string, err error)
 }
 
 type IServiceManage interface {
@@ -19,7 +20,7 @@ type IServiceManage interface {
 }
 
 type IServiceGroups interface {
-	GetGroupIDs(ctx context.Context, accountID int) (groupIDs map[int]struct{}, err error)
+	GetGroupIDs(ctx context.Context, accountID int) (groupIDs []int, err error)
 	GetGroups(ctx context.Context, accountID int, groupIDs []int) (groups []model.Group, err error)
 	AddGroups(ctx context.Context, groups []model.Group) (groupIDs map[int]int, err error)
 }

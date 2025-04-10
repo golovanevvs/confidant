@@ -18,12 +18,19 @@ type AccountResp struct {
 	Error              string
 }
 
+type RefreshAccessTokenResp struct {
+	HTTPStatusCode    int
+	HTTPStatus        string
+	AccessTokenString string
+	Error             string
+}
+
 type GroupSyncResp struct {
 	HTTPStatusCode int
 	HTTPStatus     string
 	Error          string
 	ResponseBody   []byte
-	GroupIDs       map[int]struct{}
+	GroupIDs       []int
 }
 
 type SyncResp struct {

@@ -41,24 +41,61 @@ func newPageGroupsSelect() *pageGroupsSelect {
 func (av *appView) vGroupsSelect() {
 	//! "Синхронизировать"
 	av.v.pageGroups.pageGroupsSelect.buttonSync.SetSelectedFunc(func() {
-		syncResp, err := av.sv.SyncGroups(context.Background(), av.accessToken, av.account.Email)
+		av.vClearMessages()
+		flag := true
+		if av.accessToken == "" {
+			refreshAccessTokenResp, err := av.sv.RefreshAccessToken(context.Background(), av.refreshToken)
 
-		// error
-		if err != nil {
-			av.v.pageMain.statusBar.cellResponseStatus.SetText("")
-			av.v.pageMain.messageBoxL.SetText("[red]Ошибка.")
-			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+			// error
+			if err != nil {
+				av.aLogout()
+				av.vPageLoginSwitch()
+				av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+				av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Ошибка1\naccess token: %s\nrefresh token: %s", av.accessToken, av.refreshToken))
+				av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 
-			// no error
-		} else {
-			// setting status
-			if syncResp.HTTPStatusCode == 200 {
-				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", syncResp.HTTPStatus))
+				flag = false
+
+				// no error
 			} else {
-				av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", syncResp.HTTPStatus))
-				av.v.pageMain.messageBoxL.SetText("[red]Ошибка.")
-				av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", syncResp.Error))
-				av.aPageGroupsSwitch()
+				if refreshAccessTokenResp.HTTPStatusCode == 200 {
+					av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", refreshAccessTokenResp.HTTPStatus))
+					av.accessToken = refreshAccessTokenResp.AccessTokenString
+
+					// error
+				} else {
+					av.aLogout()
+					av.vPageLoginSwitch()
+					av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Ошибка2\naccess token: %s\nrefresh token: %s", av.accessToken, av.refreshToken))
+					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", refreshAccessTokenResp.Error))
+					av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", refreshAccessTokenResp.HTTPStatus))
+
+					flag = false
+				}
+			}
+		}
+
+		if flag {
+
+			syncResp, err := av.sv.SyncGroups(context.Background(), av.accessToken, av.account.Email)
+
+			// error
+			if err != nil {
+				av.v.pageMain.statusBar.cellResponseStatus.SetText("")
+				av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Ошибка3\naccess token: %s\nrefresh token: %s", av.accessToken, av.refreshToken))
+				av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
+
+				// no error
+			} else {
+				// setting status
+				if syncResp.HTTPStatusCode == 200 {
+					av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[green]%s", syncResp.HTTPStatus))
+					av.aPageGroupsSwitch()
+				} else {
+					av.v.pageMain.statusBar.cellResponseStatus.SetText(fmt.Sprintf("[yellow]%s", syncResp.HTTPStatus))
+					av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Ошибка4\naccess token: %s\nrefresh token: %s", av.accessToken, av.refreshToken))
+					av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", syncResp.Error))
+				}
 			}
 		}
 	})
@@ -99,13 +136,11 @@ func (av *appView) vGroupsSelect() {
 		// deleting active account
 		err := av.sv.Logout(context.Background())
 		if err != nil {
-			av.v.pageMain.messageBoxL.SetText("[red]Критическая ошибка!")
+			av.v.pageMain.messageBoxL.SetText("[red]Ошибка")
 			av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))
 		}
-		av.accessToken = ""
-		av.refreshToken = ""
-		av.account.ID = -1
-		av.account.Email = ""
+
+		av.aLogout()
 	})
 
 	//! "Выход"
@@ -137,9 +172,9 @@ func (av *appView) vGroupsSelect() {
 			case av.v.pageGroups.pageGroupsSelect.buttonNew:
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsSelect.buttonSettings)
 			case av.v.pageGroups.pageGroupsSelect.buttonSettings:
-				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsSelect.buttonDelete)
-			case av.v.pageGroups.pageGroupsSelect.buttonDelete:
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsSelect.buttonLogout)
+			// case av.v.pageGroups.pageGroupsSelect.buttonDelete:
+			// 	av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsSelect.buttonLogout)
 			case av.v.pageGroups.pageGroupsSelect.buttonLogout:
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsSelect.buttonExit)
 			case av.v.pageGroups.pageGroupsSelect.buttonExit:
@@ -157,4 +192,13 @@ func (av *appView) aPageGroupsEditEmailsSwitch() {
 	av.v.pageApp.app.SetInputCapture(av.v.pageGroups.pageGroupsEditEmails.inputCapture)
 	av.v.pageApp.app.SetFocus(av.v.pageGroups.listEmails)
 	av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.inputEmail.SetText("")
+}
+
+func (av *appView) aLogout() {
+	av.v.pageGroups.listGroups.Clear()
+	av.v.pageGroups.listEmails.Clear()
+	av.accessToken = ""
+	av.refreshToken = ""
+	av.account.ID = -1
+	av.account.Email = ""
 }

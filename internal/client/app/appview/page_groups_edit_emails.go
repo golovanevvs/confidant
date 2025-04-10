@@ -93,9 +93,9 @@ func (av *appView) vGroupsEditEmails() {
 			case av.v.pageGroups.pageGroupsEditEmails.formGroupsAddEmail.inputEmail:
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsEditEmails.buttonAdd)
 			case av.v.pageGroups.pageGroupsEditEmails.buttonAdd:
-				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsEditEmails.buttonDelete)
-			case av.v.pageGroups.pageGroupsEditEmails.buttonDelete:
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsEditEmails.buttonEхit)
+			// case av.v.pageGroups.pageGroupsEditEmails.buttonDelete:
+			// 	av.v.pageApp.app.SetFocus(av.v.pageGroups.pageGroupsEditEmails.buttonEхit)
 			case av.v.pageGroups.pageGroupsEditEmails.buttonEхit:
 				av.v.pageApp.app.SetFocus(av.v.pageGroups.listEmails)
 			}
