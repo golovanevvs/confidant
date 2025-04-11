@@ -21,17 +21,17 @@ func NewSQLiteAccount(db *sqlx.DB) *sqliteAccount {
 	}
 }
 
-func (rp *sqliteAccount) SaveAccount(ctx context.Context, accountID int, email string, passwordHash []byte) (err error) {
+func (rp *sqliteAccount) SaveAccount(ctx context.Context, accountID int, email string, passwordHash []byte, refreshToken string) (err error) {
 	action := "save account"
 
 	_, err = rp.db.ExecContext(ctx, `
 	
 		INSERT INTO account
-			(id, email, password_hash)
+			(id, email, password_hash, token)
 		VALUES
-			(?, ?, ?)
+			(?, ?, ?, ?)
 
-	`, accountID, email, passwordHash)
+	`, accountID, email, passwordHash, refreshToken)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return fmt.Errorf(
@@ -140,17 +140,17 @@ func (rp *sqliteAccount) LoadEmail(ctx context.Context, accountID int) (email st
 	return email, nil
 }
 
-func (rp *sqliteAccount) SaveActiveAccount(ctx context.Context, accountID int, refreshTokenString string) (err error) {
+func (rp *sqliteAccount) SaveActiveAccount(ctx context.Context, accountID int) (err error) {
 	action := "save active account"
 
 	_, err = rp.db.ExecContext(ctx, `
 
 		INSERT OR REPLACE INTO active_account
-			(account_id, token)
+			(account_id)
 		VALUES
-			(?,?)
+			(?)
 
-	`, accountID, refreshTokenString)
+	`, accountID)
 	if err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -169,8 +169,14 @@ func (rp *sqliteAccount) LoadActiveAccount(ctx context.Context) (accountID int, 
 
 	row := rp.db.QueryRowContext(ctx, `
 
-		SELECT account_id, token
-		FROM active_account
+		SELECT
+			account_id, token
+		FROM
+			active_account
+		INNER JOIN
+			account
+		ON
+			active_account.account_id = account.id
 
 	`)
 	err = row.Scan(&accountID, &refreshTokenstring)

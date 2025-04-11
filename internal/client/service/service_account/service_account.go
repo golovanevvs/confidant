@@ -13,10 +13,10 @@ type ITransportAccount interface {
 }
 
 type IRepositoryAccount interface {
-	SaveAccount(ctx context.Context, accountID int, email string, passwordHash []byte) (err error)
+	SaveAccount(ctx context.Context, accountID int, email string, passwordHash []byte, refreshToken string) (err error)
 	LoadAccountID(ctx context.Context, email string, passwordHash []byte) (accountID int, err error)
 	LoadEmail(ctx context.Context, accountID int) (email string, err error)
-	SaveActiveAccount(ctx context.Context, accountID int, refreshTokenString string) (err error)
+	SaveActiveAccount(ctx context.Context, accountID int) (err error)
 	LoadActiveAccount(ctx context.Context) (accountID int, refreshTokenstring string, err error)
 	DeleteActiveAccount(ctx context.Context) (err error)
 }

@@ -38,12 +38,12 @@ func New() (*SQLite, error) {
 			CREATE TABLE IF NOT EXISTS account(
     			id INTEGER PRIMARY KEY,
     			email TEXT NOT NULL UNIQUE,
-    			password_hash BLOB NOT NULL
+    			password_hash BLOB NOT NULL,
+				token TEXT
 			);
 
 			CREATE TABLE IF NOT EXISTS active_account(
 				account_id INTEGER,
-				token TEXT,
 				dummy INTEGER DEFAULT 1 UNIQUE
 			);
 

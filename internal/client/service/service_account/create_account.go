@@ -122,7 +122,7 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 		)
 	}
 
-	err = sv.rp.SaveActiveAccount(ctx, account.ID, refreshTokenHeader)
+	err = sv.rp.SaveActiveAccount(ctx, account.ID)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %s: %w",
@@ -147,7 +147,7 @@ func (sv *ServiceAccount) CreateAccount(ctx context.Context, email, password str
 	}
 
 	// saving the account in a local DB
-	err = sv.rp.SaveAccount(ctx, account.ID, email, passwordHash)
+	err = sv.rp.SaveAccount(ctx, account.ID, email, passwordHash, refreshTokenHeader)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %s: %w",

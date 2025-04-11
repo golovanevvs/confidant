@@ -123,6 +123,7 @@ func (av *appView) vRegister() {
 						av.aPageGroupsSwitch()
 
 						av.accessToken = accountResp.AccessTokenString
+						av.refreshToken = accountResp.RefreshTokenString
 
 					// the response does not contain the "Authorization" header
 					case strings.Contains(accountResp.Error, customerrors.ErrAuthHeaderResp.Error()):

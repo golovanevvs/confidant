@@ -26,6 +26,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 		)
 	}
 
+	var refreshToken string
 	accountID, err := sv.rp.LoadAccountID(ctx, email, passwordHash)
 	if err != nil {
 		if errors.Is(err, customerrors.ErrDBEmailNotFound401) {
@@ -144,7 +145,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 				)
 			}
 
-			err = sv.rp.SaveActiveAccount(ctx, account.ID, refreshTokenHeader)
+			err = sv.rp.SaveActiveAccount(ctx, account.ID)
 			if err != nil {
 				return nil, fmt.Errorf(
 					"%s: %s: %s: %w",
@@ -156,7 +157,7 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 			}
 
 			// saving the account in a local DB
-			err = sv.rp.SaveAccount(ctx, account.ID, email, passwordHash)
+			err = sv.rp.SaveAccount(ctx, account.ID, email, passwordHash, refreshTokenHeader)
 			if err != nil {
 				return nil, fmt.Errorf(
 					"%s: %s: %s:%w",
@@ -184,21 +185,33 @@ func (sv *ServiceAccount) Login(ctx context.Context, email, password string) (re
 				err,
 			)
 		}
-	}
+	} else {
+		err = sv.rp.SaveActiveAccount(ctx, accountID)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
 
-	err = sv.rp.SaveActiveAccount(ctx, accountID, "")
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %s: %w",
-			customerrors.ClientMsg,
-			customerrors.ClientServiceErr,
-			action,
-			err,
-		)
+		_, refreshToken, err = sv.rp.LoadActiveAccount(ctx)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
 	}
 
 	return &model.AccountResp{
-		AccountID: accountID,
-		Error:     "",
+		AccountID:          accountID,
+		RefreshTokenString: refreshToken,
+		Error:              "",
 	}, nil
 }
