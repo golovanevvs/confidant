@@ -8,12 +8,11 @@ import (
 )
 
 func (sv *ServiceData) GetDataIDs(ctx context.Context, accountID int) (dataIDs []int, err error) {
-	//! ----------------- СТОП --------------------
-	action := "get group IDs"
+	action := "get data IDs"
 
-	groupIDs, err = sv.rp.GetGroupIDs(ctx, accountID)
+	dataIDs, err = sv.rp.GetDataIDs(ctx, accountID)
 	if err != nil {
-		return groupIDs, fmt.Errorf(
+		return dataIDs, fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.GroupsServiceErr,
 			action,
@@ -21,5 +20,5 @@ func (sv *ServiceData) GetDataIDs(ctx context.Context, accountID int) (dataIDs [
 		)
 	}
 
-	return groupIDs, nil
+	return dataIDs, nil
 }

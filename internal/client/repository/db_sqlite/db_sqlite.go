@@ -68,6 +68,7 @@ func New() (*SQLite, error) {
 				group_id INTEGER,
 				data_type TEXT NOT NULL,
 				title TEXT NOT NULL,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
 			);
 			

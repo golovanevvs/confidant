@@ -37,44 +37,19 @@ func (rp *postgresGroups) GetDataIDs(ctx context.Context, accountID int) (dataID
 
 	if len(groupIDs) > 0 {
 		dataIDs = make([]int, 0)
-		//! ----------------- СТОП --------------------
+		for _, groupID := range groupIDs {
+			rows, err := rp.db.QueryContext(ctx, `
+			
+				SELECT
+					id
+				FROM
+					data
+				WHERE
+					group_id = $1;
+	
+			`, groupID)
 
-		row := rp.db.QueryRowContext(ctx, `
-	
-		SELECT
-			email
-		FROM
-			account
-		WHERE
-			id = $1;
-	
-	`, accountID)
-
-		var email string
-		if err = row.Scan(&email); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-
-		rows, err := rp.db.QueryContext(ctx, `
-	
-		SELECT
-			group_id
-		FROM
-			email_in_groups
-		WHERE
-			email = $1;
-	
-	`, email)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, nil
-			} else {
+			if err != nil && err != sql.ErrNoRows {
 				return nil, fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -83,13 +58,24 @@ func (rp *postgresGroups) GetDataIDs(ctx context.Context, accountID int) (dataID
 					err,
 				)
 			}
-		}
-		defer rows.Close()
 
-		var groupIDs2 []int
-		for rows.Next() {
-			var groupID int
-			if err = rows.Scan(&groupID); err != nil {
+			defer rows.Close()
+
+			for rows.Next() {
+				var dataID int
+				if err = rows.Scan(&dataID); err != nil {
+					return nil, fmt.Errorf(
+						"%s: %s: %w: %w",
+						customerrors.DBErr,
+						action,
+						customerrors.ErrDBInternalError500,
+						err,
+					)
+				}
+				dataIDs = append(dataIDs, dataID)
+			}
+
+			if err = rows.Err(); err != nil {
 				return nil, fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -98,17 +84,6 @@ func (rp *postgresGroups) GetDataIDs(ctx context.Context, accountID int) (dataID
 					err,
 				)
 			}
-			groupIDs2 = append(groupIDs2, groupID)
-		}
-
-		if err = rows.Err(); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
 		}
 		return dataIDs, nil
 	} else {

@@ -33,4 +33,5 @@ type IService interface {
 	IServiceAccount
 	IServiceManage
 	IServiceGroups
+	IServiceData
 }

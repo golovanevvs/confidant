@@ -48,8 +48,6 @@ func (av *appView) vGroupsSelect() {
 
 			// error
 			if err != nil {
-				av.aLogout()
-				av.vPageLoginSwitch()
 				av.v.pageMain.statusBar.cellResponseStatus.SetText("")
 				av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("[red]Ошибка1\naccess token: %s\nrefresh token: %s", av.accessToken, av.refreshToken))
 				av.v.pageMain.messageBoxR.SetText(fmt.Sprintf("[red]%s", err.Error()))

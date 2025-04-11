@@ -101,8 +101,8 @@ type FileEnc struct {
 }
 
 type Data struct {
-	ID         int       `json:"id"`
-	IDOnServer int       `json:"id_on_server"`
+	ID         int       `json:"id_on_server"`
+	IDOnClient int       `json:"id_on_client"`
 	GroupID    int       `json:"group_id"`
 	DataType   string    `json:"data_type"`
 	Title      string    `json:"title"`

@@ -16,7 +16,6 @@ func (tr *trHTTP) GetDataIDs(ctx context.Context, accessToken string) (trRespons
 	//! Request
 	endpoint := fmt.Sprintf("http://%s/api/data_ids", tr.addr)
 
-	//! ----------------- СТОП --------------------
 	request, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -60,3 +59,5 @@ func (tr *trHTTP) GetDataIDs(ctx context.Context, accessToken string) (trRespons
 		ResponseBody:   responseBody,
 	}, nil
 }
+
+//! ----------------- STOP --------------------
