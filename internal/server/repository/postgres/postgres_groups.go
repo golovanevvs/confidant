@@ -201,7 +201,7 @@ func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (
 
 		var groupID int
 		if err = row.Scan(&groupID); err != nil {
-			return groupIDs, fmt.Errorf(
+			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
 				action,
@@ -221,7 +221,7 @@ func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (
 		`, email, groupID)
 
 			if err != nil {
-				return groupIDs, fmt.Errorf(
+				return nil, fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
 					action,
@@ -231,7 +231,7 @@ func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (
 			}
 		}
 
-		groupIDs[group.ID] = groupID
+		groupIDs[group.IDOnClient] = groupID
 	}
 
 	return groupIDs, nil

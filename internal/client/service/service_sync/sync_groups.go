@@ -77,23 +77,9 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 			}
 		}
 
-		// getting groups from server
-		groupsFromServer, err := sv.tr.GetGroups(ctx, accessToken, groupIDsForCopyFromServer)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %s: %w",
-				customerrors.ClientMsg,
-				customerrors.ClientServiceErr,
-				action,
-				err,
-			)
-		}
-
-		//TODO: добавить проверку совпадения title
-
-		// adding group to client DB
-		for _, groupFromServer := range groupsFromServer {
-			err = sv.sg.AddGroupBySync(ctx, groupFromServer)
+		if len(groupIDsForCopyFromServer) > 0 {
+			// getting groups from server
+			groupsFromServer, err := sv.tr.GetGroups(ctx, accessToken, groupIDsForCopyFromServer)
 			if err != nil {
 				return nil, fmt.Errorf(
 					"%s: %s: %s: %w",
@@ -102,6 +88,22 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 					action,
 					err,
 				)
+			}
+
+			//TODO: добавить проверку совпадения title
+
+			// adding group to client DB
+			for _, groupFromServer := range groupsFromServer {
+				err = sv.sg.AddGroupBySync(ctx, groupFromServer)
+				if err != nil {
+					return nil, fmt.Errorf(
+						"%s: %s: %s: %w",
+						customerrors.ClientMsg,
+						customerrors.ClientServiceErr,
+						action,
+						err,
+					)
+				}
 			}
 		}
 	}
