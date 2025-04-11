@@ -11,6 +11,7 @@ type Postgres struct {
 	*postgresManage
 	*postgresAccount
 	*postgresGroups
+	*postgresData
 }
 
 func New(databaseURI string) (*Postgres, error) {
@@ -28,5 +29,6 @@ func New(databaseURI string) (*Postgres, error) {
 		NewPostgresManage(db),
 		NewPostgresAccount(db),
 		NewPostgresGroups(db),
+		NewPostgresData(db),
 	}, nil
 }

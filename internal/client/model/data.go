@@ -16,8 +16,8 @@ type NoteEnc struct {
 	GroupID    int
 	Type       string
 	Title      string
-	Desc       []byte
-	Note       []byte
+	Desc       []byte `json:"desc"`
+	Note       []byte `json:"note"`
 }
 
 type PassDec struct {
@@ -37,9 +37,9 @@ type PassEnc struct {
 	GroupID    int
 	Type       string
 	Title      string
-	Desc       []byte
-	Login      []byte
-	Pass       []byte
+	Desc       []byte `json:"desc"`
+	Login      []byte `json:"login"`
+	Pass       []byte `json:"pass"`
 }
 
 type CardDec struct {
@@ -63,13 +63,13 @@ type CardEnc struct {
 	GroupID    int
 	Type       string
 	Title      string
-	Desc       []byte
-	Number     []byte
-	Date       []byte
-	Name       []byte
-	CVC2       []byte
-	PIN        []byte
-	Bank       []byte
+	Desc       []byte `json:"desc"`
+	Number     []byte `json:"number"`
+	Date       []byte `json:"date"`
+	Name       []byte `json:"name"`
+	CVC2       []byte `json:"cvc2"`
+	PIN        []byte `json:"pin"`
+	Bank       []byte `json:"bank"`
 }
 
 type FileDec struct {
@@ -91,9 +91,21 @@ type FileEnc struct {
 	GroupID    int
 	Type       string
 	Title      string
-	Desc       []byte
-	Filename   []byte
-	Filesize   []byte
-	Filedate   []byte
-	File       []byte
+	Desc       []byte `json:"desc"`
+	Filename   []byte `json:"filename"`
+	Filesize   []byte `json:"filesize"`
+	Filedate   []byte `json:"filedate"`
+	File       []byte `json:"file"`
+}
+
+type Data struct {
+	ID         int     `json:"id"`
+	IDOnServer int     `json:"id_on_server"`
+	GroupID    int     `json:"group_id"`
+	DataType   string  `json:"data_type"`
+	Title      string  `json:"title"`
+	Note       NoteEnc `json:"note"`
+	Pass       PassEnc `json:"pass"`
+	Card       CardEnc `json:"card"`
+	File       FileEnc `json:"file"`
 }

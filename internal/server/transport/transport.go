@@ -25,6 +25,10 @@ type IServiceGroups interface {
 	AddGroups(ctx context.Context, groups []model.Group) (groupIDs map[int]int, err error)
 }
 
+type IServiceData interface {
+	GetDataIDs(ctx context.Context, accountID int) (dataIDs []int, err error)
+}
+
 type IService interface {
 	IServiceAccount
 	IServiceManage
