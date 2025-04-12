@@ -12,7 +12,7 @@ func (sv *ServiceSecurity) Decrypt(data []byte) (decryptedData []byte, err error
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
@@ -21,7 +21,7 @@ func (sv *ServiceSecurity) Decrypt(data []byte) (decryptedData []byte, err error
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)

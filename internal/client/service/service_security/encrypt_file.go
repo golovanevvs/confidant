@@ -11,7 +11,7 @@ func (sv *ServiceSecurity) EncryptFile(filepath string) (encryptedFile []byte, e
 	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
@@ -20,7 +20,7 @@ func (sv *ServiceSecurity) EncryptFile(filepath string) (encryptedFile []byte, e
 	encryptedFile, err = sv.Encrypt(data)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)

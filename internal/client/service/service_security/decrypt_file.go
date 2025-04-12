@@ -11,7 +11,7 @@ func (sv *ServiceSecurity) DecryptFile(data []byte, filepath string) (err error)
 	dataDec, err := sv.Decrypt(data)
 	if err != nil {
 		return fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
@@ -20,7 +20,7 @@ func (sv *ServiceSecurity) DecryptFile(data []byte, filepath string) (err error)
 	file, err := os.Create(filepath)
 	if err != nil {
 		return fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
@@ -30,7 +30,7 @@ func (sv *ServiceSecurity) DecryptFile(data []byte, filepath string) (err error)
 	_, err = file.Write(dataDec)
 	if err != nil {
 		return fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)

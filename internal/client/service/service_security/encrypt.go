@@ -15,7 +15,7 @@ func (sv *ServiceSecurity) Encrypt(data []byte) (encryptedData []byte, err error
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
@@ -24,7 +24,7 @@ func (sv *ServiceSecurity) Encrypt(data []byte) (encryptedData []byte, err error
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
@@ -33,7 +33,7 @@ func (sv *ServiceSecurity) Encrypt(data []byte) (encryptedData []byte, err error
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, fmt.Errorf(
-			"%s:%w",
+			"%s: %w",
 			action,
 			err,
 		)
