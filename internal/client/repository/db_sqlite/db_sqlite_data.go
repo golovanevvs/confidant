@@ -2,6 +2,7 @@ package db_sqlite
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
@@ -477,4 +478,67 @@ func (rp *sqliteData) GetFileForSave(ctx context.Context, dataID int) (dataEnc [
 	}
 
 	return dataEnc, nil
+}
+
+func (rp *sqliteData) GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error) {
+	action := "get data IDs"
+
+	dataServerIDs = make([]int, 0)
+	dataNoServerIDs = make([]int, 0)
+
+	for _, groupID := range groupIDs {
+		rows, err := rp.db.QueryContext(ctx, `
+	
+		SELECT
+			id, id_on_server
+		FROM
+			data
+		WHERE
+			group_id = ?;
+	
+	`, groupID)
+		if err != nil {
+			if err == sql.ErrNoRows && err != sql.ErrNoRows {
+				return nil, nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var dataID, dataServerID int
+			if err = rows.Scan(&dataID, &dataServerID); err != nil {
+				return nil, nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+
+			if dataServerID == -1 {
+				dataNoServerIDs = append(dataNoServerIDs, dataID)
+			} else {
+				dataServerIDs = append(dataServerIDs, dataServerID)
+			}
+		}
+
+		if err = rows.Err(); err != nil {
+			return nil, nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+
+	return dataServerIDs, dataNoServerIDs, nil
 }

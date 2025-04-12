@@ -2,40 +2,42 @@ package service_sync
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
+	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
 func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email string) (syncResp *model.SyncResp, err error) {
-	// action := "sync data"
+	action := "sync data"
 
 	// getting group IDs from client
-	// groupIDs, _, err := sv.sg.GetGroupIDs(ctx, email)
-	// if err != nil {
-	// 	return nil, fmt.Errorf(
-	// 		"%s: %s: %s: %w",
-	// 		customerrors.ClientMsg,
-	// 		customerrors.ClientServiceErr,
-	// 		action,
-	// 		err,
-	// 	)
-	// }
+	groupIDs, _, err := sv.sg.GetGroupIDs(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientServiceErr,
+			action,
+			err,
+		)
+	}
 
 	// getting data IDs from server
 
-	// //! ----------------- СТОП --------------------
-	// // getting group IDs from server
-	// trResponse, err := sv.tr.GetGroupIDs(ctx, accessToken)
-	// if err != nil {
-	// 	return nil, fmt.Errorf(
-	// 		"%s: %s: %s: %w",
-	// 		customerrors.ClientMsg,
-	// 		customerrors.ClientServiceErr,
-	// 		action,
-	// 		err,
-	// 	)
-	// }
+	// getting data IDs from server
+	trResponse, err := sv.tr.GetDataIDs(ctx, accessToken)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientServiceErr,
+			action,
+			err,
+		)
+	}
 
+	// //! ----------------- СТОП --------------------
 	// if trResponse.HTTPStatusCode != 200 {
 	// 	return &model.SyncResp{
 	// 		HTTPStatusCode: trResponse.HTTPStatusCode,

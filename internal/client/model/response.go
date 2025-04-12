@@ -51,3 +51,11 @@ type StatusResp struct {
 type AccID struct {
 	AccountID int `json:"account_id"`
 }
+
+type DataSyncResp struct {
+	HTTPStatusCode int
+	HTTPStatus     string
+	Error          string
+	ResponseBody   []byte
+	DataIDs        []int
+}

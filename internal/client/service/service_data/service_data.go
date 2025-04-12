@@ -23,6 +23,7 @@ type IRepositoryData interface {
 	AddFile(ctx context.Context, data model.FileEnc) (err error)
 	GetFile(ctx context.Context, dataID int) (data model.FileEnc, err error)
 	GetFileForSave(ctx context.Context, dataID int) (data []byte, err error)
+	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
 }
 
 type IServiceSecurity interface {

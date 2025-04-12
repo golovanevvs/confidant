@@ -17,20 +17,27 @@ type IServiceGroups interface {
 	UpdateGroupIDsOnServer(ctx context.Context, newGroupIDs map[int]int) (err error)
 }
 
+type IServiceData interface {
+	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
+}
+
 type ITransportSync interface {
 	GetGroupIDs(ctx context.Context, accessToken string) (trResponse *model.GroupSyncResp, err error)
 	GetGroups(ctx context.Context, accessToken string, groupIDs []int) (groupsFromServer []model.Group, err error)
 	SendGroups(ctx context.Context, accessToken string, groups []model.Group) (groupIDs map[int]int, err error)
+	GetDataIDs(ctx context.Context, accessToken string) (trResponse *model.GroupSyncResp, err error)
 }
 
 type ServiceSync struct {
 	tr ITransportSync
 	sg IServiceGroups
+	sd IServiceData
 }
 
-func New(tr ITransportSync, sg IServiceGroups) *ServiceSync {
+func New(tr ITransportSync, sg IServiceGroups, sd IServiceData) *ServiceSync {
 	return &ServiceSync{
 		tr: tr,
 		sg: sg,
+		sd: sd,
 	}
 }

@@ -32,11 +32,12 @@ type service struct {
 
 func New(tr ITransport, rp IRepository) *service {
 	sg := service_groups.New(tr, rp)
+	sd := service_data.New(tr, rp)
 	return &service{
 		ServiceAccount: service_account.New(tr, rp),
 		ServiceManage:  service_manage.New(tr, rp),
 		ServiceGroups:  sg,
-		ServiceData:    service_data.New(tr, rp),
-		ServiceSync:    service_sync.New(tr, sg),
+		ServiceData:    sd,
+		ServiceSync:    service_sync.New(tr, sg, sd),
 	}
 }

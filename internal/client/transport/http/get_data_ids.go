@@ -10,7 +10,7 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (tr *trHTTP) GetDataIDs(ctx context.Context, accessToken string) (trResponse *model.GroupSyncResp, err error) {
+func (tr *trHTTP) GetDataIDs(ctx context.Context, accessToken string) (trResponse *model.DataSyncResp, err error) {
 	action := "get data IDs"
 
 	//! Request
@@ -53,7 +53,7 @@ func (tr *trHTTP) GetDataIDs(ctx context.Context, accessToken string) (trRespons
 		)
 	}
 
-	return &model.GroupSyncResp{
+	return &model.DataSyncResp{
 		HTTPStatusCode: response.StatusCode,
 		HTTPStatus:     response.Status,
 		ResponseBody:   responseBody,
