@@ -2,7 +2,9 @@ package service_sync
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
@@ -37,89 +39,89 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 		)
 	}
 
-	// //! ----------------- СТОП --------------------
-	// if trResponse.HTTPStatusCode != 200 {
-	// 	return &model.SyncResp{
-	// 		HTTPStatusCode: trResponse.HTTPStatusCode,
-	// 		HTTPStatus:     trResponse.HTTPStatus,
-	// 		Error: fmt.Sprintf(
-	// 			"%s: %s: %s: %s",
-	// 			customerrors.ClientMsg,
-	// 			customerrors.ClientServiceErr,
-	// 			action,
-	// 			string(trResponse.ResponseBody),
-	// 		),
-	// 	}, nil
-	// }
+	if trResponse.HTTPStatusCode != 200 {
+		return &model.SyncResp{
+			HTTPStatusCode: trResponse.HTTPStatusCode,
+			HTTPStatus:     trResponse.HTTPStatus,
+			Error: fmt.Sprintf(
+				"%s: %s: %s: %s",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				string(trResponse.ResponseBody),
+			),
+		}, nil
+	}
 
-	// response := struct {
-	// 	IDs []int `json:"ids"`
-	// }{}
-	// err = json.Unmarshal(trResponse.ResponseBody, &response)
-	// if err != nil {
-	// 	return nil, fmt.Errorf(
-	// 		"%s: %s: %w: %w",
-	// 		customerrors.ClientHTTPErr,
-	// 		action,
-	// 		customerrors.ErrDecodeJSON400,
-	// 		err,
-	// 	)
-	// }
-	// trResponse.GroupIDs = response.IDs
+	response := struct {
+		IDs []int `json:"ids"`
+	}{}
+	err = json.Unmarshal(trResponse.ResponseBody, &response)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrDecodeJSON400,
+			err,
+		)
+	}
+	trResponse.DataIDs = response.IDs
 
-	// groupIDsFromServer := trResponse.GroupIDs
+	dataIDsFromServer := trResponse.DataIDs
 
-	// // getting group server IDs and local IDs from client
-	// groupServerIDs, groupNoServerIDs, err := sv.sg.GetGroupIDs(ctx, email)
-	// if err != nil {
-	// 	return nil, fmt.Errorf(
-	// 		"%s: %s: %s: %w",
-	// 		customerrors.ClientMsg,
-	// 		customerrors.ClientServiceErr,
-	// 		action,
-	// 		err,
-	// 	)
-	// }
+	// getting data server IDs and local IDs from client
+	dataServerIDs, dataNoServerIDs, err := sv.sd.GetDataIDs(ctx, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ClientMsg,
+			customerrors.ClientServiceErr,
+			action,
+			err,
+		)
+	}
 
-	// // getting group IDs for copy to client from server
-	// if len(groupIDsFromServer) > 0 {
-	// 	groupIDsForCopyFromServer := make([]int, 0)
-	// 	for _, groupIDFromServer := range groupIDsFromServer {
-	// 		if !slices.Contains(groupServerIDs, groupIDFromServer) {
-	// 			groupIDsForCopyFromServer = append(groupIDsForCopyFromServer, groupIDFromServer)
-	// 		}
-	// 	}
+	// getting data IDs for copy to client from server
+	if len(dataIDsFromServer) > 0 {
+		dataIDsForCopyFromServer := make([]int, 0)
+		for _, dataIDFromServer := range dataIDsFromServer {
+			if !slices.Contains(dataServerIDs, dataIDFromServer) {
+				dataIDsForCopyFromServer = append(dataIDsForCopyFromServer, dataIDFromServer)
+			}
+		}
 
-	// 	if len(groupIDsForCopyFromServer) > 0 {
-	// 		// getting groups from server
-	// 		groupsFromServer, err := sv.tr.GetGroups(ctx, accessToken, groupIDsForCopyFromServer)
-	// 		if err != nil {
-	// 			return nil, fmt.Errorf(
-	// 				"%s: %s: %s: %w",
-	// 				customerrors.ClientMsg,
-	// 				customerrors.ClientServiceErr,
-	// 				action,
-	// 				err,
-	// 			)
-	// 		}
+		//! ----------------- СТОП --------------------
+		// if len(dataIDsForCopyFromServer) > 0 {
+		// 	// getting data from server
+		// 	dataFromServer, err := sv.tr.GetGroups(ctx, accessToken, groupIDsForCopyFromServer)
+		// 	if err != nil {
+		// 		return nil, fmt.Errorf(
+		// 			"%s: %s: %s: %w",
+		// 			customerrors.ClientMsg,
+		// 			customerrors.ClientServiceErr,
+		// 			action,
+		// 			err,
+		// 		)
+		// 	}
 
-	// 		//TODO: добавить проверку совпадения title
+		// 	//TODO: добавить проверку совпадения title
 
-	// 		// adding group to client DB
-	// 		for _, groupFromServer := range groupsFromServer {
-	// 			err = sv.sg.AddGroupBySync(ctx, groupFromServer)
-	// 			if err != nil {
-	// 				return nil, fmt.Errorf(
-	// 					"%s: %s: %s: %w",
-	// 					customerrors.ClientMsg,
-	// 					customerrors.ClientServiceErr,
-	// 					action,
-	// 					err,
-	// 				)
-	// 			}
-	// 		}
-	// 	}
-	// }
+		// 		// adding group to client DB
+		// 		for _, groupFromServer := range groupsFromServer {
+		// 			err = sv.sg.AddGroupBySync(ctx, groupFromServer)
+		// 			if err != nil {
+		// 				return nil, fmt.Errorf(
+		// 					"%s: %s: %s: %w",
+		// 					customerrors.ClientMsg,
+		// 					customerrors.ClientServiceErr,
+		// 					action,
+		// 					err,
+		// 				)
+		// 			}
+		// 		}
+		// 	}
+	}
 
 	// // getting groups from client
 	// if len(groupNoServerIDs) > 0 {
