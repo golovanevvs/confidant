@@ -8,8 +8,8 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (hd *handler) GroupsPost(w http.ResponseWriter, r *http.Request) {
-	action := fmt.Sprintf("get groups, url: %s, method: %s", r.URL.String(), r.Method)
+func (hd *handler) DataDatesPost(w http.ResponseWriter, r *http.Request) {
+	action := fmt.Sprintf("get dates by data IDs, url: %s, method: %s", r.URL.String(), r.Method)
 
 	// checking the Content-Type
 	contentType := r.Header.Get("Content-Type")
@@ -26,11 +26,9 @@ func (hd *handler) GroupsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountID := r.Context().Value(AccountIDContextKey).(int)
-
 	// deserializing JSON
-	var groupIDs []int
-	if err := json.NewDecoder(r.Body).Decode(&groupIDs); err != nil {
+	var dataIDs []int
+	if err := json.NewDecoder(r.Body).Decode(&dataIDs); err != nil {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w: %w",
 			customerrors.ServerMsg,
@@ -44,7 +42,7 @@ func (hd *handler) GroupsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groups, err := hd.sv.GetGroups(r.Context(), accountID, groupIDs)
+	datadates, err := hd.sv.GetDataDates(r.Context(), dataIDs)
 	if err != nil {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w",
@@ -58,7 +56,7 @@ func (hd *handler) GroupsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseJSON, err := json.MarshalIndent(groups, "", " ")
+	responseJSON, err := json.MarshalIndent(datadates, "", " ")
 	if err != nil {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w: %w",

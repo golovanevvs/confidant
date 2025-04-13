@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/jmoiron/sqlx"
@@ -49,7 +49,7 @@ func (rp *postgresGroups) GetDataIDs(ctx context.Context, accountID int) (dataID
 	
 			`, groupID)
 
-			if err != nil && err != sql.ErrNoRows {
+			if err != nil {
 				return nil, fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -89,4 +89,38 @@ func (rp *postgresGroups) GetDataIDs(ctx context.Context, accountID int) (dataID
 	} else {
 		return nil, nil
 	}
+}
+
+func (rp *postgresGroups) GetDataDates(ctx context.Context, dataIDs []int) (dataDates map[int]time.Time, err error) {
+	action := "get dates by data IDs"
+
+	dataDates = make(map[int]time.Time)
+
+	for _, dataID := range dataIDs {
+		row := rp.db.QueryRowContext(ctx, `
+	
+			SELECT
+				created_at
+			FROM
+				data
+			WHERE
+				id = $1;
+	
+		`, dataID)
+
+		var date time.Time
+		if err = row.Scan(&date); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		dataDates[dataID] = date
+	}
+
+	return dataDates, nil
 }

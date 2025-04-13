@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"time"
 
 	"github.com/golovanevvs/confidant/internal/server/model"
 )
@@ -27,6 +28,7 @@ type IServiceGroups interface {
 
 type IServiceData interface {
 	GetDataIDs(ctx context.Context, accountID int) (dataIDs []int, err error)
+	GetDataDates(ctx context.Context, dataIDs []int) (datadates map[int]time.Time, err error)
 }
 
 type IService interface {

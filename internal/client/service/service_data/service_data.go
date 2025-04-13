@@ -2,6 +2,7 @@ package service_data
 
 import (
 	"context"
+	"time"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/client/service/service_security"
@@ -24,6 +25,7 @@ type IRepositoryData interface {
 	GetFile(ctx context.Context, dataID int) (data model.FileEnc, err error)
 	GetFileForSave(ctx context.Context, dataID int) (data []byte, err error)
 	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
+	GetDataDates(ctx context.Context, dataIDs []int) (dataDates map[int]time.Time, err error)
 }
 
 type IServiceSecurity interface {

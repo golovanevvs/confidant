@@ -2,6 +2,7 @@ package service_sync
 
 import (
 	"context"
+	"time"
 
 	"github.com/golovanevvs/confidant/internal/client/model"
 )
@@ -19,6 +20,7 @@ type IServiceGroups interface {
 
 type IServiceData interface {
 	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
+	GetDataDates(ctx context.Context, dataIDs []int) (dataDatesFromClient map[int]time.Time, err error)
 }
 
 type ITransportSync interface {
@@ -26,6 +28,7 @@ type ITransportSync interface {
 	GetGroups(ctx context.Context, accessToken string, groupIDs []int) (groupsFromServer []model.Group, err error)
 	SendGroups(ctx context.Context, accessToken string, groups []model.Group) (groupIDs map[int]int, err error)
 	GetDataIDs(ctx context.Context, accessToken string) (trResponse *model.DataSyncResp, err error)
+	GetDataDates(ctx context.Context, accessToken string, dataIDs []int) (dataDatesFromServer map[int]time.Time, err error)
 }
 
 type ServiceSync struct {
