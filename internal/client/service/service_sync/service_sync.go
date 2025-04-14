@@ -29,6 +29,7 @@ type ITransportSync interface {
 	SendGroups(ctx context.Context, accessToken string, groups []model.Group) (groupIDs map[int]int, err error)
 	GetDataIDs(ctx context.Context, accessToken string) (trResponse *model.DataSyncResp, err error)
 	GetDataDates(ctx context.Context, accessToken string, dataIDs []int) (dataDatesFromServer map[int]time.Time, err error)
+	GetDatas(ctx context.Context, accessToken string, dataIDs []int) (datasFromServer []model.Data, err error)
 }
 
 type ServiceSync struct {

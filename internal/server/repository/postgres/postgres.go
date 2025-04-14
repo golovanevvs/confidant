@@ -25,10 +25,12 @@ func New(databaseURI string) (*Postgres, error) {
 		return nil, fmt.Errorf("DB ping error: %s", err.Error())
 	}
 
+	rpgp := NewPostgresGroups(db)
+
 	return &Postgres{
 		NewPostgresManage(db),
 		NewPostgresAccount(db),
-		NewPostgresGroups(db),
-		NewPostgresData(db),
+		rpgp,
+		NewPostgresData(db, rpgp),
 	}, nil
 }

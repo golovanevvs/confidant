@@ -42,7 +42,8 @@ func (hd *handler) InitRoutes() http.Handler {
 		r.With(hd.authByJWT).Put("/groups", hd.GroupsPut)
 		r.With(hd.authByJWT).Get("/data_ids", hd.DataIDsGet)
 		r.With(hd.authByJWT).Post("/data_dates", hd.DataDatesPost)
-
+		r.With(hd.authByJWT).Post("/datas", hd.DatasPost)
+		r.With(hd.authByJWT).Post("/data_file", hd.DataFilePost)
 	})
 
 	return rt

@@ -29,6 +29,8 @@ type IServiceGroups interface {
 type IServiceData interface {
 	GetDataIDs(ctx context.Context, accountID int) (dataIDs []int, err error)
 	GetDataDates(ctx context.Context, dataIDs []int) (datadates map[int]time.Time, err error)
+	GetDatas(ctx context.Context, dataIDs []int) (datas []model.DataBase64, err error)
+	GetDataFile(ctx context.Context, dataID int) (file []byte, err error)
 }
 
 type IService interface {

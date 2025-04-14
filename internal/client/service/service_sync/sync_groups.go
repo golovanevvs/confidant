@@ -90,7 +90,7 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 				)
 			}
 
-			//TODO: добавить проверку совпадения title
+			//TODO: add a title match check
 
 			// adding group to client DB
 			for _, groupFromServer := range groupsFromServer {

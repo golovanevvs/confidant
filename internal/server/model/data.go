@@ -2,102 +2,37 @@ package model
 
 import "time"
 
-type NoteDec struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       string
-	Note       string
-}
-
 type NoteEnc struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       []byte `json:"desc"`
-	Note       []byte `json:"note"`
-}
-
-type PassDec struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       string
-	Login      string
-	Pass       string
+	ID   int
+	Desc []byte `json:"desc"`
+	Note []byte `json:"note"`
 }
 
 type PassEnc struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       []byte `json:"desc"`
-	Login      []byte `json:"login"`
-	Pass       []byte `json:"pass"`
-}
-
-type CardDec struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       string
-	Number     string
-	Date       string
-	Name       string
-	CVC2       string
-	PIN        string
-	Bank       string
+	ID    int
+	Desc  []byte `json:"desc"`
+	Login []byte `json:"login"`
+	Pass  []byte `json:"pass"`
 }
 
 type CardEnc struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       []byte `json:"desc"`
-	Number     []byte `json:"number"`
-	Date       []byte `json:"date"`
-	Name       []byte `json:"name"`
-	CVC2       []byte `json:"cvc2"`
-	PIN        []byte `json:"pin"`
-	Bank       []byte `json:"bank"`
-}
-
-type FileDec struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       string
-	Filename   string
-	Filesize   string
-	Filedate   string
-	File       []byte
+	ID     int
+	Desc   []byte `json:"desc"`
+	Number []byte `json:"number"`
+	Date   []byte `json:"date"`
+	Name   []byte `json:"name"`
+	CVC2   []byte `json:"cvc2"`
+	PIN    []byte `json:"pin"`
+	Bank   []byte `json:"bank"`
 }
 
 type FileEnc struct {
-	ID         int
-	IDOnServer int
-	GroupID    int
-	Type       string
-	Title      string
-	Desc       []byte `json:"desc"`
-	Filename   []byte `json:"filename"`
-	Filesize   []byte `json:"filesize"`
-	Filedate   []byte `json:"filedate"`
-	File       []byte `json:"file"`
+	ID       int
+	Desc     []byte `json:"desc"`
+	Filename []byte `json:"filename"`
+	Filesize []byte `json:"filesize"`
+	Filedate []byte `json:"filedate"`
+	File     []byte `json:"-"`
 }
 
 type Data struct {
