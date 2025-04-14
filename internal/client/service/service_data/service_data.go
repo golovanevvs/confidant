@@ -26,6 +26,9 @@ type IRepositoryData interface {
 	GetFileForSave(ctx context.Context, dataID int) (data []byte, err error)
 	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
 	GetDataDates(ctx context.Context, dataIDs []int) (dataDates map[int]time.Time, err error)
+	SaveDatas(ctx context.Context, datas []model.Data) (err error)
+	SaveDataFile(ctx context.Context, dataID int, file []byte) (err error)
+	GetDatasByIDs(ctx context.Context, dataIDs []int) (datas []model.Data, err error)
 }
 
 type IServiceSecurity interface {

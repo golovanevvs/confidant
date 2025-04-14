@@ -32,8 +32,8 @@ type FileBase64 struct {
 }
 
 type DataBase64 struct {
-	ID         int        `json:"id_on_server"`
-	IDOnClient int        `json:"id_on_client"`
+	ID         int        `json:"id_on_client"`
+	IDOnServer int        `json:"id_on_server"`
 	GroupID    int        `json:"group_id"`
 	DataType   string     `json:"data_type"`
 	Title      string     `json:"title"`

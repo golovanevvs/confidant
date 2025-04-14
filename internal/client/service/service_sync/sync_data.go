@@ -147,47 +147,74 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 				)
 			}
 
+			// saving datas to client DB
+			err = sv.sd.SaveDatas(ctx, datasFromServer)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+
 			//TODO: add a title match check
 
 			// getting files from server
 			for _, dataFromServer := range datasFromServer {
 				if dataFromServer.DataType == "file" {
+					file, err := sv.tr.GetDataFile(ctx, accessToken, dataFromServer.IDOnServer)
+					if err != nil {
+						return nil, fmt.Errorf(
+							"%s: %s: %s: %w",
+							customerrors.ClientMsg,
+							customerrors.ClientServiceErr,
+							action,
+							err,
+						)
+					}
 
+					// saving file to client DB
+					err = sv.sd.SaveDataFile(ctx, dataFromServer.IDOnServer, file)
+					if err != nil {
+						return nil, fmt.Errorf(
+							"%s: %s: %s: %w",
+							customerrors.ClientMsg,
+							customerrors.ClientServiceErr,
+							action,
+							err,
+						)
+					}
 				}
 			}
 		}
 
 		// 		// adding group to client DB
-		//! ----------------- СТОП --------------------
-		// 		for _, groupFromServer := range groupsFromServer {
-		// 			err = sv.sg.AddGroupBySync(ctx, groupFromServer)
-		// 			if err != nil {
-		// 				return nil, fmt.Errorf(
-		// 					"%s: %s: %s: %w",
-		// 					customerrors.ClientMsg,
-		// 					customerrors.ClientServiceErr,
-		// 					action,
-		// 					err,
-		// 				)
-		// 			}
-		// 		}
-		// 	}
 	}
 
-	// // getting groups from client
-	// if len(groupNoServerIDs) > 0 {
-	// 	groupsForCopyToServer, err := sv.sg.GetGroupsByIDs(ctx, groupNoServerIDs)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %s: %w: groupNoServerIDs: %v",
-	// 			customerrors.ClientMsg,
-	// 			customerrors.ClientServiceErr,
-	// 			action,
-	// 			err,
-	// 			groupNoServerIDs,
-	// 		)
-	// 	}
+	// getting datas from client
+	if len(dataNoServerIDs) > 0 {
+		datasForCopyToServer, err := sv.sd.GetDatas(ctx, dataNoServerIDs)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
+	}
+	//TODO: отправить данные на сервер
+	//TODO: получить от сервера id_on_server
+	//TODO: обновить id_on_server у клиента
 
+	//TODO: написать хендлер, сервис, БД на сервере с преобразованием данных в []byte
+
+	//TODO: сделать то же самое для сохранения на сервер файла
+
+	//! ----------------- СТОП --------------------
 	// 	// sending groups to server
 	// 	newGroupIDsFromServer, err := sv.tr.SendGroups(ctx, accessToken, groupsForCopyToServer)
 	// 	if err != nil {

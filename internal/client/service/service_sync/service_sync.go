@@ -21,6 +21,9 @@ type IServiceGroups interface {
 type IServiceData interface {
 	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
 	GetDataDates(ctx context.Context, dataIDs []int) (dataDatesFromClient map[int]time.Time, err error)
+	SaveDatas(ctx context.Context, datas []model.Data) (err error)
+	SaveDataFile(ctx context.Context, dataID int, file []byte) (err error)
+	GetDatas(ctx context.Context, dataIDs []int) (datasBase64 []model.DataBase64, err error)
 }
 
 type ITransportSync interface {
@@ -30,6 +33,7 @@ type ITransportSync interface {
 	GetDataIDs(ctx context.Context, accessToken string) (trResponse *model.DataSyncResp, err error)
 	GetDataDates(ctx context.Context, accessToken string, dataIDs []int) (dataDatesFromServer map[int]time.Time, err error)
 	GetDatas(ctx context.Context, accessToken string, dataIDs []int) (datasFromServer []model.Data, err error)
+	GetDataFile(ctx context.Context, accessToken string, dataID int) (fileFromServer []byte, err error)
 }
 
 type ServiceSync struct {
