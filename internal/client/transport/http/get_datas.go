@@ -66,7 +66,7 @@ func (tr *trHTTP) GetDatas(ctx context.Context, accessToken string, dataIDs []in
 			err,
 		)
 	}
-	datasFromServer = make([]model.Data, len(datasBase64))
+	datasFromServer = make([]model.Data, 0)
 	for _, dataBase64 := range datasBase64 {
 		var note model.NoteEnc
 		var pass model.PassEnc
@@ -76,7 +76,7 @@ func (tr *trHTTP) GetDatas(ctx context.Context, accessToken string, dataIDs []in
 		switch dataBase64.DataType {
 		case "note":
 			note.Desc, _ = base64.StdEncoding.DecodeString(dataBase64.Note.Desc)
-			note.Note, _ = base64.StdEncoding.DecodeString(dataBase64.Note.Desc)
+			note.Note, _ = base64.StdEncoding.DecodeString(dataBase64.Note.Note)
 		case "pass":
 			pass.Desc, _ = base64.StdEncoding.DecodeString(dataBase64.Pass.Desc)
 			pass.Login, _ = base64.StdEncoding.DecodeString(dataBase64.Pass.Login)
@@ -96,15 +96,16 @@ func (tr *trHTTP) GetDatas(ctx context.Context, accessToken string, dataIDs []in
 			file.Filedate, _ = base64.StdEncoding.DecodeString(dataBase64.File.Filedate)
 		}
 		dataFromServer := model.Data{
-			ID:        dataBase64.ID,
-			GroupID:   dataBase64.GroupID,
-			DataType:  dataBase64.DataType,
-			Title:     dataBase64.Title,
-			CreatedAt: dataBase64.CreatedAt,
-			Note:      note,
-			Pass:      pass,
-			Card:      card,
-			File:      file,
+			ID:         dataBase64.ID,
+			IDOnServer: dataBase64.IDOnServer,
+			GroupID:    dataBase64.GroupID,
+			DataType:   dataBase64.DataType,
+			Title:      dataBase64.Title,
+			CreatedAt:  dataBase64.CreatedAt,
+			Note:       note,
+			Pass:       pass,
+			Card:       card,
+			File:       file,
 		}
 		datasFromServer = append(datasFromServer, dataFromServer)
 	}

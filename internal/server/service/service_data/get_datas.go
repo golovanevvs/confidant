@@ -29,7 +29,6 @@ func (sv *ServiceData) GetDatas(ctx context.Context, dataIDs []int) (datasBase64
 		var passBase64 model.PassBase64
 		var cardBase64 model.CardBase64
 		var fileBase64 model.FileBase64
-		var dataBase64 model.DataBase64
 
 		switch data.DataType {
 		case "note":
@@ -62,7 +61,7 @@ func (sv *ServiceData) GetDatas(ctx context.Context, dataIDs []int) (datasBase64
 			}
 		}
 
-		dataBase64 = model.DataBase64{
+		dataBase64 := model.DataBase64{
 			ID:        data.ID,
 			GroupID:   data.GroupID,
 			DataType:  data.DataType,

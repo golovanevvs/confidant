@@ -584,6 +584,28 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	for _, data := range datas {
 		row := rp.db.QueryRowContext(ctx, `
 		
+			SELECT
+				id
+			FROM
+				groups
+			WHERE
+				id_on_server = ?;
+		
+		`, data.GroupID)
+
+		var groupID int
+		if err = row.Scan(&groupID); err != nil {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		row2 := rp.db.QueryRowContext(ctx, `
+		
 			INSERT INTO data
 				(id_on_server, group_id, data_type, title, created_at)
 			VALUES
@@ -591,10 +613,10 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 			RETURNING
 				id;
 		
-		`, data.IDOnServer, data.GroupID, data.DataType, data.Title, data.CreatedAt)
+		`, data.IDOnServer, groupID, data.DataType, data.Title, data.CreatedAt)
 
 		var dataID int
-		if err = row.Scan(&dataID); err != nil {
+		if err = row2.Scan(&dataID); err != nil {
 			return fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -737,11 +759,7 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 		file := model.FileEnc{}
 
 		data := model.Data{
-			ID:   dataID,
-			Note: note,
-			Pass: pass,
-			Card: card,
-			File: file,
+			ID: dataID,
 		}
 
 		if err = row.Scan(&data.GroupID, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
@@ -825,7 +843,7 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 			row2 := rp.db.QueryRowContext(ctx, `
 			
 				SELECT
-					desc, filename, filesize, filedate, file
+					desc, filename, filesize, filedate
 				FROM
 					data_file
 				WHERE
@@ -833,7 +851,7 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 			
 			`, dataID)
 
-			if err = row2.Scan(&file.Desc, &file.Filename, &file.Filesize, &file.Filedate, &file.File); err != nil {
+			if err = row2.Scan(&file.Desc, &file.Filename, &file.Filesize, &file.Filedate); err != nil {
 				return nil, fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -843,6 +861,11 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 				)
 			}
 		}
+
+		data.Note = note
+		data.Pass = pass
+		data.Card = card
+		data.File = file
 
 		datas = append(datas, data)
 	}

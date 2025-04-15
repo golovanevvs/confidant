@@ -151,11 +151,7 @@ func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []mo
 		file := model.FileEnc{}
 
 		data := model.Data{
-			ID:   dataID,
-			Note: note,
-			Pass: pass,
-			Card: card,
-			File: file,
+			ID: dataID,
 		}
 
 		if err = row.Scan(&data.GroupID, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
@@ -242,7 +238,7 @@ func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []mo
 				SELECT
 					descr, filename, filesize, filedate, file
 				FROM
-					data_note
+					data_file
 				WHERE
 					data_id = $1;
 			
@@ -258,6 +254,11 @@ func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []mo
 				)
 			}
 		}
+
+		data.Note = note
+		data.Pass = pass
+		data.Card = card
+		data.File = file
 
 		datas = append(datas, data)
 	}

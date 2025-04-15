@@ -53,7 +53,7 @@ func (hd *handler) DatasPut(w http.ResponseWriter, r *http.Request) {
 		switch dataBase64.DataType {
 		case "note":
 			note.Desc, _ = base64.StdEncoding.DecodeString(dataBase64.Note.Desc)
-			note.Note, _ = base64.StdEncoding.DecodeString(dataBase64.Note.Desc)
+			note.Note, _ = base64.StdEncoding.DecodeString(dataBase64.Note.Note)
 		case "pass":
 			pass.Desc, _ = base64.StdEncoding.DecodeString(dataBase64.Pass.Desc)
 			pass.Login, _ = base64.StdEncoding.DecodeString(dataBase64.Pass.Login)
@@ -84,7 +84,7 @@ func (hd *handler) DatasPut(w http.ResponseWriter, r *http.Request) {
 			Card:       card,
 			File:       file,
 		}
-		hd.lg.Infof("group ID: %d, data type: %s, title: %s", data.ID, data.GroupID, data.DataType, data.Title)
+		hd.lg.Infof("group ID: %d, data type: %s, title: %s, note desc: %v, note note: %v", data.GroupID, data.DataType, data.Title, data.Note.Desc, data.Note.Note)
 		datas = append(datas, data)
 	}
 
@@ -102,6 +102,8 @@ func (hd *handler) DatasPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hd.lg.Infof("dataIDs: %v", dataIDs)
+
 	responseJSON, err := json.Marshal(dataIDs)
 	if err != nil {
 		resErr := fmt.Errorf(
@@ -116,7 +118,7 @@ func (hd *handler) DatasPut(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, resErr.Error(), http.StatusInternalServerError)
 		return
 	}
-	hd.lg.Infof("dataIDs: %v", responseJSON)
+	hd.lg.Infof("dataIDsJSON: %v", responseJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

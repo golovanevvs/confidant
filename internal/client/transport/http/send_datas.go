@@ -25,7 +25,6 @@ func (tr *trHTTP) SendDatas(ctx context.Context, accessToken string, datas []mod
 		var passBase64 model.PassBase64
 		var cardBase64 model.CardBase64
 		var fileBase64 model.FileBase64
-		var dataBase64 model.DataBase64
 
 		switch data.DataType {
 		case "note":
@@ -58,7 +57,7 @@ func (tr *trHTTP) SendDatas(ctx context.Context, accessToken string, datas []mod
 			}
 		}
 
-		dataBase64 = model.DataBase64{
+		dataBase64 := model.DataBase64{
 			ID:        data.ID,
 			GroupID:   data.GroupID,
 			DataType:  data.DataType,
@@ -84,7 +83,7 @@ func (tr *trHTTP) SendDatas(ctx context.Context, accessToken string, datas []mod
 		)
 	}
 
-	request, err := http.NewRequest("PUT", endpoint, bytes.NewBuffer(datasBase64JSON))
+	request, err := http.NewRequest("PUT", endpoint, bytes.NewReader(datasBase64JSON))
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
