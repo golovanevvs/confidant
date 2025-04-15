@@ -14,7 +14,7 @@ func (sv *ServiceData) GetDataIDs(ctx context.Context, accountID int) (dataIDs [
 	if err != nil {
 		return dataIDs, fmt.Errorf(
 			"%s: %s: %w",
-			customerrors.GroupsServiceErr,
+			customerrors.DataServiceErr,
 			action,
 			err,
 		)

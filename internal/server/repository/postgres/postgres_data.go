@@ -291,3 +291,137 @@ func (rp *postgresData) GetDataFile(ctx context.Context, dataID int) (file []byt
 
 	return file, nil
 }
+
+func (rp *postgresData) AddDatas(ctx context.Context, datas []model.Data) (dataIDs map[int]int, err error) {
+	action := "add datas"
+
+	dataIDs = make(map[int]int)
+
+	for _, data := range datas {
+		row := rp.db.QueryRowContext(ctx, `
+		
+			INSERT INTO data
+				(group_id, data_type, title, created_at)
+			VALUES
+				($1, $2, $3, $4)
+			RETURNING
+				id;
+		
+		`, data.GroupID, data.DataType, data.Title, data.CreatedAt)
+
+		var dataID int
+		if err = row.Scan(&dataID); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		switch data.DataType {
+		case "note":
+			_, err = rp.db.ExecContext(ctx, `
+			
+				INSERT INTO data_note
+					(data_id, descr, note)
+				VALUES
+					($1, $2, $3);
+			
+			`, dataID, data.Note.Desc, data.Note.Note)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+		case "pass":
+			_, err = rp.db.ExecContext(ctx, `
+			
+				INSERT INTO data_pass
+					(data_id, descr, login, pass)
+				VALUES
+					($1, $2, $3, $4);
+			
+			`, dataID, data.Pass.Desc, data.Pass.Login, data.Pass.Pass)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+		case "card":
+			_, err = rp.db.ExecContext(ctx, `
+			
+				INSERT INTO data_card
+					(data_id, descr, number, date, name, cvc2, pin, bank)
+				VALUES
+					($1, $2, $3, $4, $5, $6, $7, $8);
+			
+			`, dataID, data.Card.Desc, data.Card.Number, data.Card.Date, data.Card.Name, data.Card.CVC2, data.Card.PIN, data.Card.Bank)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+		case "file":
+			_, err = rp.db.ExecContext(ctx, `
+			
+				INSERT INTO data_file
+					(data_id, descr, filename, filesize, filedate)
+				VALUES
+					($1, $2, $3, $4, $5);
+			
+			`, dataID, data.File.Desc, data.File.Filename, data.File.Filesize, data.File.Filedate)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+		}
+		dataIDs[data.IDOnClient] = dataID
+	}
+	return dataIDs, nil
+}
+
+func (rp *postgresData) SaveDataFile(ctx context.Context, dataID int, file []byte) (err error) {
+	action := "save file"
+
+	_, err = rp.db.ExecContext(ctx, `
+		
+		UPDATE
+			data_file
+		SET
+			file = $1
+		WHERE
+			data_id = $2;
+		
+		`, file, dataID)
+
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return nil
+}

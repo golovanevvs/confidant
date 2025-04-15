@@ -75,7 +75,7 @@ func (av *appView) vGroupsSelect() {
 
 		if flag {
 
-			syncResp, err := av.sv.SyncGroups(context.Background(), av.accessToken, av.account.Email)
+			syncResp, err := av.sv.SyncAll(context.Background(), av.accessToken, av.account.Email)
 
 			// error
 			if err != nil {

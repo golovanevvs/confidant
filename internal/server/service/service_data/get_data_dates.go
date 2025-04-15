@@ -15,7 +15,7 @@ func (sv *ServiceData) GetDataDates(ctx context.Context, dataIDs []int) (datadat
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w",
-			customerrors.GroupsServiceErr,
+			customerrors.DataServiceErr,
 			action,
 			err,
 		)

@@ -5,27 +5,6 @@ import (
 )
 
 const (
-	OrderAlredyUploadedThisUser200  = "номер заказа уже был загружен этим пользователем"
-	EmptyOrder204                   = "нет данных для ответа"
-	EmptyWithdrawals204             = "нет ни одного списания"
-	ASOrderNotRegistered204         = "заказ не зарегистрирован в системе расчёта"
-	InvalidRequest400               = "неверный формат запроса"
-	JWTParseError401                = "ошибка при чтении JWT"
-	NotEnoughPoints402              = "на счету недостаточно средств"
-	OrderAlredyUploadedOtherUser409 = "номер заказа уже был загружен другим пользователем"
-	InvalidOrderNumber422           = "Неверный формат номера заказа"
-	InvalidOrderNumberNotInt422     = "Неверный формат номера заказа: не соответствует типу int"
-	ASTooManyRequests429            = "превышено количество запросов к сервису"
-	InternalServerError500          = "внутренняя ошибка сервера"
-	DecodeJSONError500              = "ошибка десериализации JSON"
-	EncodeJSONError500              = "ошибка сериализации JSON"
-	ResponseBodyError500            = "ошибка при чтении тела ответа"
-	AtoiError500                    = "ошибка преобразования строки в число"
-	ClientError500                  = "ошибка при отправке запроса"
-	ASError                         = "сервис по взаимодействию с системой расчёта начислений баллов"
-)
-
-const (
 	ClientMsg = "CLIENT"
 )
 
@@ -69,6 +48,7 @@ var (
 	ErrGetCard               = errors.New("get card error")
 	ErrGetFile               = errors.New("get file error")
 	ErrGetFileForSave        = errors.New("get file for save error")
+	ErrDecryptEmptyBody      = errors.New(("empty encrypted body"))
 )
 
 const (
@@ -81,6 +61,7 @@ const (
 	AccountServiceErr = "account service"
 	ManageServiceErr  = "manage service"
 	GroupsServiceErr  = "groups service"
+	DataServiceErr    = "data service"
 	DBErr             = "DB"
 )
 
@@ -99,4 +80,5 @@ var (
 	ErrJWTWrongSingingMethod401   = errors.New("invalid signature method")
 	ErrJWTInvalidToken401         = errors.New("invalid token")
 	ErrJWTExpiredToken401         = errors.New("expired token")
+	ErrDebug                      = errors.New("error for debug")
 )

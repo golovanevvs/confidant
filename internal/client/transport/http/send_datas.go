@@ -1,28 +1,24 @@
-package service_data
+package trhttp
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net/http"
 
+	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
-	"github.com/golovanevvs/confidant/internal/server/model"
 )
 
-func (sv *ServiceData) GetDatas(ctx context.Context, dataIDs []int) (datasBase64 []model.DataBase64, err error) {
-	action := "get datas by data IDs"
+func (tr *trHTTP) SendDatas(ctx context.Context, accessToken string, datas []model.Data) (dataIDs map[int]int, err error) {
+	action := "send datas"
 
-	datas, err := sv.rp.GetDatas(ctx, dataIDs)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %w",
-			customerrors.DataServiceErr,
-			action,
-			err,
-		)
-	}
+	//! Request
+	endpoint := fmt.Sprintf("http://%s/api/datas", tr.addr)
 
-	datasBase64 = make([]model.DataBase64, 0)
+	datasBase64 := make([]model.DataBase64, 0)
 
 	for _, data := range datas {
 		var noteBase64 model.NoteBase64
@@ -77,5 +73,54 @@ func (sv *ServiceData) GetDatas(ctx context.Context, dataIDs []int) (datasBase64
 		datasBase64 = append(datasBase64, dataBase64)
 	}
 
-	return datasBase64, nil
+	datasBase64JSON, err := json.Marshal(datasBase64)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrEncodeJSON500,
+			err,
+		)
+	}
+
+	request, err := http.NewRequest("PUT", endpoint, bytes.NewBuffer(datasBase64JSON))
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrCreateRequest,
+			err,
+		)
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	//! Response
+	response, err := tr.cl.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrSendRequest,
+			err,
+		)
+	}
+	defer response.Body.Close()
+
+	err = json.NewDecoder(response.Body).Decode(&dataIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.ClientHTTPErr,
+			action,
+			customerrors.ErrDecodeJSON400,
+			err,
+		)
+	}
+
+	return dataIDs, nil
 }

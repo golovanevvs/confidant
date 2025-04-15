@@ -23,7 +23,9 @@ type IServiceData interface {
 	GetDataDates(ctx context.Context, dataIDs []int) (dataDatesFromClient map[int]time.Time, err error)
 	SaveDatas(ctx context.Context, datas []model.Data) (err error)
 	SaveDataFile(ctx context.Context, dataID int, file []byte) (err error)
-	GetDatas(ctx context.Context, dataIDs []int) (datasBase64 []model.DataBase64, err error)
+	GetDatas(ctx context.Context, dataIDs []int) (datas []model.Data, err error)
+	UpdateDataIDsOnServer(ctx context.Context, newDataIDs map[int]int) (err error)
+	GetDataFile(ctx context.Context, dataID int) (file []byte, err error)
 }
 
 type ITransportSync interface {
@@ -34,6 +36,8 @@ type ITransportSync interface {
 	GetDataDates(ctx context.Context, accessToken string, dataIDs []int) (dataDatesFromServer map[int]time.Time, err error)
 	GetDatas(ctx context.Context, accessToken string, dataIDs []int) (datasFromServer []model.Data, err error)
 	GetDataFile(ctx context.Context, accessToken string, dataID int) (fileFromServer []byte, err error)
+	SendDatas(ctx context.Context, accessToken string, datas []model.Data) (dataIDs map[int]int, err error)
+	SendFile(ctx context.Context, accessToken string, dataID int, file []byte) (err error)
 }
 
 type ServiceSync struct {

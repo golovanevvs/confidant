@@ -719,11 +719,15 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 		row := rp.db.QueryRowContext(ctx, `
 	
 		SELECT
-			group_id, data_type, title, created_at
+			groups.id_on_server, data.data_type, data.title, data.created_at
 		FROM
 			data
+		INNER JOIN
+			groups
+		ON
+			data.group_id = groups.id
 		WHERE
-			id = ?;
+			data.id = ?;
 
 	`, dataID)
 
@@ -823,7 +827,7 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 				SELECT
 					desc, filename, filesize, filedate, file
 				FROM
-					data_note
+					data_file
 				WHERE
 					data_id = ?;
 			
@@ -844,4 +848,59 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 	}
 
 	return datas, nil
+}
+
+func (rp *sqliteData) UpdateDataIDsOnServer(ctx context.Context, newDataIDs map[int]int) (err error) {
+	action := "update data IDsOnServer"
+
+	for dataID, dataIDOnServer := range newDataIDs {
+		_, err = rp.db.ExecContext(ctx, `
+
+		UPDATE
+			data
+		SET
+			id_on_server = ?
+		WHERE
+			id = ?;
+
+	`, dataIDOnServer, dataID)
+	}
+
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.DBErr,
+			action,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (rp *sqliteData) GetDataFile(ctx context.Context, dataID int) (file []byte, err error) {
+	action := "get file by data ID"
+
+	row := rp.db.QueryRowContext(ctx, `
+		
+		SELECT
+			file
+		FROM
+			data_file
+		WHERE
+			data_id = ?;
+		
+	`, dataID)
+
+	if err = row.Scan(&file); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return file, nil
 }

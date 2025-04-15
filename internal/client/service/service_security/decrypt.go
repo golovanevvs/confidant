@@ -4,10 +4,20 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
+
+	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
 func (sv *ServiceSecurity) Decrypt(data []byte) (decryptedData []byte, err error) {
 	action := "decrypt"
+
+	if len(data) == 0 {
+		return nil, fmt.Errorf(
+			"%s: %w",
+			action,
+			customerrors.ErrDecryptEmptyBody,
+		)
+	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {

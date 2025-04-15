@@ -24,14 +24,10 @@ func New(sv transport.IService, lg *zap.SugaredLogger) *handler {
 
 // InitRoutes - request routing, used as http.Handler when starting the server
 func (hd *handler) InitRoutes() http.Handler {
-	// creating a router instance
 	rt := chi.NewRouter()
 
-	// using middleware
-	// logging
 	rt.Use(logger.WithLogging(hd.lg))
 
-	// routes
 	rt.Route("/api", func(r chi.Router) {
 		r.Post("/register", hd.accountRegisterPost)
 		r.Post("/login", hd.loginPost)
@@ -43,7 +39,9 @@ func (hd *handler) InitRoutes() http.Handler {
 		r.With(hd.authByJWT).Get("/data_ids", hd.DataIDsGet)
 		r.With(hd.authByJWT).Post("/data_dates", hd.DataDatesPost)
 		r.With(hd.authByJWT).Post("/datas", hd.DatasPost)
+		r.With(hd.authByJWT).Put("/datas", hd.DatasPut)
 		r.With(hd.authByJWT).Post("/data_file", hd.DataFilePost)
+		r.With(hd.authByJWT).Put("/data_file", hd.DataFilePut)
 	})
 
 	return rt

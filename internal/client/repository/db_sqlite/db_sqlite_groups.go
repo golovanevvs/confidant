@@ -435,9 +435,9 @@ func (rp *sqliteGroups) UpdateGroupIDsOnServer(ctx context.Context, newGroupIDs 
 		UPDATE
 			groups
 		SET
-			id_on_server = $1
+			id_on_server = ?
 		WHERE
-			id = $2;
+			id = ?;
 
 	`, groupIDOnServer, groupID)
 	}

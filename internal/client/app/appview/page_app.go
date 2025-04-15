@@ -36,8 +36,6 @@ func (av *appView) vApp() (err error) {
 		// clearing messages
 		av.vClearMessages()
 
-		av.v.pageMain.messageBoxL.SetText(fmt.Sprintf("accountID: %d,\ne-mail: %s\nrefresh token: %s", av.account.ID, av.account.Email, av.refreshToken))
-
 		// setting active account to status bar
 		av.v.pageMain.statusBar.cellActiveAccount.SetText(fmt.Sprintf("[green]%s", av.account.Email))
 

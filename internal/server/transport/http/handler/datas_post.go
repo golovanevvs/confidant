@@ -11,7 +11,6 @@ import (
 func (hd *handler) DatasPost(w http.ResponseWriter, r *http.Request) {
 	action := fmt.Sprintf("get datas, url: %s, method: %s", r.URL.String(), r.Method)
 
-	// checking the Content-Type
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		resErr := fmt.Errorf(
@@ -26,7 +25,6 @@ func (hd *handler) DatasPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// deserializing JSON
 	var dataIDs []int
 	if err := json.NewDecoder(r.Body).Decode(&dataIDs); err != nil {
 		resErr := fmt.Errorf(
@@ -36,6 +34,19 @@ func (hd *handler) DatasPost(w http.ResponseWriter, r *http.Request) {
 			action,
 			customerrors.ErrDecodeJSON400,
 			err,
+		)
+		hd.lg.Errorf(resErr.Error())
+		http.Error(w, resErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(dataIDs) == 0 {
+		resErr := fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ServerMsg,
+			customerrors.HandlerErr,
+			action,
+			customerrors.ErrDebug,
 		)
 		hd.lg.Errorf(resErr.Error())
 		http.Error(w, resErr.Error(), http.StatusBadRequest)

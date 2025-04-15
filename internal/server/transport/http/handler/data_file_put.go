@@ -1,20 +1,19 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/golovanevvs/confidant/internal/customerrors"
-	"github.com/golovanevvs/confidant/internal/server/model"
 )
 
-func (hd *handler) GroupsPut(w http.ResponseWriter, r *http.Request) {
-	action := fmt.Sprintf("add groups, url: %s, method: %s", r.URL.String(), r.Method)
+func (hd *handler) DataFilePut(w http.ResponseWriter, r *http.Request) {
+	action := fmt.Sprintf("add file, url: %s, method: %s", r.URL.String(), r.Method)
 
-	// checking the Content-Type
-	contentType := r.Header.Get("Content-Type")
-	if contentType != "application/json" {
+	dataIDStr := r.Header.Get("X-Data-ID")
+	if dataIDStr == "" {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w",
 			customerrors.ServerMsg,
@@ -27,14 +26,41 @@ func (hd *handler) GroupsPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var groups []model.Group
-	if err := json.NewDecoder(r.Body).Decode(&groups); err != nil {
+	dataID, err := strconv.Atoi(dataIDStr)
+	if err != nil {
 		resErr := fmt.Errorf(
-			"%s: %s: %s: %w: %w",
+			"%s: %s: %s: %w",
 			customerrors.ServerMsg,
 			customerrors.HandlerErr,
 			action,
-			customerrors.ErrDecodeJSON400,
+			customerrors.ErrContentType400,
+		)
+		hd.lg.Errorf(resErr.Error())
+		http.Error(w, resErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/octet-stream" {
+		resErr := fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ServerMsg,
+			customerrors.HandlerErr,
+			action,
+			customerrors.ErrContentType400,
+		)
+		hd.lg.Errorf(resErr.Error())
+		http.Error(w, resErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	file, err := io.ReadAll(r.Body)
+	if err != nil {
+		resErr := fmt.Errorf(
+			"%s: %s: %s: %w",
+			customerrors.ServerMsg,
+			customerrors.HandlerErr,
+			action,
 			err,
 		)
 		hd.lg.Errorf(resErr.Error())
@@ -42,7 +68,7 @@ func (hd *handler) GroupsPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupIDs, err := hd.sv.AddGroups(r.Context(), groups)
+	err = hd.sv.AddDataFile(r.Context(), dataID, file)
 	if err != nil {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w",
@@ -56,23 +82,5 @@ func (hd *handler) GroupsPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseJSON, err := json.MarshalIndent(groupIDs, "", " ")
-	if err != nil {
-		resErr := fmt.Errorf(
-			"%s: %s: %s: %w: %w",
-			customerrors.ServerMsg,
-			customerrors.HandlerErr,
-			action,
-			customerrors.ErrEncodeJSON500,
-			err,
-		)
-		hd.lg.Errorf(resErr.Error())
-		http.Error(w, resErr.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// writing the headers and response
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(responseJSON))
 }

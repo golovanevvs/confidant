@@ -190,7 +190,6 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 			}
 		}
 
-		// 		// adding group to client DB
 	}
 
 	// getting datas from client
@@ -205,45 +204,62 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 				err,
 			)
 		}
+
+		// sending datas to server
+		newDataIDsFromServer, err := sv.tr.SendDatas(ctx, accessToken, datasForCopyToServer)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
+
+		// 	// updating IDsOnServer
+		err = sv.sd.UpdateDataIDsOnServer(ctx, newDataIDsFromServer)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %s: %w",
+				customerrors.ClientMsg,
+				customerrors.ClientServiceErr,
+				action,
+				err,
+			)
+		}
+
+		for _, dataForCopyToServer := range datasForCopyToServer {
+			if dataForCopyToServer.DataType == "file" {
+				file, err := sv.sd.GetDataFile(ctx, dataForCopyToServer.ID)
+				if err != nil {
+					return nil, fmt.Errorf(
+						"%s: %s: %s: %w",
+						customerrors.ClientMsg,
+						customerrors.ClientServiceErr,
+						action,
+						err,
+					)
+				}
+
+				//sending file to server
+				err = sv.tr.SendFile(ctx, accessToken, dataForCopyToServer.IDOnServer, file)
+				if err != nil {
+					return nil, fmt.Errorf(
+						"%s: %s: %s: %w",
+						customerrors.ClientMsg,
+						customerrors.ClientServiceErr,
+						action,
+						err,
+					)
+				}
+			}
+		}
 	}
-	//TODO: отправить данные на сервер
-	//TODO: получить от сервера id_on_server
-	//TODO: обновить id_on_server у клиента
 
-	//TODO: написать хендлер, сервис, БД на сервере с преобразованием данных в []byte
-
-	//TODO: сделать то же самое для сохранения на сервер файла
-
-	//! ----------------- СТОП --------------------
-	// 	// sending groups to server
-	// 	newGroupIDsFromServer, err := sv.tr.SendGroups(ctx, accessToken, groupsForCopyToServer)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %s: %w",
-	// 			customerrors.ClientMsg,
-	// 			customerrors.ClientServiceErr,
-	// 			action,
-	// 			err,
-	// 		)
-	// 	}
-
-	// 	// updating IDsOnServer
-	// 	err = sv.sg.UpdateGroupIDsOnServer(ctx, newGroupIDsFromServer)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %s: %w",
-	// 			customerrors.ClientMsg,
-	// 			customerrors.ClientServiceErr,
-	// 			action,
-	// 			err,
-	// 		)
-	// 	}
-	// }
-
-	// return &model.SyncResp{
-	// 	HTTPStatusCode: trResponse.HTTPStatusCode,
-	// 	HTTPStatus:     trResponse.HTTPStatus,
-	// 	Error:          "",
-	// }, nil
-	return
+	return &model.SyncResp{
+		HTTPStatusCode: trResponse.HTTPStatusCode,
+		HTTPStatus:     trResponse.HTTPStatus,
+		Error:          "",
+	}, nil
 }
