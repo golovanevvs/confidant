@@ -19,13 +19,17 @@ Confidant представляет собой клиент-серверную с
 
 Команда для определения покрытия:
 
-```go test -coverprofile=coverage.out.tmp ./... && cat coverage.out.tmp | grep -v "_mock.go" > coverage.out && go tool cover -func=coverage.out && go tool cover -html=coverage.out```
+```bash
+go test -coverprofile=coverage.out.tmp ./... && cat coverage.out.tmp | grep -v "_mock.go" > coverage.out && go tool cover -func=coverage.out && go tool cover -html=coverage.out
+```
 
 ## confidant_client
 
 confidant_client для работы использует БД SQLite и при первом запуске создаёт файл confidant_client.db.
 
 Для удобства использования реализован терминальный интерфейс (TUI) на базе библиотеки [tview](https://github.com/rivo/tview "https://github.com/rivo/tview").
+
+![alt text](./resources/images/image.png)
 
 Навигация по интерфейсу:
 
@@ -43,17 +47,26 @@ confidant_client для работы использует БД SQLite и при 
 
 Обмен данными между клиентом и сервером выполняется через REST API, соответствующее спецификации HTTP/1.1 с использованием методов GET/POST/PUT/PATCH.
 
+### Флаги и переменные окружения (клиент)
+
+При запуске необходимо использовать следующие флаги:
+
+- адрес сервера: флаг `a`, переменная окружения `ADDRESS`, пример `localhost:7541`.
+
 ## confidant_server
 
-confidant_server для работы использует БД PostreSQL.
+confidant_server для работы использует БД PostreSQL (название БД должно быть `confidant`).
 
-БД должна иметь следующие параметры:
+Логгирование реализовано через middleware.
 
-- port - с 5430 по 5440;
-- user - postgres;
-- password - password;
-- dbname - confidant;
-- sslmode - disable.
+![alt text](./resources/images/image-8.png)
+
+### Флаги и переменные окружения (сервер)
+
+При запуске необходимо использовать следующие флаги:
+
+- адрес сервера: флаг `a`, переменная окружения `ADDRESS`, пример `:7541`;
+- DSN БД: флаг `d`, переменная окружения `DATABASE_DSN`, пример `host=localhost port=5432 user=postgres password=password dbname=confidant sslmode=disable`.
 
 ### Миграции БД
 
@@ -85,6 +98,8 @@ confidant_server для работы использует БД PostreSQL.
 
 Все сохраняемые конфиденциальные данные должны относиться к определённой группе, например "Семья", "Работа", "Личное".
 
+![alt text](./resources/images/image-1.png)
+
 ## Добавление e-mail
 
 В настройках группы возможно добавить e-mail пользователей, которым будет доступна вся конфиденциальная информация из данной группы.
@@ -98,6 +113,8 @@ confidant_server для работы использует БД PostreSQL.
 - банковская карта;
 - файл.
 
+![alt text](./resources/images/image-2.png)
+
 Для каждого типа свои форма записи и форма отображения информации.
 
 Все поля сохраняют данные в строковый тип и не имеют валидации введённых данных.
@@ -110,6 +127,8 @@ confidant_server для работы использует БД PostreSQL.
 - описание;
 - название.
 
+![alt text](./resources/images/image-3.png)
+
 ### Пароль
 
 Поля для типа "пароль":
@@ -118,6 +137,8 @@ confidant_server для работы использует БД PostreSQL.
 - пароль;
 - описание;
 - название.
+
+![alt text](./resources/images/image-4.png)
 
 ### Банковская карта
 
@@ -131,6 +152,8 @@ confidant_server для работы использует БД PostreSQL.
 - банк;
 - описание;
 - название.
+
+![alt text](./resources/images/image-5.png)
 
 ### Файл
 
@@ -146,6 +169,10 @@ confidant_server для работы использует БД PostreSQL.
 - дата изменения файла;
 - описание;
 - название.
+
+![alt text](./resources/images/image-6.png)
+
+![alt text](./resources/images/image-7.png)
 
 ## Синхронизация
 
