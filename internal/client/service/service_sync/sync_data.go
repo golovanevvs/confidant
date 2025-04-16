@@ -231,7 +231,7 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 
 		for _, dataForCopyToServer := range datasForCopyToServer {
 			if dataForCopyToServer.DataType == "file" {
-				file, err := sv.sd.GetDataFile(ctx, dataForCopyToServer.ID)
+				idOnServer, file, err := sv.sd.GetDataFile(ctx, dataForCopyToServer.ID)
 				if err != nil {
 					return nil, fmt.Errorf(
 						"%s: %s: %s: %w",
@@ -243,7 +243,7 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 				}
 
 				//sending file to server
-				err = sv.tr.SendFile(ctx, accessToken, dataForCopyToServer.IDOnServer, file)
+				err = sv.tr.SendFile(ctx, accessToken, idOnServer, file)
 				if err != nil {
 					return nil, fmt.Errorf(
 						"%s: %s: %s: %w",

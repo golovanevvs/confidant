@@ -7,12 +7,12 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceData) GetDataFile(ctx context.Context, dataID int) (file []byte, err error) {
+func (sv *ServiceData) GetDataFile(ctx context.Context, dataID int) (idOnServer int, file []byte, err error) {
 	action := "get file"
 
-	file, err = sv.rp.GetDataFile(ctx, dataID)
+	idOnServer, file, err = sv.rp.GetDataFile(ctx, dataID)
 	if err != nil {
-		return nil, fmt.Errorf(
+		return -1, nil, fmt.Errorf(
 			"%s: %s: %s: %w",
 			customerrors.ClientMsg,
 			customerrors.ClientServiceErr,
@@ -21,5 +21,5 @@ func (sv *ServiceData) GetDataFile(ctx context.Context, dataID int) (file []byte
 		)
 	}
 
-	return file, nil
+	return idOnServer, file, nil
 }

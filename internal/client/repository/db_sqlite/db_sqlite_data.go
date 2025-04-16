@@ -901,22 +901,26 @@ func (rp *sqliteData) UpdateDataIDsOnServer(ctx context.Context, newDataIDs map[
 	return nil
 }
 
-func (rp *sqliteData) GetDataFile(ctx context.Context, dataID int) (file []byte, err error) {
+func (rp *sqliteData) GetDataFile(ctx context.Context, dataID int) (idOnServer int, file []byte, err error) {
 	action := "get file by data ID"
 
 	row := rp.db.QueryRowContext(ctx, `
 		
 		SELECT
-			file
+			data.id_on_server, data_file.file
 		FROM
 			data_file
+		INNER JOIN
+			data
+		ON
+			data_file.data_id = data.id
 		WHERE
-			data_id = ?;
+			data_file.data_id = ?;
 		
 	`, dataID)
 
-	if err = row.Scan(&file); err != nil {
-		return nil, fmt.Errorf(
+	if err = row.Scan(&idOnServer, &file); err != nil {
+		return -1, nil, fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
 			action,
@@ -925,5 +929,5 @@ func (rp *sqliteData) GetDataFile(ctx context.Context, dataID int) (file []byte,
 		)
 	}
 
-	return file, nil
+	return idOnServer, file, nil
 }

@@ -30,7 +30,7 @@ type IRepositoryData interface {
 	SaveDataFile(ctx context.Context, dataID int, file []byte) (err error)
 	GetDatasByIDs(ctx context.Context, dataIDs []int) (datas []model.Data, err error)
 	UpdateDataIDsOnServer(ctx context.Context, newDataIDs map[int]int) (err error)
-	GetDataFile(ctx context.Context, dataID int) (file []byte, err error)
+	GetDataFile(ctx context.Context, dataID int) (idOnServer int, file []byte, err error)
 }
 
 type IServiceSecurity interface {

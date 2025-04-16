@@ -9,14 +9,12 @@ ifeq ($(HOSTNAME),GVS)
 	@echo "migrating db..."
 	migrate -path resources/migration -database "postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password" up
 	@echo "migrating db completed"
-else
-ifeq ($(HOSTNAME),SURFACE-VEL)
+else ifeq ($(HOSTNAME),SURFACE-VEL)
 	@echo "migrating db..."
 	migrate -path resources/migration -database "postgres://localhost:5434/confidant?sslmode=disable&user=postgres&password=password" up
 	@echo "migrating db completed"
 else
 	@echo "no hostname"
-endif
 endif
 
 migrate_down:
@@ -24,17 +22,17 @@ ifeq ($(HOSTNAME),GVS)
 	@echo "migrating db..."
 	migrate -path resources/migration -database "postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password" down
 	@echo "migrating db completed"
-else
-ifeq ($(HOSTNAME),SURFACE-VEL)
+else ifeq ($(HOSTNAME),SURFACE-VEL)
 	@echo "migrating db..."
 	migrate -path resources/migration -database "postgres://localhost:5434/confidant?sslmode=disable&user=postgres&password=password" down
 	@echo "migrating db completed"
 else
 	@echo "no hostname"
 endif
-endif
 
-deldb:
+clear_server: migrate_down migrate_up
+
+clear_client:
 	@echo "Deleting SQLite DB..."
 	if [ -f "confidant_client.db" ]; then \
 		rm -v confidant_client.db; \
@@ -70,12 +68,14 @@ build_run_server: build_server run_server
 
 build_run_client: build_client run_client
 
-build_run_client_clear: deldb build_client run_client
+build_run_server_clear: clear_server build_run_server
 
-run_client_clear: deldb run_client
+build_run_client_clear: clear_client build_run_client
+
+run_client_clear: clear_client run_client
 
 build_run_server_client: build_server run_server build_client run_client
 
-build_run_server_client_clear: migrate_down migrate_up build_server run_server deldb build_client run_client
+build_run_server_client_clear: clear_server build_server run_server clear_client build_client run_client
 
 run_server_client: run_server run_client

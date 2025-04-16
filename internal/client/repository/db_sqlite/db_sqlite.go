@@ -105,7 +105,7 @@ func New() (*SQLite, error) {
 			CREATE TABLE IF NOT EXISTS data_file(
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				data_id INTEGER,
-				desc TEXT,
+				desc BLOB,
 				filename BLOB NOT NULL,
 				filesize BLOB,
 				filedate BLOB,

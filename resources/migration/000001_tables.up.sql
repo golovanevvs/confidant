@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS data_card(
 CREATE TABLE IF NOT EXISTS data_file(
 	id SERIAL PRIMARY KEY,
 	data_id INT,
-	descr TEXT,
+	descr BYTEA,
 	filename BYTEA NOT NULL,
 	filesize BYTEA,
 	filedate BYTEA,

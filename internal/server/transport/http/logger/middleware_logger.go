@@ -49,6 +49,10 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 func WithLogging(lg *zap.SugaredLogger) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/api/status" {
+				h.ServeHTTP(w, r)
+				return
+			}
 			// to determine the request processing time
 			start := time.Now()
 
