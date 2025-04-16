@@ -44,23 +44,11 @@ func RunApp() {
 	cfg := NewConfig()
 
 	//initializing the repository
-	// var rp *repository.Repository
-	// for i := 5430; i <= 5440; i++ {
-	// 	databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
-	// 	lg.Debugf("Connecting to DB: port %d...", i)
 	rp, err := repository.New(cfg.repository.DatabaseURI)
 	if err != nil {
-		// if i == 5440 {
 		lg.Fatalf("postgres DB initialization error: %s", err.Error())
-		// }
-		// lg.Debugf("Connect to DB: error: %s", err.Error())
-		// lg.Debugf("Repeating...")
-		// } else {
 	}
 	lg.Infof("Connecting to DB: success")
-	// break
-	// }
-	// }
 
 	// initializing the service
 	sv := service.New(rp)

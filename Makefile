@@ -4,13 +4,14 @@ else
 HOSTNAME := $(shell hostname)
 endif
 
-PORT ?= 8082
+PORT ?= 7542
+
 ifeq ($(HOSTNAME),KKO11PC)
-	DATABASE_DSN ?= postgres://localhost:5432/confidant?sslmode=disable&user=postgres&password=password
+	DATABASE_DSN ?= host=localhost port=5432 user=postgres password=password dbname=confidant sslmode=disable
 else ifeq ($(HOSTNAME),GVS)
-	DATABASE_DSN ?= postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password
+	DATABASE_DSN ?= host=localhost port=5433 user=postgres password=password dbname=confidant sslmode=disable
 else ifeq ($(HOSTNAME),SURFACE-VEL)
-	DATABASE_DSN ?= postgres://localhost:5434/confidant?sslmode=disable&user=postgres&password=password
+	DATABASE_DSN ?= host=localhost port=5434 user=postgres password=password dbname=confidant sslmode=disable
 endif
 
 migrate_up:
@@ -72,13 +73,11 @@ build_client:
 run_server:
 	@echo "Running server..."
 	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_server -a ':$(PORT)' -d '$(DATABASE_DSN)'; exec bash"
-# start "./confidant_server -a ':7541\' -d 'host=localhost port=5434 user=postgres password=password dbname=confidant sslmode=disable'"
 	@echo "Running server completed"
 
 run_client:
 	@echo "Running client..."
-	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_client; exec bash"
-# start "./confidant_client"
+	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_client -a 'localhost:$(PORT)'; exec bash"
 	@echo "Running client completed"
 
 build_run_server: build_server run_server
@@ -89,10 +88,12 @@ build_run_server_clear: clear_server build_run_server
 
 build_run_client_clear: clear_client build_run_client
 
-run_client_clear: clear_client run_client
+build_run_server_client: build_run_server build_run_client
 
-build_run_server_client: build_server run_server build_client run_client
-
-build_run_server_client_clear: clear_server build_server run_server clear_client build_client run_client
+build_run_server_client_clear: build_run_server_clear build_run_client_clear
 
 run_server_client: run_server run_client
+
+run_server_clear: clear_server run_server
+
+run_client_clear: clear_client run_client
