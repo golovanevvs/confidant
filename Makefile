@@ -4,6 +4,15 @@ else
 HOSTNAME := $(shell hostname)
 endif
 
+PORT ?= 8082
+ifeq ($(HOSTNAME),KKO11PC)
+	DATABASE_DSN ?= postgres://localhost:5432/confidant?sslmode=disable&user=postgres&password=password
+else ifeq ($(HOSTNAME),GVS)
+	DATABASE_DSN ?= postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password
+else ifeq ($(HOSTNAME),SURFACE-VEL)
+	DATABASE_DSN ?= postgres://localhost:5434/confidant?sslmode=disable&user=postgres&password=password
+endif
+
 migrate_up:
 ifeq ($(HOSTNAME),KKO11PC)
 	@echo "migrating db..."
@@ -62,8 +71,8 @@ build_client:
 
 run_server:
 	@echo "Running server..."
-	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_server; exec bash"
-# start "./confidant_server"
+	start "" "C:\\Program Files\\Git\\bin\\bash.exe" -c "./confidant_server -a ':$(PORT)' -d '$(DATABASE_DSN)'; exec bash"
+# start "./confidant_server -a ':7541\' -d 'host=localhost port=5434 user=postgres password=password dbname=confidant sslmode=disable'"
 	@echo "Running server completed"
 
 run_client:

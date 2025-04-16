@@ -7,6 +7,7 @@ package service_mock
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/golovanevvs/confidant/internal/server/model"
@@ -33,6 +34,64 @@ func NewMockIService(ctrl *gomock.Controller) *MockIService {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIService) EXPECT() *MockIServiceMockRecorder {
 	return m.recorder
+}
+
+// AddDataFile mocks base method.
+func (m *MockIService) AddDataFile(arg0 context.Context, arg1 int, arg2 []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddDataFile", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddDataFile indicates an expected call of AddDataFile.
+func (mr *MockIServiceMockRecorder) AddDataFile(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDataFile", reflect.TypeOf((*MockIService)(nil).AddDataFile), arg0, arg1, arg2)
+}
+
+// AddDatas mocks base method.
+func (m *MockIService) AddDatas(arg0 context.Context, arg1 []model.Data) (map[int]int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddDatas", arg0, arg1)
+	ret0, _ := ret[0].(map[int]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddDatas indicates an expected call of AddDatas.
+func (mr *MockIServiceMockRecorder) AddDatas(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddDatas", reflect.TypeOf((*MockIService)(nil).AddDatas), arg0, arg1)
+}
+
+// AddEmails mocks base method.
+func (m *MockIService) AddEmails(arg0 context.Context, arg1 map[int][]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddEmails", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddEmails indicates an expected call of AddEmails.
+func (mr *MockIServiceMockRecorder) AddEmails(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEmails", reflect.TypeOf((*MockIService)(nil).AddEmails), arg0, arg1)
+}
+
+// AddGroups mocks base method.
+func (m *MockIService) AddGroups(arg0 context.Context, arg1 []model.Group) (map[int]int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddGroups", arg0, arg1)
+	ret0, _ := ret[0].(map[int]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddGroups indicates an expected call of AddGroups.
+func (mr *MockIServiceMockRecorder) AddGroups(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddGroups", reflect.TypeOf((*MockIService)(nil).AddGroups), arg0, arg1)
 }
 
 // BuildAccessJWTString mocks base method.
@@ -95,6 +154,111 @@ func (mr *MockIServiceMockRecorder) GetAccountIDFromJWT(arg0 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountIDFromJWT", reflect.TypeOf((*MockIService)(nil).GetAccountIDFromJWT), arg0)
 }
 
+// GetDataDates mocks base method.
+func (m *MockIService) GetDataDates(arg0 context.Context, arg1 []int) (map[int]time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDataDates", arg0, arg1)
+	ret0, _ := ret[0].(map[int]time.Time)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDataDates indicates an expected call of GetDataDates.
+func (mr *MockIServiceMockRecorder) GetDataDates(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDataDates", reflect.TypeOf((*MockIService)(nil).GetDataDates), arg0, arg1)
+}
+
+// GetDataFile mocks base method.
+func (m *MockIService) GetDataFile(arg0 context.Context, arg1 int) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDataFile", arg0, arg1)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDataFile indicates an expected call of GetDataFile.
+func (mr *MockIServiceMockRecorder) GetDataFile(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDataFile", reflect.TypeOf((*MockIService)(nil).GetDataFile), arg0, arg1)
+}
+
+// GetDataIDs mocks base method.
+func (m *MockIService) GetDataIDs(arg0 context.Context, arg1 int) ([]int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDataIDs", arg0, arg1)
+	ret0, _ := ret[0].([]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDataIDs indicates an expected call of GetDataIDs.
+func (mr *MockIServiceMockRecorder) GetDataIDs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDataIDs", reflect.TypeOf((*MockIService)(nil).GetDataIDs), arg0, arg1)
+}
+
+// GetDatas mocks base method.
+func (m *MockIService) GetDatas(arg0 context.Context, arg1 []int) ([]model.DataBase64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDatas", arg0, arg1)
+	ret0, _ := ret[0].([]model.DataBase64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDatas indicates an expected call of GetDatas.
+func (mr *MockIServiceMockRecorder) GetDatas(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDatas", reflect.TypeOf((*MockIService)(nil).GetDatas), arg0, arg1)
+}
+
+// GetEmails mocks base method.
+func (m *MockIService) GetEmails(arg0 context.Context, arg1 []int) (map[int][]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEmails", arg0, arg1)
+	ret0, _ := ret[0].(map[int][]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEmails indicates an expected call of GetEmails.
+func (mr *MockIServiceMockRecorder) GetEmails(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmails", reflect.TypeOf((*MockIService)(nil).GetEmails), arg0, arg1)
+}
+
+// GetGroupIDs mocks base method.
+func (m *MockIService) GetGroupIDs(arg0 context.Context, arg1 int) ([]int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroupIDs", arg0, arg1)
+	ret0, _ := ret[0].([]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroupIDs indicates an expected call of GetGroupIDs.
+func (mr *MockIServiceMockRecorder) GetGroupIDs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroupIDs", reflect.TypeOf((*MockIService)(nil).GetGroupIDs), arg0, arg1)
+}
+
+// GetGroups mocks base method.
+func (m *MockIService) GetGroups(arg0 context.Context, arg1 int, arg2 []int) ([]model.Group, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGroups", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]model.Group)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGroups indicates an expected call of GetGroups.
+func (mr *MockIServiceMockRecorder) GetGroups(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGroups", reflect.TypeOf((*MockIService)(nil).GetGroups), arg0, arg1, arg2)
+}
+
 // Login mocks base method.
 func (m *MockIService) Login(arg0 context.Context, arg1 model.Account) (int, error) {
 	m.ctrl.T.Helper()
@@ -122,4 +286,19 @@ func (m *MockIService) PingDB() error {
 func (mr *MockIServiceMockRecorder) PingDB() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PingDB", reflect.TypeOf((*MockIService)(nil).PingDB))
+}
+
+// RefreshAccessJWT mocks base method.
+func (m *MockIService) RefreshAccessJWT(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RefreshAccessJWT", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RefreshAccessJWT indicates an expected call of RefreshAccessJWT.
+func (mr *MockIServiceMockRecorder) RefreshAccessJWT(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshAccessJWT", reflect.TypeOf((*MockIService)(nil).RefreshAccessJWT), arg0, arg1)
 }

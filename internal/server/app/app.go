@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,32 +41,28 @@ func RunApp() {
 	lg := logger.Sugar()
 
 	// initializing the config
-	_, err := NewConfig()
-	if err != nil {
-		lg.Fatalf("application configuration initialization error: %s", err.Error())
-	}
+	cfg := NewConfig()
 
 	//initializing the repository
-	var rp *repository.Repository
-	for i := 5430; i <= 5440; i++ {
-		databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
-		lg.Debugf("Connecting to DB: port %d...", i)
-		rp, err = repository.New(databaseURI)
-		if err != nil {
-			if i == 5440 {
-				lg.Fatalf("postgres DB initialization error: %s", err.Error())
-			}
-			lg.Debugf("Connect to DB: error: %s", err.Error())
-			lg.Debugf("Repeating...")
-		} else {
-			lg.Infof("Connecting to DB: success")
-			break
-		}
+	// var rp *repository.Repository
+	// for i := 5430; i <= 5440; i++ {
+	// 	databaseURI := fmt.Sprintf("host=localhost port=%d user=postgres password=password dbname=confidant sslmode=disable", i)
+	// 	lg.Debugf("Connecting to DB: port %d...", i)
+	rp, err := repository.New(cfg.repository.DatabaseURI)
+	if err != nil {
+		// if i == 5440 {
+		lg.Fatalf("postgres DB initialization error: %s", err.Error())
+		// }
+		// lg.Debugf("Connect to DB: error: %s", err.Error())
+		// lg.Debugf("Repeating...")
+		// } else {
 	}
+	lg.Infof("Connecting to DB: success")
+	// break
+	// }
+	// }
 
 	// initializing the service
-	// accountSv := accountservice.New(rp.IAccountRepository)
-	// sv := transport.NewService(accountSv)
 	sv := service.New(rp)
 
 	//initializing the handler
@@ -78,8 +73,8 @@ func RunApp() {
 
 	// starting the server
 	go func() {
-		lg.Infof("The 'confidant' server is running")
-		if err := srv.RunServer(":7541", hd.InitRoutes()); err != nil {
+		lg.Infof("The 'confidant' server is running, address: %s", cfg.server.Addr)
+		if err := srv.RunServer(cfg.server.Addr, hd.InitRoutes()); err != nil {
 			lg.Fatalf("server startup error: %s", err.Error())
 		}
 	}()
@@ -100,5 +95,5 @@ func RunApp() {
 	}
 
 	lg.Infof("the server operation is completed")
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 1)
 }

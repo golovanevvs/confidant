@@ -12,6 +12,9 @@ import (
 )
 
 func RunApp() {
+	//initalizing the config
+	cfg := NewConfig()
+
 	// initializing the logger
 	rawJSON := []byte(`{
 		"level": "debug",
@@ -33,7 +36,7 @@ func RunApp() {
 	lg := logger.Sugar()
 
 	// initializing the transport
-	trHTTP := trhttp.New("localhost:7541")
+	trHTTP := trhttp.New(cfg.addr)
 
 	// initializing the repository
 	rp, err := repository.New()
