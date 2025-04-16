@@ -16,6 +16,8 @@ type IServiceGroups interface {
 	GetGroupIDs(ctx context.Context, email string) (groupServerIDs []int, groupNoServerIDs []int, err error)
 	AddGroupBySync(ctx context.Context, group model.Group) (err error)
 	UpdateGroupIDsOnServer(ctx context.Context, newGroupIDs map[int]int) (err error)
+	GetEmails(ctx context.Context, groupIDs []int) (mapGroupIDEmails map[int][]string, err error)
+	AddEmailsBySync(ctx context.Context, mapGroupIDEmails map[int][]string) (err error)
 }
 
 type IServiceData interface {
@@ -38,6 +40,8 @@ type ITransportSync interface {
 	GetDataFile(ctx context.Context, accessToken string, dataID int) (fileFromServer []byte, err error)
 	SendDatas(ctx context.Context, accessToken string, datas []model.Data) (dataIDs map[int]int, err error)
 	SendFile(ctx context.Context, accessToken string, dataID int, file []byte) (err error)
+	GetEmails(ctx context.Context, accessToken string, groupIDs []int) (mapGroupIDEmailsFromServer map[int][]string, err error)
+	SendEmails(ctx context.Context, accessToken string, mapGroupIDEmails map[int][]string) (err error)
 }
 
 type ServiceSync struct {

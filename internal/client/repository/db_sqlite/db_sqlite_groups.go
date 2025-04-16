@@ -146,6 +146,71 @@ func (rp *sqliteGroups) GetGroups(ctx context.Context, email string) (groups []m
 	return groups, nil
 }
 
+func (rp *sqliteGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGroupIDEmails map[int][]string, err error) {
+	action := "get map groupID-emails by group IDs"
+
+	mapGroupIDEmails = make(map[int][]string, 0)
+
+	for _, groupID := range groupIDs {
+
+		rows, err := rp.db.QueryContext(ctx, `
+			
+			SELECT
+				email_in_groups.email
+			FROM
+				email_in_groups
+			INNER JOIN
+				groups
+			ON
+				email_in_groups.group_id = groups.id
+			WHERE
+				groups.id_on_server = ?;
+			
+		`, groupID)
+
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		defer rows.Close()
+
+		emails := make([]string, 0)
+
+		for rows.Next() {
+			var email string
+			if err = rows.Scan(&email); err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+			emails = append(emails, email)
+		}
+
+		if err = rows.Err(); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		mapGroupIDEmails[groupID] = emails
+	}
+
+	return mapGroupIDEmails, nil
+}
+
 func (rp *sqliteGroups) GetGroupsByIDs(ctx context.Context, groupIDs []int) (groups []model.Group, err error) {
 	action := "get groups by IDs"
 
@@ -420,6 +485,45 @@ func (rp *sqliteGroups) AddGroupBySync(ctx context.Context, group model.Group) (
 				customerrors.ErrAddEmailInGroup,
 				err,
 			)
+		}
+	}
+
+	return nil
+}
+
+func (rp *sqliteGroups) AddEmailsBySync(ctx context.Context, mapGroupIDEmails map[int][]string) (err error) {
+	action := "add e-mails by sync"
+
+	for groupIDOnServer, emails := range mapGroupIDEmails {
+		for _, email := range emails {
+
+			_, err = rp.db.ExecContext(ctx, `
+
+				INSERT INTO email_in_groups
+					(email, group_id)
+				VALUES
+					(?,
+					(
+						SELECT
+							id
+						FROM
+							groups
+						WHERE
+							id_on_server = ?
+					)
+					);
+
+				`, email, groupIDOnServer)
+
+			if err != nil {
+				return fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrAddGroup,
+					err,
+				)
+			}
 		}
 	}
 

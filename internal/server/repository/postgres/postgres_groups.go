@@ -183,6 +183,66 @@ func (rp *postgresGroups) GetGroups(ctx context.Context, accountID int, groupIDs
 	return groups, nil
 }
 
+func (rp *postgresGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGroupIDEmails map[int][]string, err error) {
+	action := "get map groupID-emails by group IDs"
+
+	mapGroupIDEmails = make(map[int][]string, 0)
+
+	for _, groupID := range groupIDs {
+		rows, err := rp.db.QueryContext(ctx, `
+			
+			SELECT
+				email
+			FROM
+				email_in_groups
+			WHERE
+				group_id = $1;
+			
+		`, groupID)
+
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		defer rows.Close()
+
+		emails := make([]string, 0)
+
+		for rows.Next() {
+			var email string
+			if err = rows.Scan(&email); err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+			emails = append(emails, email)
+		}
+
+		if err = rows.Err(); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+
+		mapGroupIDEmails[groupID] = emails
+	}
+
+	return mapGroupIDEmails, nil
+}
+
 func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (groupIDs map[int]int, err error) {
 	action := "add groups"
 
@@ -235,4 +295,33 @@ func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (
 	}
 
 	return groupIDs, nil
+}
+
+func (rp *postgresGroups) AddEmails(ctx context.Context, mapGroupIDEmails map[int][]string) (err error) {
+	action := "add e-mails"
+
+	for groupID, emails := range mapGroupIDEmails {
+		for _, email := range emails {
+			_, err = rp.db.ExecContext(ctx, `
+	
+				INSERT INTO email_in_groups
+					(group_id, email)
+				VALUES
+					($1, $2);
+	
+	`, groupID, email)
+
+			if err != nil {
+				return fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+		}
+	}
+
+	return nil
 }

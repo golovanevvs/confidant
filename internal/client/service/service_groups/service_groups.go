@@ -19,6 +19,8 @@ type IRepositoryGroups interface {
 	GetGroupIDs(ctx context.Context, email string) (groupServerIDs []int, groupNoServerIDs []int, err error)
 	AddGroupBySync(ctx context.Context, group model.Group) (err error)
 	UpdateGroupIDsOnServer(ctx context.Context, newGroupIDs map[int]int) (err error)
+	GetEmails(ctx context.Context, groupIDs []int) (mapGroupIDEmails map[int][]string, err error)
+	AddEmailsBySync(ctx context.Context, mapGroupIDEmails map[int][]string) (err error)
 }
 
 type ServiceGroups struct {

@@ -71,9 +71,12 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 	// getting group IDs for copy to client from server
 	if len(groupIDsFromServer) > 0 {
 		groupIDsForCopyFromServer := make([]int, 0)
+		groupIDsForSyncEmails := make([]int, 0)
 		for _, groupIDFromServer := range groupIDsFromServer {
 			if !slices.Contains(groupServerIDs, groupIDFromServer) {
 				groupIDsForCopyFromServer = append(groupIDsForCopyFromServer, groupIDFromServer)
+			} else {
+				groupIDsForSyncEmails = append(groupIDsForSyncEmails, groupIDFromServer)
 			}
 		}
 
@@ -106,6 +109,80 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 				}
 			}
 		}
+
+		//sync e-mails
+		if len(groupIDsForSyncEmails) > 0 {
+			mapGroupIDEmailsFromServer, err := sv.tr.GetEmails(ctx, accessToken, groupIDsForSyncEmails)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+
+			mapGroupIDEmailsFromClient, err := sv.sg.GetEmails(ctx, groupIDsForSyncEmails)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
+			}
+
+			mapGroupIDEmailsForAddToClient := make(map[int][]string)
+			for groupIDFromServer, emailsFromServer := range mapGroupIDEmailsFromServer {
+				emailsForAddToClient := make([]string, 0)
+				for _, emailFromServer := range emailsFromServer {
+					if !slices.Contains(mapGroupIDEmailsFromClient[groupIDFromServer], emailFromServer) {
+						emailsForAddToClient = append(emailsForAddToClient, emailFromServer)
+					}
+					mapGroupIDEmailsForAddToClient[groupIDFromServer] = emailsForAddToClient
+				}
+			}
+
+			mapGroupIDEmailsForAddToServer := make(map[int][]string)
+			for groupIDFromCLient, emailsFromCLient := range mapGroupIDEmailsFromClient {
+				emailsForAddToServer := make([]string, 0)
+				for _, emailFromClient := range emailsFromCLient {
+					if !slices.Contains(mapGroupIDEmailsFromServer[groupIDFromCLient], emailFromClient) {
+						emailsForAddToServer = append(emailsForAddToServer, emailFromClient)
+					}
+					mapGroupIDEmailsForAddToServer[groupIDFromCLient] = emailsForAddToServer
+				}
+			}
+
+			if len(mapGroupIDEmailsForAddToClient) > 0 {
+				err = sv.sg.AddEmailsBySync(ctx, mapGroupIDEmailsForAddToClient)
+				if err != nil {
+					return nil, fmt.Errorf(
+						"%s: %s: %s: %w",
+						customerrors.ClientMsg,
+						customerrors.ClientServiceErr,
+						action,
+						err,
+					)
+				}
+			}
+
+			if len(mapGroupIDEmailsForAddToServer) > 0 {
+				err = sv.tr.SendEmails(ctx, accessToken, mapGroupIDEmailsForAddToServer)
+				if err != nil {
+					return nil, fmt.Errorf(
+						"%s: %s: %s: %w",
+						customerrors.ClientMsg,
+						customerrors.ClientServiceErr,
+						action,
+						err,
+					)
+				}
+			}
+		}
+
 	}
 
 	// getting groups from client
@@ -123,6 +200,7 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 		}
 
 		// sending groups to server
+		//TODO: add send e-mails
 		newGroupIDsFromServer, err := sv.tr.SendGroups(ctx, accessToken, groupsForCopyToServer)
 		if err != nil {
 			return nil, fmt.Errorf(
