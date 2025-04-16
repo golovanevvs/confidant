@@ -5,7 +5,11 @@ HOSTNAME := $(shell hostname)
 endif
 
 migrate_up:
-ifeq ($(HOSTNAME),GVS)
+ifeq ($(HOSTNAME),KKO11PC)
+	@echo "migrating db..."
+	migrate -path resources/migration -database "postgres://localhost:5432/confidant?sslmode=disable&user=postgres&password=password" up
+	@echo "migrating db completed"
+else ifeq ($(HOSTNAME),GVS)
 	@echo "migrating db..."
 	migrate -path resources/migration -database "postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password" up
 	@echo "migrating db completed"
@@ -18,7 +22,11 @@ else
 endif
 
 migrate_down:
-ifeq ($(HOSTNAME),GVS)
+ifeq ($(HOSTNAME),KKO11PC)
+	@echo "migrating db..."
+	migrate -path resources/migration -database "postgres://localhost:5432/confidant?sslmode=disable&user=postgres&password=password" down
+	@echo "migrating db completed"
+else ifeq ($(HOSTNAME),GVS)
 	@echo "migrating db..."
 	migrate -path resources/migration -database "postgres://localhost:5433/confidant?sslmode=disable&user=postgres&password=password" down
 	@echo "migrating db completed"
