@@ -26,13 +26,7 @@ func (hd *handler) GroupIDsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := struct {
-		IDs []int `json:"ids"`
-	}{
-		IDs: groupIDs,
-	}
-	var responseJSON []byte
-	responseJSON, err = json.Marshal(response)
+	responseJSON, err := json.Marshal(groupIDs)
 	if err != nil {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w: %w",

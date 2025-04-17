@@ -39,10 +39,8 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 		}, nil
 	}
 
-	response := struct {
-		IDs []int `json:"ids"`
-	}{}
-	err = json.Unmarshal(trResponse.ResponseBody, &response)
+	var groupIDsFromServer []int
+	err = json.Unmarshal(trResponse.ResponseBody, &groupIDsFromServer)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -52,9 +50,6 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 			err,
 		)
 	}
-	trResponse.GroupIDs = response.IDs
-
-	groupIDsFromServer := trResponse.GroupIDs
 
 	// getting group server IDs and local IDs from client
 	groupServerIDs, groupNoServerIDs, err := sv.sg.GetGroupIDs(ctx, email)

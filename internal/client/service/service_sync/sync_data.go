@@ -14,7 +14,7 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 	action := "sync data"
 
 	// getting group IDs from client
-	groupIDs, _, err := sv.sg.GetGroupIDs(ctx, email)
+	groupServerIDs, _, err := sv.sg.GetGroupIDs(ctx, email)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %s: %w",
@@ -51,10 +51,8 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 		}, nil
 	}
 
-	response := struct {
-		IDs []int `json:"ids"`
-	}{}
-	err = json.Unmarshal(trResponse.ResponseBody, &response)
+	var dataIDsFromServer []int
+	err = json.Unmarshal(trResponse.ResponseBody, &dataIDsFromServer)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -64,12 +62,9 @@ func (sv *ServiceSync) SyncData(ctx context.Context, accessToken string, email s
 			err,
 		)
 	}
-	trResponse.DataIDs = response.IDs
-
-	dataIDsFromServer := trResponse.DataIDs
 
 	// gettingdata server IDs and local IDs from client
-	dataServerIDs, dataNoServerIDs, err := sv.sd.GetDataIDs(ctx, groupIDs)
+	dataServerIDs, dataNoServerIDs, err := sv.sd.GetDataIDs(ctx, groupServerIDs)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %s: %w",

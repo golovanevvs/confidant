@@ -24,7 +24,7 @@ type IRepositoryData interface {
 	AddFile(ctx context.Context, data model.FileEnc) (err error)
 	GetFile(ctx context.Context, dataID int) (data model.FileEnc, err error)
 	GetFileForSave(ctx context.Context, dataID int) (data []byte, err error)
-	GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
+	GetDataIDs(ctx context.Context, groupServerIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error)
 	GetDataDates(ctx context.Context, dataIDs []int) (dataDates map[int]time.Time, err error)
 	SaveDatas(ctx context.Context, datas []model.Data) (err error)
 	SaveDataFile(ctx context.Context, dataID int, file []byte) (err error)

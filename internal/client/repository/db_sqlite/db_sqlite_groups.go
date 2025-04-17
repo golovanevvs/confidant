@@ -2,7 +2,6 @@ package db_sqlite
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
@@ -386,17 +385,13 @@ func (rp *sqliteGroups) GetGroupIDs(ctx context.Context, email string) (groupSer
 	
 	`, email)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil, nil
-		} else {
-			return nil, nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
+		return nil, nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 	defer rows.Close()
 

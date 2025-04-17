@@ -2,7 +2,6 @@ package db_sqlite
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -481,13 +480,13 @@ func (rp *sqliteData) GetFileForSave(ctx context.Context, dataID int) (dataEnc [
 	return dataEnc, nil
 }
 
-func (rp *sqliteData) GetDataIDs(ctx context.Context, groupIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error) {
+func (rp *sqliteData) GetDataIDs(ctx context.Context, groupServerIDs []int) (dataServerIDs []int, dataNoServerIDs []int, err error) {
 	action := "get data IDs"
 
 	dataServerIDs = make([]int, 0)
 	dataNoServerIDs = make([]int, 0)
 
-	for _, groupID := range groupIDs {
+	for _, groupServerID := range groupServerIDs {
 		rows, err := rp.db.QueryContext(ctx, `
 	
 		SELECT
@@ -495,19 +494,24 @@ func (rp *sqliteData) GetDataIDs(ctx context.Context, groupIDs []int) (dataServe
 		FROM
 			data
 		WHERE
-			group_id = ?;
+			(
+				SELECT
+					id
+				FROM
+					groups
+				WHERE
+					id_on_server = ?
+			);
 	
-	`, groupID)
+	`, groupServerID)
 		if err != nil {
-			if err == sql.ErrNoRows && err != sql.ErrNoRows {
-				return nil, nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
+			return nil, nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
 		}
 		defer rows.Close()
 

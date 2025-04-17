@@ -27,14 +27,7 @@ func (hd *handler) DataIDsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := struct {
-		IDs []int `json:"ids"`
-	}{
-		IDs: dataIDs,
-	}
-
-	var responseJSON []byte
-	responseJSON, err = json.Marshal(response)
+	responseJSON, err := json.Marshal(dataIDs)
 	if err != nil {
 		resErr := fmt.Errorf(
 			"%s: %s: %s: %w: %w",
