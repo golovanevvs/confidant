@@ -43,6 +43,7 @@ func (rp *sqliteData) GetDataTitles(ctx context.Context, groupID int) (dataTitle
 		)
 	}
 	defer rows.Close()
+
 	var dataTitle []byte
 	for rows.Next() {
 		if err = rows.Scan(&dataTitle); err != nil {
@@ -140,18 +141,7 @@ func (rp *sqliteData) GetDataIDAndType(ctx context.Context, groupID int, dataTit
 func (rp *sqliteData) AddNote(ctx context.Context, data model.NoteEnc) (err error) {
 	action := "add note"
 
-	row := rp.db.QueryRowContext(ctx, `
-		
-		INSERT INTO data
-			(group_id, data_type, title)
-		VALUES
-			(?, ?, ?)
-		RETURNING id;
-	
-	`, data.GroupID, data.Type, data.Title)
-
-	var dataID int
-	err = row.Scan(&dataID)
+	tx, err := rp.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -162,7 +152,34 @@ func (rp *sqliteData) AddNote(ctx context.Context, data model.NoteEnc) (err erro
 		)
 	}
 
-	_, err = rp.db.ExecContext(ctx, `
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	row := tx.QueryRowContext(ctx, `
+		
+		INSERT INTO data
+			(group_id, data_type, title)
+		VALUES
+			(?, ?, ?)
+		RETURNING id;
+	
+	`, data.GroupID, data.Type, data.Title)
+
+	var dataID int
+	if err = row.Scan(&dataID); err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddNote,
+			err,
+		)
+	}
+
+	_, err = tx.ExecContext(ctx, `
 	
 		INSERT INTO data_note
 			(data_id, desc, note)
@@ -171,6 +188,16 @@ func (rp *sqliteData) AddNote(ctx context.Context, data model.NoteEnc) (err erro
 	
 	`, dataID, data.Desc, data.Note)
 	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddNote,
+			err,
+		)
+	}
+
+	if err = tx.Commit(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -219,7 +246,24 @@ func (rp *sqliteData) GetNote(ctx context.Context, dataID int) (data model.NoteE
 func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err error) {
 	action := "add password"
 
-	row := rp.db.QueryRowContext(ctx, `
+	tx, err := rp.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddPass,
+			err,
+		)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	row := tx.QueryRowContext(ctx, `
 		
 		INSERT INTO data
 			(group_id, data_type, title)
@@ -241,7 +285,7 @@ func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err erro
 		)
 	}
 
-	_, err = rp.db.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 	
 		INSERT INTO data_pass
 			(data_id, desc, login, pass)
@@ -250,6 +294,16 @@ func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err erro
 	
 	`, dataID, data.Desc, data.Login, data.Pass)
 	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddPass,
+			err,
+		)
+	}
+
+	if err = tx.Commit(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -298,7 +352,24 @@ func (rp *sqliteData) GetPass(ctx context.Context, dataID int) (data model.PassE
 func (rp *sqliteData) AddCard(ctx context.Context, data model.CardEnc) (err error) {
 	action := "add card"
 
-	row := rp.db.QueryRowContext(ctx, `
+	tx, err := rp.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddCard,
+			err,
+		)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	row := tx.QueryRowContext(ctx, `
 		
 		INSERT INTO data
 			(group_id, data_type, title)
@@ -320,7 +391,7 @@ func (rp *sqliteData) AddCard(ctx context.Context, data model.CardEnc) (err erro
 		)
 	}
 
-	_, err = rp.db.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 	
 		INSERT INTO data_card
 			(data_id, desc, number, date, name, cvc2, pin, bank)
@@ -329,6 +400,16 @@ func (rp *sqliteData) AddCard(ctx context.Context, data model.CardEnc) (err erro
 	
 	`, dataID, data.Desc, data.Number, data.Date, data.Name, data.CVC2, data.PIN, data.Bank)
 	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddCard,
+			err,
+		)
+	}
+
+	if err = tx.Commit(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -377,7 +458,24 @@ func (rp *sqliteData) GetCard(ctx context.Context, dataID int) (data model.CardE
 func (rp *sqliteData) AddFile(ctx context.Context, data model.FileEnc) (err error) {
 	action := "add file"
 
-	row := rp.db.QueryRowContext(ctx, `
+	tx, err := rp.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddFile,
+			err,
+		)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	row := tx.QueryRowContext(ctx, `
 		
 		INSERT INTO data
 			(group_id, data_type, title)
@@ -399,7 +497,7 @@ func (rp *sqliteData) AddFile(ctx context.Context, data model.FileEnc) (err erro
 		)
 	}
 
-	_, err = rp.db.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 	
 		INSERT INTO data_file
 			(data_id, desc, filename, filesize, filedate, file)
@@ -408,6 +506,16 @@ func (rp *sqliteData) AddFile(ctx context.Context, data model.FileEnc) (err erro
 	
 	`, dataID, data.Desc, data.Filename, data.Filesize, data.Filedate, data.File)
 	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddFile,
+			err,
+		)
+	}
+
+	if err = tx.Commit(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -490,18 +598,15 @@ func (rp *sqliteData) GetDataIDs(ctx context.Context, groupServerIDs []int) (dat
 		rows, err := rp.db.QueryContext(ctx, `
 	
 		SELECT
-			id, id_on_server
+			data.id, data.id_on_server
 		FROM
 			data
+		JOIN
+			groups
+		ON
+			data.group_id = groups.id
 		WHERE
-			(
-				SELECT
-					id
-				FROM
-					groups
-				WHERE
-					id_on_server = ?
-			);
+			groups.id_on_server IN (?);
 	
 	`, groupServerID)
 		if err != nil {

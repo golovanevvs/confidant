@@ -127,6 +127,17 @@ func New() (*SQLite, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		_, err = db.ExecContext(ctx, `
+		
+			CREATE INDEX group_id_index
+			ON data (group_id);
+		
+		`)
+		if err != nil {
+			return nil, err
+		}
+
 	} else {
 		db, err = sqlx.Open("sqlite3", dbFile)
 		if err != nil {

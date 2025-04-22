@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -67,7 +68,7 @@ func (rp *sqliteAccount) LoadAccountID(ctx context.Context, email string, passwo
 
 	if err = row.Scan(&accountID); err != nil {
 		switch {
-		case err == sql.ErrNoRows:
+		case errors.Is(err, sql.ErrNoRows):
 			return -1, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
