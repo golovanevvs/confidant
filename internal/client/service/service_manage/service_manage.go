@@ -11,7 +11,6 @@ type ITransportManage interface {
 }
 
 type IRepositoryManage interface {
-	GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error)
 	CloseDB(ctx context.Context) error
 }
 

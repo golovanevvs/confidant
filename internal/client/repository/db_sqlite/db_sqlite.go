@@ -33,6 +33,16 @@ func New() (*SQLite, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		_, err = db.ExecContext(ctx, `
+		
+			PRAGMA foreign_keys = ON
+		
+		`)
+		if err != nil {
+			return nil, err
+		}
+
 		_, err = db.ExecContext(ctx, `
 
 			CREATE TABLE IF NOT EXISTS account(
@@ -112,16 +122,6 @@ func New() (*SQLite, error) {
 				file BLOB,
 				FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 			);
-
-		`)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = db.ExecContext(ctx, `
-
-			CREATE INDEX email_index
-			ON account (email);
 
 		`)
 		if err != nil {

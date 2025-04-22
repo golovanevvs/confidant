@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golovanevvs/confidant/internal/client/model"
 	"github.com/golovanevvs/confidant/internal/customerrors"
 	"github.com/jmoiron/sqlx"
 )
@@ -17,10 +16,6 @@ func NewSQLiteManage(db *sqlx.DB) *sqliteManage {
 	return &sqliteManage{
 		db: db,
 	}
-}
-
-func (rp *sqliteAccount) GetServerStatus(ctx context.Context) (statusResp *model.StatusResp, err error) {
-	return nil, nil
 }
 
 func (rp *sqliteAccount) CloseDB(ctx context.Context) error {
