@@ -594,8 +594,7 @@ func (rp *sqliteData) GetDataIDs(ctx context.Context, groupServerIDs []int) (dat
 	dataServerIDs = make([]int, 0)
 	dataNoServerIDs = make([]int, 0)
 
-	for _, groupServerID := range groupServerIDs {
-		rows, err := rp.db.QueryContext(ctx, `
+	query, args, err := sqlx.In(`
 	
 		SELECT
 			data.id, data.id_on_server
@@ -606,10 +605,35 @@ func (rp *sqliteData) GetDataIDs(ctx context.Context, groupServerIDs []int) (dat
 		ON
 			data.group_id = groups.id
 		WHERE
-			groups.id_on_server IN (?);
+			groups.id_on_server IN (?)
 	
-	`, groupServerID)
-		if err != nil {
+	`, groupServerIDs)
+	if err != nil {
+		return nil, nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	rows, err := rp.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var dataID, dataServerID int
+		if err = rows.Scan(&dataID, &dataServerID); err != nil {
 			return nil, nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -618,36 +642,22 @@ func (rp *sqliteData) GetDataIDs(ctx context.Context, groupServerIDs []int) (dat
 				err,
 			)
 		}
-		defer rows.Close()
 
-		for rows.Next() {
-			var dataID, dataServerID int
-			if err = rows.Scan(&dataID, &dataServerID); err != nil {
-				return nil, nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-
-			if dataServerID == -1 {
-				dataNoServerIDs = append(dataNoServerIDs, dataID)
-			} else {
-				dataServerIDs = append(dataServerIDs, dataServerID)
-			}
+		if dataServerID == -1 {
+			dataNoServerIDs = append(dataNoServerIDs, dataID)
+		} else {
+			dataServerIDs = append(dataServerIDs, dataServerID)
 		}
+	}
 
-		if err = rows.Err(); err != nil {
-			return nil, nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
+	if err = rows.Err(); err != nil {
+		return nil, nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
 	return dataServerIDs, dataNoServerIDs, nil
@@ -658,31 +668,41 @@ func (rp *sqliteData) GetDataDates(ctx context.Context, dataIDs []int) (dataDate
 
 	dataDates = make(map[int]time.Time)
 
-	for _, dataID := range dataIDs {
-		row := rp.db.QueryRowContext(ctx, `
+	query, args, err := sqlx.In(`
 	
 			SELECT
-				created_at
+				id, created_at
 			FROM
 				data
 			WHERE
-				id = ?;
+				id IN (?)
 	
-		`, dataID)
-
-		var date time.Time
-		if err = row.Scan(&date); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-
-		dataDates[dataID] = date
+		`, dataIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
+
+	row := rp.db.QueryRowContext(ctx, query, args...)
+
+	var dataID int
+	var date time.Time
+	if err = row.Scan(&dataID, &date); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	dataDates[dataID] = date
 
 	return dataDates, nil
 }
