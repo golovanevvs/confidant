@@ -23,7 +23,25 @@ func NewSQLiteGroups(db *sqlx.DB) *sqliteGroups {
 func (rp *sqliteGroups) AddGroup(ctx context.Context, account *model.Account, title string) (err error) {
 	action := "add group"
 
-	row := rp.db.QueryRowContext(ctx, `
+	tx, err := rp.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddGroup,
+			err,
+		)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+	}()
+
+	row := tx.QueryRowContext(ctx, `
 
 		INSERT INTO groups
 			(title, account_id)
@@ -36,6 +54,7 @@ func (rp *sqliteGroups) AddGroup(ctx context.Context, account *model.Account, ti
 	var groupID int
 	err = row.Scan(&groupID)
 	if err != nil {
+		_ = tx.Rollback()
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return fmt.Errorf(
 				"%s: %s: %w: %w",
@@ -55,7 +74,7 @@ func (rp *sqliteGroups) AddGroup(ctx context.Context, account *model.Account, ti
 		}
 	}
 
-	_, err = rp.db.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 	
 		INSERT INTO email_in_groups
 			(email, group_id)
@@ -64,6 +83,7 @@ func (rp *sqliteGroups) AddGroup(ctx context.Context, account *model.Account, ti
 
 	`, account.Email, groupID)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -73,11 +93,23 @@ func (rp *sqliteGroups) AddGroup(ctx context.Context, account *model.Account, ti
 		)
 	}
 
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrAddGroup,
+			err,
+		)
+	}
+
 	return nil
 }
 
 func (rp *sqliteGroups) GetGroups(ctx context.Context, email string) (groups []model.Group, err error) {
 	action := "get groups"
+
+	groupIDs := make([]int, 0)
 
 	rows, err := rp.db.QueryContext(ctx, `
 	
@@ -90,7 +122,7 @@ func (rp *sqliteGroups) GetGroups(ctx context.Context, email string) (groups []m
 		ON
 			groups.id = email_in_groups.group_id
 		WHERE
-			email = ?;
+			email IN (?);
 
 	`, email)
 	if err != nil {
@@ -116,19 +148,7 @@ func (rp *sqliteGroups) GetGroups(ctx context.Context, email string) (groups []m
 			)
 		}
 
-		emails, err := rp.getEmails(ctx, group.ID)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-
-		group.Emails = emails
-
+		groupIDs = append(groupIDs, group.ID)
 		groups = append(groups, group)
 	}
 
@@ -142,6 +162,56 @@ func (rp *sqliteGroups) GetGroups(ctx context.Context, email string) (groups []m
 		)
 	}
 
+	emailQuery, emailArgs, err := sqlx.In(`
+		SELECT
+			email, group_id
+		FROM
+			email_in_groups
+		WHERE
+			group_id IN (?);
+	`, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	emailRows, err := rp.db.QueryContext(ctx, emailQuery, emailArgs...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer emailRows.Close()
+
+	mapGroupIDEmails := make(map[int][]string, 0)
+	for emailRows.Next() {
+		var email string
+		var groupID int
+		if err = emailRows.Scan(&email, &groupID); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		mapGroupIDEmails[groupID] = append(mapGroupIDEmails[groupID], email)
+	}
+
+	for i := range groups {
+		groups[i].Emails = mapGroupIDEmails[groups[i].ID]
+	}
+
 	return groups, nil
 }
 
@@ -150,24 +220,46 @@ func (rp *sqliteGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGroup
 
 	mapGroupIDEmails = make(map[int][]string, 0)
 
-	for _, groupID := range groupIDs {
-
-		rows, err := rp.db.QueryContext(ctx, `
+	query, args, err := sqlx.In(`
 			
-			SELECT
-				email_in_groups.email
-			FROM
-				email_in_groups
-			INNER JOIN
-				groups
-			ON
-				email_in_groups.group_id = groups.id
-			WHERE
-				groups.id_on_server = ?;
+		SELECT
+			email_in_groups.email, groups.id_on_server
+		FROM
+			email_in_groups
+		INNER JOIN
+			groups
+		ON
+			email_in_groups.group_id = groups.id
+		WHERE
+			groups.id_on_server IN (?);
 			
-		`, groupID)
+		`, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
 
-		if err != nil {
+	rows, err := rp.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var email string
+		var groupOnServerID int
+		if err = rows.Scan(&email, &groupOnServerID); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -176,35 +268,18 @@ func (rp *sqliteGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGroup
 				err,
 			)
 		}
-		defer rows.Close()
+		mapGroupIDEmails[groupOnServerID] = append(mapGroupIDEmails[groupOnServerID], email)
 
-		emails := make([]string, 0)
+	}
 
-		for rows.Next() {
-			var email string
-			if err = rows.Scan(&email); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-			emails = append(emails, email)
-		}
-
-		if err = rows.Err(); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-
-		mapGroupIDEmails[groupID] = emails
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
 	return mapGroupIDEmails, nil
@@ -213,8 +288,7 @@ func (rp *sqliteGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGroup
 func (rp *sqliteGroups) GetGroupsByIDs(ctx context.Context, groupIDs []int) (groups []model.Group, err error) {
 	action := "get groups by IDs"
 
-	for _, groupID := range groupIDs {
-		row := rp.db.QueryRowContext(ctx, `
+	query, args, err := sqlx.In(`
 	
 		SELECT
 			id, title, account_id
@@ -223,22 +297,32 @@ func (rp *sqliteGroups) GetGroupsByIDs(ctx context.Context, groupIDs []int) (gro
 		WHERE
 			id = ?;
 
-	`, groupID)
+	`, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
 
+	rows, err := rp.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
 		var group model.Group
-		if err = row.Scan(&group.ID, &group.Title, &group.AccountID); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w, groupID: %d",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-				groupID,
-			)
-		}
-
-		emails, err := rp.getEmails(ctx, groupID)
-		if err != nil {
+		if err = rows.Scan(&group.ID, &group.Title, &group.AccountID); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -247,17 +331,28 @@ func (rp *sqliteGroups) GetGroupsByIDs(ctx context.Context, groupIDs []int) (gro
 				err,
 			)
 		}
-
-		group.Emails = emails
-		group.ID = groupID
-
-		groups = append(groups, group)
 	}
+
+	emails, err := rp.getEmails(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	group.Emails = emails
+	group.ID = groupID
+
+	groups = append(groups, group)
 
 	return groups, nil
 }
 
-func (rp *sqliteData) GetGroupID(ctx context.Context, email string, titleGroup string) (groupID int, err error) {
+func (rp *sqliteGroups) GetGroupID(ctx context.Context, email string, titleGroup string) (groupID int, err error) {
 	action := "get group ID"
 
 	row := rp.db.QueryRowContext(ctx, `
@@ -290,56 +385,56 @@ func (rp *sqliteData) GetGroupID(ctx context.Context, email string, titleGroup s
 	return groupID, nil
 }
 
-func (rp *sqliteGroups) getEmails(ctx context.Context, groupID int) (emails []string, err error) {
-	action := "get emails"
+// func (rp *sqliteGroups) getEmails(ctx context.Context, groupID int) (emails []string, err error) {
+// 	action := "get emails"
 
-	emails = make([]string, 0)
+// 	emails = make([]string, 0)
 
-	rows, err := rp.db.QueryContext(ctx, `
-	
-		SELECT
-			email
-		FROM
-			email_in_groups
-		WHERE
-			group_id = ?;
+// 	rows, err := rp.db.QueryContext(ctx, `
 
-	`, groupID)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %w: %w",
-			action,
-			customerrors.ErrDBInternalError500,
-			err,
-		)
-	}
-	defer rows.Close()
+// 		SELECT
+// 			email
+// 		FROM
+// 			email_in_groups
+// 		WHERE
+// 			group_id = ?;
 
-	for rows.Next() {
-		var email string
-		if err = rows.Scan(&email); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %w: %w",
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
+// 	`, groupID)
+// 	if err != nil {
+// 		return nil, fmt.Errorf(
+// 			"%s: %w: %w",
+// 			action,
+// 			customerrors.ErrDBInternalError500,
+// 			err,
+// 		)
+// 	}
+// 	defer rows.Close()
 
-		emails = append(emails, email)
-	}
+// 	for rows.Next() {
+// 		var email string
+// 		if err = rows.Scan(&email); err != nil {
+// 			return nil, fmt.Errorf(
+// 				"%s: %w: %w",
+// 				action,
+// 				customerrors.ErrDBInternalError500,
+// 				err,
+// 			)
+// 		}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf(
-			"%s 7: %w: %w",
-			action,
-			customerrors.ErrDBInternalError500,
-			err,
-		)
-	}
+// 		emails = append(emails, email)
+// 	}
 
-	return emails, nil
-}
+// 	if err = rows.Err(); err != nil {
+// 		return nil, fmt.Errorf(
+// 			"%s 7: %w: %w",
+// 			action,
+// 			customerrors.ErrDBInternalError500,
+// 			err,
+// 		)
+// 	}
+
+// 	return emails, nil
+// }
 
 func (rp *sqliteGroups) AddEmail(ctx context.Context, groupID int, email string) (err error) {
 	action := "add e-mail"

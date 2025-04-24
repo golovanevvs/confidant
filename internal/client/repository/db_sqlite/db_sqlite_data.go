@@ -172,6 +172,7 @@ func (rp *sqliteData) AddNote(ctx context.Context, data model.NoteEnc) (err erro
 
 	var dataID int
 	if err = row.Scan(&dataID); err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -190,6 +191,7 @@ func (rp *sqliteData) AddNote(ctx context.Context, data model.NoteEnc) (err erro
 	
 	`, dataID, data.Desc, data.Note)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -279,6 +281,7 @@ func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err erro
 	var dataID int
 	err = row.Scan(&dataID)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -297,6 +300,7 @@ func (rp *sqliteData) AddPass(ctx context.Context, data model.PassEnc) (err erro
 	
 	`, dataID, data.Desc, data.Login, data.Pass)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -386,6 +390,7 @@ func (rp *sqliteData) AddCard(ctx context.Context, data model.CardEnc) (err erro
 	var dataID int
 	err = row.Scan(&dataID)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -404,6 +409,7 @@ func (rp *sqliteData) AddCard(ctx context.Context, data model.CardEnc) (err erro
 	
 	`, dataID, data.Desc, data.Number, data.Date, data.Name, data.CVC2, data.PIN, data.Bank)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -493,6 +499,7 @@ func (rp *sqliteData) AddFile(ctx context.Context, data model.FileEnc) (err erro
 	var dataID int
 	err = row.Scan(&dataID)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -511,6 +518,7 @@ func (rp *sqliteData) AddFile(ctx context.Context, data model.FileEnc) (err erro
 	
 	`, dataID, data.Desc, data.Filename, data.Filesize, data.Filedate, data.File)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -756,7 +764,6 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 			err,
 		)
 	}
-
 	defer func() {
 		if p := recover(); p != nil {
 			_ = tx.Rollback()
@@ -765,16 +772,15 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	}()
 
 	query, args, err := sqlx.In(`
-	
 		SELECT
 			id, id_on_server
 		FROM
 			groups
 		WHERE
 			id_on_server IN (?)
-	
 	`, groupServerIDs)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -786,6 +792,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -801,6 +808,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	for rows.Next() {
 		var groupID, groupServerID int
 		if err = rows.Scan(&groupID, &groupServerID); err != nil {
+			_ = tx.Rollback()
 			return fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -813,6 +821,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	}
 
 	if err = rows.Err(); err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -823,16 +832,15 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	}
 
 	stmtData, err := tx.PrepareContext(ctx, `
-	
 		INSERT INTO data
 			(id_on_server, group_id, data_type, title, created_at)
 		VALUES
 			(?, ?, ?, ?, ?)
 		RETURNING
 			id;
-	
 	`)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -844,14 +852,13 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	defer stmtData.Close()
 
 	stmtNote, err := tx.PrepareContext(ctx, `
-	
 		INSERT INTO data_note
 			(data_id, desc, note)
 		VALUES
 			(?, ?, ?);
-	
 	`)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -863,14 +870,13 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	defer stmtNote.Close()
 
 	stmtPass, err := tx.PrepareContext(ctx, `
-	
 		INSERT INTO data_pass
 			(data_id, desc, login, pass)
 		VALUES
 			(?, ?, ?, ?);
-	
 	`)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -882,14 +888,13 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	defer stmtPass.Close()
 
 	stmtCard, err := tx.PrepareContext(ctx, `
-	
 		INSERT INTO data_card
 			(data_id, desc, number, date, name, cvc2, pin, bank)
 		VALUES
 			(?, ?, ?, ?, ?, ?, ?, ?);
-	
 	`)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -901,14 +906,13 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 	defer stmtCard.Close()
 
 	stmtFile, err := tx.PrepareContext(ctx, `
-	
 		INSERT INTO data_file
 			(data_id, desc, filename, filesize, filedate)
 		VALUES
 			(?, ?, ?, ?, ?);
-	
 	`)
 	if err != nil {
+		_ = tx.Rollback()
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
 			customerrors.DBErr,
@@ -929,6 +933,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 			data.Title,
 			data.CreatedAt,
 		).Scan(&dataID); err != nil {
+			_ = tx.Rollback()
 			return fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -946,6 +951,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 				data.Note.Desc,
 				data.Note.Note,
 			); err != nil {
+				_ = tx.Rollback()
 				return fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -962,6 +968,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 				data.Pass.Login,
 				data.Pass.Pass,
 			); err != nil {
+				_ = tx.Rollback()
 				return fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -982,6 +989,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 				data.Card.PIN,
 				data.Card.Bank,
 			); err != nil {
+				_ = tx.Rollback()
 				return fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -999,6 +1007,7 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 				data.File.Filesize,
 				data.File.Filedate,
 			); err != nil {
+				_ = tx.Rollback()
 				return fmt.Errorf(
 					"%s: %s: %w: %w",
 					customerrors.DBErr,
@@ -1008,17 +1017,15 @@ func (rp *sqliteData) SaveDatas(ctx context.Context, datas []model.Data) (err er
 				)
 			}
 		}
-
-		if err = tx.Commit(); err != nil {
-			return fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-
+	}
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
 	return nil
@@ -1028,16 +1035,13 @@ func (rp *sqliteData) SaveDataFile(ctx context.Context, dataID int, file []byte)
 	action := "save file"
 
 	_, err = rp.db.ExecContext(ctx, `
-		
 		UPDATE
 			data_file
 		SET
 			file = ?
 		WHERE
 			data_id IN (?);
-		
-		`, file, dataID)
-
+	`, file, dataID)
 	if err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w: %w",
@@ -1054,8 +1058,9 @@ func (rp *sqliteData) SaveDataFile(ctx context.Context, dataID int, file []byte)
 func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas []model.Data, err error) {
 	action := "get datas by data IDs"
 
-	query, args, err := sqlx.In(`
+	mapDataIDData := make(map[int]*model.Data)
 
+	query, args, err := sqlx.In(`
 		SELECT
 			d.id, g.id_on_server, d.data_type, d.title, d.created_at
 		FROM
@@ -1066,7 +1071,6 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 			d.group_id = g.id
 		WHERE
 			d.id IN (?)
-
 	`, dataIDs)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -1077,7 +1081,6 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 			err,
 		)
 	}
-
 	rows, err := rp.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -1090,13 +1093,14 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 	}
 	defer rows.Close()
 
+	noteIDs := make([]int, 0)
+	passIDs := make([]int, 0)
+	cardIDs := make([]int, 0)
+	fileIDs := make([]int, 0)
+
 	for rows.Next() {
-		note := model.NoteEnc{}
-		pass := model.PassEnc{}
-		card := model.CardEnc{}
-		file := model.FileEnc{}
-		data := model.Data{}
-		if err = rows.Scan(&data.ID, &data.IDOnServer, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
+		data := new(model.Data)
+		if err = rows.Scan(&data.ID, &data.GroupID, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -1105,150 +1109,249 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 				err,
 			)
 		}
+		mapDataIDData[data.ID] = data
+		switch data.DataType {
+		case "note":
+			noteIDs = append(noteIDs, data.ID)
+		case "pass":
+			passIDs = append(passIDs, data.ID)
+		case "card":
+			cardIDs = append(cardIDs, data.ID)
+		case "file":
+			fileIDs = append(fileIDs, data.ID)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
 
-		queryNote, argsNote, err := sqlx.In(`
-		
+	note := model.NoteEnc{}
+	pass := model.PassEnc{}
+	card := model.CardEnc{}
+	file := model.FileEnc{}
+
+	if len(noteIDs) > 0 {
+		noteQuery, noteArgs, err := sqlx.In(`
 			SELECT
 				data_id, desc, note
 			FROM
 				data_note
 			WHERE
 				data_id IN (?);
-		
-		`)
-
+		`, noteIDs)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		noteRows, err := rp.db.QueryContext(ctx, noteQuery, noteArgs...)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		defer noteRows.Close()
+		for noteRows.Next() {
+			var noteDataID int
+			if err = noteRows.Scan(&noteDataID, &note.Desc, &note.Note); err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+			mapDataIDData[noteDataID].Note = note
+		}
+		if err = noteRows.Err(); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
 	}
 
-	// row := rp.db.QueryRowContext(ctx, `
+	if len(passIDs) > 0 {
+		passQuery, passArgs, err := sqlx.In(`
+			SELECT
+	 			data_id, desc, login, pass
+	 		FROM
+				data_pass
+			WHERE
+	 			data_id IN (?);
+		`, passIDs)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		passRows, err := rp.db.QueryContext(ctx, passQuery, passArgs...)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		defer passRows.Close()
+		for passRows.Next() {
+			var passDataID int
+			if err = passRows.Scan(&passDataID, &pass.Desc, &pass.Login, &pass.Pass); err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+			mapDataIDData[passDataID].Pass = pass
+		}
+		if err = passRows.Err(); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
 
-	// 	SELECT
-	// 		groups.id_on_server, data.data_type, data.title, data.created_at
-	// 	FROM
-	// 		data
-	// 	INNER JOIN
-	// 		groups
-	// 	ON
-	// 		data.group_id = groups.id
-	// 	WHERE
-	// 		data.id = ?;
+	if len(cardIDs) > 0 {
+		cardQuery, cardArgs, err := sqlx.In(`
+			SELECT
+	 			data_id, desc, number, date, name, cvc2, pin, bank
+			FROM
+	 			data_card
+	 		WHERE
+	 			data_id IN (?);
+		`, cardIDs)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		cardRows, err := rp.db.QueryContext(ctx, cardQuery, cardArgs...)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		defer cardRows.Close()
+		for cardRows.Next() {
+			var cardDataID int
+			if err = cardRows.Scan(&cardDataID, &card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank); err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+			mapDataIDData[cardDataID].Card = card
+		}
+		if err = cardRows.Err(); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
 
-	// `, dataID)
+	if len(fileIDs) > 0 {
+		fileQuery, fileArgs, err := sqlx.In(`
+			SELECT
+	 			data_id, desc, filename, filesize, filedate
+	 		FROM
+	 			data_file
+	 		WHERE
+	 			data_id IN (?);
+		`, fileIDs)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		fileRows, err := rp.db.QueryContext(ctx, fileQuery, fileArgs...)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+		defer fileRows.Close()
+		for fileRows.Next() {
+			var fileDataID int
+			if err = fileRows.Scan(&fileDataID, &file.Desc, &file.Filename, &file.Filesize, &file.Filedate); err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %w: %w",
+					customerrors.DBErr,
+					action,
+					customerrors.ErrDBInternalError500,
+					err,
+				)
+			}
+			mapDataIDData[fileDataID].File = file
+		}
+		if err = fileRows.Err(); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
 
-	// note := model.NoteEnc{}
-	// pass := model.PassEnc{}
-	// card := model.CardEnc{}
-	// file := model.FileEnc{}
-
-	// data := model.Data{
-	// 	ID: dataID,
-	// }
-
-	// if err = row.Scan(&data.GroupID, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
-	// 	return nil, fmt.Errorf(
-	// 		"%s: %s: %w: %w",
-	// 		customerrors.DBErr,
-	// 		action,
-	// 		customerrors.ErrDBInternalError500,
-	// 		err,
-	// 	)
-	// }
-
-	// switch data.DataType {
-	// case "note":
-	// 	row2 := rp.db.QueryRowContext(ctx, `
-
-	// 			SELECT
-	// 				desc, note
-	// 			FROM
-	// 				data_note
-	// 			WHERE
-	// 				data_id = ?;
-
-	// 		`, dataID)
-
-	// 	if err = row2.Scan(&note.Desc, &note.Note); err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %w: %w",
-	// 			customerrors.DBErr,
-	// 			action,
-	// 			customerrors.ErrDBInternalError500,
-	// 			err,
-	// 		)
-	// 	}
-
-	// case "pass":
-	// 	row2 := rp.db.QueryRowContext(ctx, `
-
-	// 			SELECT
-	// 				desc, login, pass
-	// 			FROM
-	// 				data_pass
-	// 			WHERE
-	// 				data_id = ?;
-
-	// 		`, dataID)
-
-	// 	if err = row2.Scan(&pass.Desc, &pass.Login, &pass.Pass); err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %w: %w",
-	// 			customerrors.DBErr,
-	// 			action,
-	// 			customerrors.ErrDBInternalError500,
-	// 			err,
-	// 		)
-	// 	}
-
-	// case "card":
-	// 	row2 := rp.db.QueryRowContext(ctx, `
-
-	// 			SELECT
-	// 				desc, number, date, name, cvc2, pin, bank
-	// 			FROM
-	// 				data_card
-	// 			WHERE
-	// 				data_id = ?;
-
-	// 		`, dataID)
-
-	// 	if err = row2.Scan(&card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank); err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %w: %w",
-	// 			customerrors.DBErr,
-	// 			action,
-	// 			customerrors.ErrDBInternalError500,
-	// 			err,
-	// 		)
-	// 	}
-
-	// case "file":
-	// 	row2 := rp.db.QueryRowContext(ctx, `
-
-	// 			SELECT
-	// 				desc, filename, filesize, filedate
-	// 			FROM
-	// 				data_file
-	// 			WHERE
-	// 				data_id = ?;
-
-	// 		`, dataID)
-
-	// 	if err = row2.Scan(&file.Desc, &file.Filename, &file.Filesize, &file.Filedate); err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"%s: %s: %w: %w",
-	// 			customerrors.DBErr,
-	// 			action,
-	// 			customerrors.ErrDBInternalError500,
-	// 			err,
-	// 		)
-	// 	}
-	// }
-
-	// data.Note = note
-	// data.Pass = pass
-	// data.Card = card
-	// data.File = file
-
-	// datas = append(datas, data)
+	datas = make([]model.Data, 0, len(mapDataIDData))
+	for _, data := range mapDataIDData {
+		datas = append(datas, *data)
+	}
 
 	return datas, nil
 }
@@ -1256,20 +1359,58 @@ func (rp *sqliteData) GetDatasByIDs(ctx context.Context, dataIDs []int) (datas [
 func (rp *sqliteData) UpdateDataIDsOnServer(ctx context.Context, newDataIDs map[int]int) (err error) {
 	action := "update data IDsOnServer"
 
-	for dataID, dataIDOnServer := range newDataIDs {
-		_, err = rp.db.ExecContext(ctx, `
+	if len(newDataIDs) == 0 {
+		return nil
+	}
 
+	tx, err := rp.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.DBErr,
+			action,
+			err,
+		)
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+	}()
+
+	stmt, err := tx.PrepareContext(ctx, `
 		UPDATE
 			data
 		SET
 			id_on_server = ?
 		WHERE
-			id = ?;
+			id = ?
+	`)
+	if err != nil {
+		_ = tx.Rollback()
+		return fmt.Errorf(
+			"%s: %s: %w",
+			customerrors.DBErr,
+			action,
+			err,
+		)
+	}
+	defer stmt.Close()
 
-	`, dataIDOnServer, dataID)
+	for dataID, dataIDOnServer := range newDataIDs {
+		if _, err := stmt.ExecContext(ctx, dataIDOnServer, dataID); err != nil {
+			_ = tx.Rollback()
+			return fmt.Errorf(
+				"%s: %s: %w",
+				customerrors.DBErr,
+				action,
+				err,
+			)
+		}
 	}
 
-	if err != nil {
+	if err := tx.Commit(); err != nil {
 		return fmt.Errorf(
 			"%s: %s: %w",
 			customerrors.DBErr,

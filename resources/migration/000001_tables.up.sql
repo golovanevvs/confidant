@@ -18,8 +18,7 @@ CREATE TABLE IF NOT EXISTS refresh_token(
 CREATE TABLE IF NOT EXISTS groups(
     id SERIAL PRIMARY KEY,
     title VARCHAR(250),
-    account_id INT,
-    FOREIGN KEY (account_id) REFERENCES account (id)
+    account_id INT
 );
 
 CREATE TABLE IF NOT EXISTS email_in_groups(

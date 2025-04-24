@@ -61,8 +61,7 @@ func New() (*SQLite, error) {
     			id INTEGER PRIMARY KEY AUTOINCREMENT,
 				id_on_server INTEGER DEFAULT -1,
    				title TEXT NOT NULL,
-    			account_id INTEGER,
-    			FOREIGN KEY (account_id) REFERENCES account (id) ON DELETE CASCADE
+    			account_id INTEGER
 			);
 
 			CREATE TABLE IF NOT EXISTS email_in_groups(
