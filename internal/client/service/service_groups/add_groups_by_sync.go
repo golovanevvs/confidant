@@ -8,9 +8,9 @@ import (
 	"github.com/golovanevvs/confidant/internal/customerrors"
 )
 
-func (sv *ServiceGroups) AddGroupBySync(ctx context.Context, group model.Group) (err error) {
+func (sv *ServiceGroups) AddGroupsBySync(ctx context.Context, groups []model.Group) (err error) {
 	action := "add group by sync"
-	err = sv.rp.AddGroupBySync(ctx, group)
+	err = sv.rp.AddGroupsBySync(ctx, groups)
 	if err != nil {
 		return fmt.Errorf(
 			"%s: %s: %s: %w",

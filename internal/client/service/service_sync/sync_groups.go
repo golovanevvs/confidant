@@ -91,18 +91,18 @@ func (sv *ServiceSync) SyncGroups(ctx context.Context, accessToken string, email
 			//TODO: add a title match check
 
 			// adding group to client DB
-			for _, groupFromServer := range groupsFromServer {
-				err = sv.sg.AddGroupBySync(ctx, groupFromServer)
-				if err != nil {
-					return nil, fmt.Errorf(
-						"%s: %s: %s: %w",
-						customerrors.ClientMsg,
-						customerrors.ClientServiceErr,
-						action,
-						err,
-					)
-				}
+			// for _, groupFromServer := range groupsFromServer {
+			err = sv.sg.AddGroupsBySync(ctx, groupsFromServer)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s: %s: %s: %w",
+					customerrors.ClientMsg,
+					customerrors.ClientServiceErr,
+					action,
+					err,
+				)
 			}
+			// }
 		}
 
 		//sync e-mails
