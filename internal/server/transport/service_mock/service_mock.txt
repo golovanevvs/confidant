@@ -1,0 +1,1 @@
+mockgen -destination=internal/server/transport/service_mock/service_mock.go -package=service_mock github.com/golovanevvs/confidant/internal/server/transport IService
