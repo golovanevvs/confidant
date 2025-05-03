@@ -175,29 +175,75 @@ func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []mo
 	action := "get datas by data IDs"
 
 	datas = make([]model.Data, 0)
+	// ---------------------------------------
 
-	for _, dataID := range dataIDs {
-		row := rp.db.QueryRowContext(ctx, `
-		
-			SELECT
-				group_id, data_type, title, created_at
-			FROM
-				data
-			WHERE
-				id = $1;
-		
-		`, dataID)
+	query, args, err := sqlx.In(`
+	
+		SELECT
+			d.id, d.group_id, d.data_type, d.title, d.created_at,
+			dn.descr, dn.note,
+			dp.descr, dp.login, dp.pass,
+			dc.descr, dc.number, dc.date, dc.name, dc.cvc2, dc.pin, dc.bank,
+			df.descr, df.filename, df.filesize, df.filedate, df.file
+		FROM
+			data d
+		LEFT JOIN
+			data_note dn
+		ON
+			d.id = dn.data_id
+		LEFT JOIN
+			data_pass dp
+		ON
+			d.id = dp.data_id
+		LEFT JOIN
+			data_card dc
+		ON
+			d.id = dc.data_id
+		LEFT JOIN
+			data_file df
+		ON
+			d.id = df.data_id			
+		WHERE
+			d.id IN (?);
 
+	`, dataIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	query = rp.db.Rebind(query)
+
+	rows, err := rp.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
 		note := model.NoteEnc{}
 		pass := model.PassEnc{}
 		card := model.CardEnc{}
 		file := model.FileEnc{}
+		data := model.Data{}
 
-		data := model.Data{
-			ID: dataID,
-		}
-
-		if err = row.Scan(&data.GroupID, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
+		if err = rows.Scan(
+			&data.ID, &data.GroupID, &data.DataType, data.Title, data.CreatedAt,
+			&note.Desc, &note.Note,
+			&pass.Desc, &pass.Login, &pass.Pass,
+			&card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank,
+			&file.Desc, &file.Filename, &file.Filesize, &file.Filedate, &file.File,
+		); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -208,103 +254,159 @@ func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []mo
 		}
 
 		switch data.DataType {
-
 		case "note":
-			row2 := rp.db.QueryRowContext(ctx, `
-			
-				SELECT
-					descr, note
-				FROM
-					data_note
-				WHERE
-					data_id = $1;
-			
-			`, dataID)
-
-			if err = row2.Scan(&note.Desc, &note.Note); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-
+			data.Note = note
 		case "pass":
-			row2 := rp.db.QueryRowContext(ctx, `
-			
-				SELECT
-					descr, login, pass
-				FROM
-					data_pass
-				WHERE
-					data_id = $1;
-			
-			`, dataID)
-
-			if err = row2.Scan(&pass.Desc, &pass.Login, &pass.Pass); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-
+			data.Pass = pass
 		case "card":
-			row2 := rp.db.QueryRowContext(ctx, `
-			
-				SELECT
-					descr, number, date, name, cvc2, pin, bank
-				FROM
-					data_card
-				WHERE
-					data_id = $1;
-			
-			`, dataID)
-
-			if err = row2.Scan(&card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-
+			data.Card = card
 		case "file":
-			row2 := rp.db.QueryRowContext(ctx, `
-			
-				SELECT
-					descr, filename, filesize, filedate, file
-				FROM
-					data_file
-				WHERE
-					data_id = $1;
-			
-			`, dataID)
-
-			if err = row2.Scan(&file.Desc, &file.Filename, &file.Filesize, &file.Filedate, &file.File); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
+			data.File = file
 		}
-
-		data.Note = note
-		data.Pass = pass
-		data.Card = card
-		data.File = file
 
 		datas = append(datas, data)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	// ---------------------------------------
+	// for _, dataID := range dataIDs {
+	// 	row := rp.db.QueryRowContext(ctx, `
+
+	// 		SELECT
+	// 			group_id, data_type, title, created_at
+	// 		FROM
+	// 			data
+	// 		WHERE
+	// 			id = $1;
+
+	// 	`, dataID)
+
+	// 	note := model.NoteEnc{}
+	// 	pass := model.PassEnc{}
+	// 	card := model.CardEnc{}
+	// 	file := model.FileEnc{}
+
+	// 	data := model.Data{
+	// 		ID: dataID,
+	// 	}
+
+	// 	if err = row.Scan(&data.GroupID, &data.DataType, &data.Title, &data.CreatedAt); err != nil {
+	// 		return nil, fmt.Errorf(
+	// 			"%s: %s: %w: %w",
+	// 			customerrors.DBErr,
+	// 			action,
+	// 			customerrors.ErrDBInternalError500,
+	// 			err,
+	// 		)
+	// 	}
+
+	// 	switch data.DataType {
+
+	// 	case "note":
+	// 		row2 := rp.db.QueryRowContext(ctx, `
+
+	// 			SELECT
+	// 				descr, note
+	// 			FROM
+	// 				data_note
+	// 			WHERE
+	// 				data_id = $1;
+
+	// 		`, dataID)
+
+	// 		if err = row2.Scan(&note.Desc, &note.Note); err != nil {
+	// 			return nil, fmt.Errorf(
+	// 				"%s: %s: %w: %w",
+	// 				customerrors.DBErr,
+	// 				action,
+	// 				customerrors.ErrDBInternalError500,
+	// 				err,
+	// 			)
+	// 		}
+
+	// 	case "pass":
+	// 		row2 := rp.db.QueryRowContext(ctx, `
+
+	// 			SELECT
+	// 				descr, login, pass
+	// 			FROM
+	// 				data_pass
+	// 			WHERE
+	// 				data_id = $1;
+
+	// 		`, dataID)
+
+	// 		if err = row2.Scan(&pass.Desc, &pass.Login, &pass.Pass); err != nil {
+	// 			return nil, fmt.Errorf(
+	// 				"%s: %s: %w: %w",
+	// 				customerrors.DBErr,
+	// 				action,
+	// 				customerrors.ErrDBInternalError500,
+	// 				err,
+	// 			)
+	// 		}
+
+	// 	case "card":
+	// 		row2 := rp.db.QueryRowContext(ctx, `
+
+	// 			SELECT
+	// 				descr, number, date, name, cvc2, pin, bank
+	// 			FROM
+	// 				data_card
+	// 			WHERE
+	// 				data_id = $1;
+
+	// 		`, dataID)
+
+	// 		if err = row2.Scan(&card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank); err != nil {
+	// 			return nil, fmt.Errorf(
+	// 				"%s: %s: %w: %w",
+	// 				customerrors.DBErr,
+	// 				action,
+	// 				customerrors.ErrDBInternalError500,
+	// 				err,
+	// 			)
+	// 		}
+
+	// 	case "file":
+	// 		row2 := rp.db.QueryRowContext(ctx, `
+
+	// 			SELECT
+	// 				descr, filename, filesize, filedate, file
+	// 			FROM
+	// 				data_file
+	// 			WHERE
+	// 				data_id = $1;
+
+	// 		`, dataID)
+
+	// 		if err = row2.Scan(&file.Desc, &file.Filename, &file.Filesize, &file.Filedate, &file.File); err != nil {
+	// 			return nil, fmt.Errorf(
+	// 				"%s: %s: %w: %w",
+	// 				customerrors.DBErr,
+	// 				action,
+	// 				customerrors.ErrDBInternalError500,
+	// 				err,
+	// 			)
+	// 		}
+	// 	}
+
+	// 	data.Note = note
+	// 	data.Pass = pass
+	// 	data.Card = card
+	// 	data.File = file
+
+	// 	datas = append(datas, data)
+	// }
 
 	return datas, nil
 }
