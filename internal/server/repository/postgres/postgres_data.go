@@ -25,7 +25,6 @@ func NewPostgresData(db *sqlx.DB, rpgp *postgresGroups) *postgresData {
 func (rp *postgresData) GetDataIDs(ctx context.Context, accountID int) (dataIDs []int, err error) {
 	action := "get data IDs"
 
-	// getting group IDs
 	var groupIDs []int
 	groupIDs, err = rp.rpgp.GetGroupIDs(ctx, accountID)
 	if err != nil {
@@ -38,81 +37,48 @@ func (rp *postgresData) GetDataIDs(ctx context.Context, accountID int) (dataIDs 
 		)
 	}
 
-	if len(groupIDs) > 0 {
-		dataIDs = make([]int, 0)
-		for _, groupID := range groupIDs {
-			rows, err := rp.db.QueryContext(ctx, `
-			
-				SELECT
-					id
-				FROM
-					data
-				WHERE
-					group_id = $1;
-	
-			`, groupID)
-
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-
-			defer rows.Close()
-
-			for rows.Next() {
-				var dataID int
-				if err = rows.Scan(&dataID); err != nil {
-					return nil, fmt.Errorf(
-						"%s: %s: %w: %w",
-						customerrors.DBErr,
-						action,
-						customerrors.ErrDBInternalError500,
-						err,
-					)
-				}
-				dataIDs = append(dataIDs, dataID)
-			}
-
-			if err = rows.Err(); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-		}
-		return dataIDs, nil
-	} else {
+	if len(groupIDs) == 0 {
 		return nil, nil
 	}
-}
 
-func (rp *postgresData) GetDataDates(ctx context.Context, dataIDs []int) (dataDates map[int]time.Time, err error) {
-	action := "get dates by data IDs"
-
-	dataDates = make(map[int]time.Time)
-
-	for _, dataID := range dataIDs {
-		row := rp.db.QueryRowContext(ctx, `
+	query, args, err := sqlx.In(`
 	
-			SELECT
-				created_at
-			FROM
-				data
-			WHERE
-				id = $1;
-	
-		`, dataID)
+		SELECT
+			id
+		FROM
+			data
+		WHERE
+			group_id IN (?);
+		
+		`, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
 
-		var date time.Time
-		if err = row.Scan(&date); err != nil {
+	query = rp.db.Rebind(query)
+
+	rows, err := rp.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	dataIDs = make([]int, 0)
+	for rows.Next() {
+		var dataID int
+		if err = rows.Scan(&dataID); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -121,11 +87,88 @@ func (rp *postgresData) GetDataDates(ctx context.Context, dataIDs []int) (dataDa
 				err,
 			)
 		}
-
-		dataDates[dataID] = date
+		dataIDs = append(dataIDs, dataID)
 	}
 
-	return dataDates, nil
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return dataIDs, nil
+}
+
+func (rp *postgresData) GetDataDates(ctx context.Context, dataIDs []int) (mapDataIDDate map[int]time.Time, err error) {
+	action := "get dates by data IDs"
+
+	query, args, err := sqlx.In(`
+	
+		SELECT
+			id, created_at
+		FROM
+			data
+		WHERE
+			id IN (?);
+	
+	`, dataIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	query = rp.db.Rebind(query)
+
+	rows, err := rp.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	mapDataIDDate = make(map[int]time.Time)
+
+	var dataID int
+	var date time.Time
+	for rows.Next() {
+		if err = rows.Scan(&dataID, &date); err != nil {
+			return nil, fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	mapDataIDDate[dataID] = date
+
+	return mapDataIDDate, nil
 }
 
 func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []model.Data, err error) {
