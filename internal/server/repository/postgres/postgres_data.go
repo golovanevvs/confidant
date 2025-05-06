@@ -174,108 +174,108 @@ func (rp *postgresData) GetDataDates(ctx context.Context, dataIDs []int) (mapDat
 func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []model.Data, err error) {
 	action := "get datas by data IDs"
 
-	datas = make([]model.Data, 0)
+	// datas = make([]model.Data, 0)
 	// ---------------------------------------
 
-	query, args, err := sqlx.In(`
-	
-		SELECT
-			d.id, d.group_id, d.data_type, d.title, d.created_at,
-			dn.descr, dn.note,
-			dp.descr, dp.login, dp.pass,
-			dc.descr, dc.number, dc.date, dc.name, dc.cvc2, dc.pin, dc.bank,
-			df.descr, df.filename, df.filesize, df.filedate, df.file
-		FROM
-			data d
-		LEFT JOIN
-			data_note dn
-		ON
-			d.id = dn.data_id
-		LEFT JOIN
-			data_pass dp
-		ON
-			d.id = dp.data_id
-		LEFT JOIN
-			data_card dc
-		ON
-			d.id = dc.data_id
-		LEFT JOIN
-			data_file df
-		ON
-			d.id = df.data_id			
-		WHERE
-			d.id IN (?);
+	// query, args, err := sqlx.In(`
 
-	`, dataIDs)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %w: %w",
-			customerrors.DBErr,
-			action,
-			customerrors.ErrDBInternalError500,
-			err,
-		)
-	}
-	query = rp.db.Rebind(query)
+	// 	SELECT
+	// 		d.id, d.group_id, d.data_type, d.title, d.created_at,
+	// 		dn.descr, dn.note,
+	// 		dp.descr, dp.login, dp.pass,
+	// 		dc.descr, dc.number, dc.date, dc.name, dc.cvc2, dc.pin, dc.bank,
+	// 		df.descr, df.filename, df.filesize, df.filedate, df.file
+	// 	FROM
+	// 		data d
+	// 	LEFT JOIN
+	// 		data_note dn
+	// 	ON
+	// 		d.id = dn.data_id
+	// 	LEFT JOIN
+	// 		data_pass dp
+	// 	ON
+	// 		d.id = dp.data_id
+	// 	LEFT JOIN
+	// 		data_card dc
+	// 	ON
+	// 		d.id = dc.data_id
+	// 	LEFT JOIN
+	// 		data_file df
+	// 	ON
+	// 		d.id = df.data_id
+	// 	WHERE
+	// 		d.id IN (?);
 
-	rows, err := rp.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %w: %w",
-			customerrors.DBErr,
-			action,
-			customerrors.ErrDBInternalError500,
-			err,
-		)
-	}
-	defer rows.Close()
+	// `, dataIDs)
+	// if err != nil {
+	// 	return nil, fmt.Errorf(
+	// 		"%s: %s: %w: %w",
+	// 		customerrors.DBErr,
+	// 		action,
+	// 		customerrors.ErrDBInternalError500,
+	// 		err,
+	// 	)
+	// }
+	// query = rp.db.Rebind(query)
 
-	for rows.Next() {
-		note := model.NoteEnc{}
-		pass := model.PassEnc{}
-		card := model.CardEnc{}
-		file := model.FileEnc{}
-		data := model.Data{}
+	// rows, err := rp.db.QueryContext(ctx, query, args...)
+	// if err != nil {
+	// 	return nil, fmt.Errorf(
+	// 		"%s: %s: %w: %w",
+	// 		customerrors.DBErr,
+	// 		action,
+	// 		customerrors.ErrDBInternalError500,
+	// 		err,
+	// 	)
+	// }
+	// defer rows.Close()
 
-		if err = rows.Scan(
-			&data.ID, &data.GroupID, &data.DataType, data.Title, data.CreatedAt,
-			&note.Desc, &note.Note,
-			&pass.Desc, &pass.Login, &pass.Pass,
-			&card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank,
-			&file.Desc, &file.Filename, &file.Filesize, &file.Filedate, &file.File,
-		); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
+	// for rows.Next() {
+	// 	note := model.NoteEnc{}
+	// 	pass := model.PassEnc{}
+	// 	card := model.CardEnc{}
+	// 	file := model.FileEnc{}
+	// 	data := model.Data{}
 
-		switch data.DataType {
-		case "note":
-			data.Note = note
-		case "pass":
-			data.Pass = pass
-		case "card":
-			data.Card = card
-		case "file":
-			data.File = file
-		}
+	// 	if err = rows.Scan(
+	// 		&data.ID, &data.GroupID, &data.DataType, data.Title, data.CreatedAt,
+	// 		&note.Desc, &note.Note,
+	// 		&pass.Desc, &pass.Login, &pass.Pass,
+	// 		&card.Desc, &card.Number, &card.Date, &card.Name, &card.CVC2, &card.PIN, &card.Bank,
+	// 		&file.Desc, &file.Filename, &file.Filesize, &file.Filedate, &file.File,
+	// 	); err != nil {
+	// 		return nil, fmt.Errorf(
+	// 			"%s: %s: %w: %w",
+	// 			customerrors.DBErr,
+	// 			action,
+	// 			customerrors.ErrDBInternalError500,
+	// 			err,
+	// 		)
+	// 	}
 
-		datas = append(datas, data)
-	}
+	// 	switch data.DataType {
+	// 	case "note":
+	// 		data.Note = note
+	// 	case "pass":
+	// 		data.Pass = pass
+	// 	case "card":
+	// 		data.Card = card
+	// 	case "file":
+	// 		data.File = file
+	// 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %w: %w",
-			customerrors.DBErr,
-			action,
-			customerrors.ErrDBInternalError500,
-			err,
-		)
-	}
+	// 	datas = append(datas, data)
+	// }
+
+	// if err = rows.Err(); err != nil {
+	// 	return nil, fmt.Errorf(
+	// 		"%s: %s: %w: %w",
+	// 		customerrors.DBErr,
+	// 		action,
+	// 		customerrors.ErrDBInternalError500,
+	// 		err,
+	// 	)
+	// }
 
 	// ---------------------------------------
 	// for _, dataID := range dataIDs {
@@ -409,6 +409,67 @@ func (rp *postgresData) GetDatas(ctx context.Context, dataIDs []int) (datas []mo
 	// }
 
 	return datas, nil
+}
+
+func (rp *postgresData) loadNoteData(ctx context.Context, datas *[]model.Data) error {
+	action := "load note data"
+
+	var noteIDs []int
+
+	for _, data := range *datas {
+		if data.DataType == "note" {
+			noteIDs = append(noteIDs, data.ID)
+		}
+	}
+
+	if len(noteIDs) == 0 {
+		return nil
+	}
+
+	query, args, err := sqlx.In(`
+	
+		SELECT
+			data_id, descr, note
+		FROM
+			data_note
+		WHERE
+			data_id IN (?);
+	
+	`, noteIDs)
+	if err != nil {
+		return fmt.Errorf("%s: %w:", action, err)
+	}
+
+	var notes []struct {
+		DataID int    `db:"data_id"`
+		Desc   []byte `db:"descr"`
+		Note   []byte `db:"note"`
+	}
+
+	if err = rp.db.SelectContext(ctx, &notes, rp.db.Rebind(query), args...); err != nil {
+		return fmt.Errorf("%s: %w:", action, err)
+	}
+
+	mapDataIDNoteEnc := make(map[int]model.NoteEnc)
+	for _, note := range notes {
+		mapDataIDNoteEnc[note.DataID] = model.NoteEnc{
+			Desc: note.Desc,
+			Note: note.Desc,
+		}
+	}
+
+	for i := range *datas {
+		data := &(*datas)[i]
+		if data.DataType == "note" {
+			if note, inMap := mapDataIDNoteEnc[data.ID]; inMap {
+				data.Note = note
+			} else {
+				return fmt.Errorf("%s: %w:", action, err)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (rp *postgresData) GetDataFile(ctx context.Context, dataID int) (file []byte, err error) {
