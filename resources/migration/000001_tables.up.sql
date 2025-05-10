@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS email_in_groups(
 
 CREATE TABLE IF NOT EXISTS data(
 	id SERIAL PRIMARY KEY,
+	id_on_client INT,
 	group_id INT,
 	data_type TEXT NOT NULL,
 	title TEXT NOT NULL,

@@ -51,3 +51,8 @@ type Data struct {
 	Card       CardEnc   `json:"card"`
 	File       FileEnc   `json:"file"`
 }
+
+type DataResults struct {
+	ID         int `db:"id"`
+	IDOnClient int `db:"id_on_client"`
+}

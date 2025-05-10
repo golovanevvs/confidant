@@ -515,25 +515,65 @@ func (rp *postgresData) GetDataFile(ctx context.Context, dataID int) (file []byt
 	return file, nil
 }
 
-func (rp *postgresData) AddDatas(ctx context.Context, datas []model.Data) (dataIDs map[int]int, err error) {
+func (rp *postgresData) AddDatas(ctx context.Context, datas []model.Data) (mapDataIDOnClientDataID map[int]int, err error) {
 	action := "add datas"
 
-	dataIDs = make(map[int]int)
+	mapDataIDOnClientDataID = make(map[int]int)
 
-	for _, data := range datas {
-		row := rp.db.QueryRowContext(ctx, `
-		
-			INSERT INTO data
-				(group_id, data_type, title, created_at)
-			VALUES
-				($1, $2, $3, $4)
-			RETURNING
-				id;
-		
-		`, data.GroupID, data.DataType, data.Title, data.CreatedAt)
+	tx, err := rp.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
-		var dataID int
-		if err = row.Scan(&dataID); err != nil {
+	dataQuery := `
+	
+		INSERT INTO data
+			(id_on_client, group_id, data_type, title, created_at)
+		VALUES
+			(:id_on_client, :group_id, :data_type, :title, :created_at)
+		RETURNING
+			id, id_on_client;
+	
+	`
+
+	dataArgs := make([]map[string]interface{}, len(datas))
+	for i, data := range datas {
+		dataArgs[i] = map[string]interface{}{
+			"id_on_client": data.IDOnClient,
+			"group_id":     data.GroupID,
+			"data_type":    data.DataType,
+			"title":        data.Title,
+			"created_at":   data.CreatedAt,
+		}
+	}
+
+	stmt, err := tx.PrepareNamedContext(ctx, dataQuery)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer stmt.Close()
+
+	var dataResults []model.DataResults
+	for _, arg := range dataArgs {
+		var dataResult model.DataResults
+		if err = stmt.GetContext(ctx, &dataResult, arg); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -542,84 +582,227 @@ func (rp *postgresData) AddDatas(ctx context.Context, datas []model.Data) (dataI
 				err,
 			)
 		}
+		dataResults = append(dataResults, dataResult)
+		mapDataIDOnClientDataID[dataResult.IDOnClient] = dataResult.ID
+	}
 
-		switch data.DataType {
-		case "note":
-			_, err = rp.db.ExecContext(ctx, `
-			
-				INSERT INTO data_note
-					(data_id, descr, note)
-				VALUES
-					($1, $2, $3);
-			
-			`, dataID, data.Note.Desc, data.Note.Note)
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-		case "pass":
-			_, err = rp.db.ExecContext(ctx, `
-			
-				INSERT INTO data_pass
-					(data_id, descr, login, pass)
-				VALUES
-					($1, $2, $3, $4);
-			
-			`, dataID, data.Pass.Desc, data.Pass.Login, data.Pass.Pass)
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-		case "card":
-			_, err = rp.db.ExecContext(ctx, `
-			
-				INSERT INTO data_card
-					(data_id, descr, number, date, name, cvc2, pin, bank)
-				VALUES
-					($1, $2, $3, $4, $5, $6, $7, $8);
-			
-			`, dataID, data.Card.Desc, data.Card.Number, data.Card.Date, data.Card.Name, data.Card.CVC2, data.Card.PIN, data.Card.Bank)
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-		case "file":
-			_, err = rp.db.ExecContext(ctx, `
-			
-				INSERT INTO data_file
-					(data_id, descr, filename, filesize, filedate)
-				VALUES
-					($1, $2, $3, $4, $5);
-			
-			`, dataID, data.File.Desc, data.File.Filename, data.File.Filesize, data.File.Filedate)
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
+	if err = rp.batchInsertNotes(ctx, tx, datas, dataResults); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	if err = rp.batchInsertPasses(ctx, tx, datas, dataResults); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	if err = rp.batchInsertCards(ctx, tx, datas, dataResults); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	if err = rp.batchInsertFiles(ctx, tx, datas, dataResults); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return mapDataIDOnClientDataID, nil
+}
+
+func (rp *postgresData) batchInsertNotes(ctx context.Context, tx *sqlx.Tx, datas []model.Data, dataResults []model.DataResults) (err error) {
+	action := "batch insert notes"
+
+	var notes []map[string]interface{}
+
+	for _, dataResult := range dataResults {
+		for _, data := range datas {
+			if data.IDOnClient == dataResult.IDOnClient && data.DataType == "note" {
+				notes = append(notes, map[string]interface{}{
+					"data_id": dataResult.ID,
+					"descr":   data.Note.Desc,
+					"note":    data.Note.Note,
+				})
+				break
 			}
 		}
-		dataIDs[data.IDOnClient] = dataID
 	}
-	return dataIDs, nil
+
+	if len(notes) > 0 {
+		_, err = tx.NamedExecContext(ctx, `
+		
+			INSERT INTO data_note
+				(data_id, descr, note)
+			VALUES
+				(:data_id, :descr, :note);
+		
+		`, notes)
+		if err != nil {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+
+	return nil
+}
+
+func (rp *postgresData) batchInsertPasses(ctx context.Context, tx *sqlx.Tx, datas []model.Data, dataResults []model.DataResults) (err error) {
+	action := "batch insert passes"
+
+	var passes []map[string]interface{}
+
+	for _, dataResult := range dataResults {
+		for _, data := range datas {
+			if data.IDOnClient == dataResult.IDOnClient && data.DataType == "pass" {
+				passes = append(passes, map[string]interface{}{
+					"data_id": dataResult.ID,
+					"descr":   data.Pass.Desc,
+					"login":   data.Pass.Login,
+					"pass":    data.Pass.Pass,
+				})
+				break
+			}
+		}
+	}
+
+	if len(passes) > 0 {
+		_, err = tx.NamedExecContext(ctx, `
+		
+			INSERT INTO data_pass
+				(data_id, descr, login, pass)
+			VALUES
+				(:data_id, :descr, :login, :pass);
+		
+		`, passes)
+		if err != nil {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+	return nil
+}
+
+func (rp *postgresData) batchInsertCards(ctx context.Context, tx *sqlx.Tx, datas []model.Data, dataResults []model.DataResults) (err error) {
+	action := "batch insert cards"
+
+	var cards []map[string]interface{}
+
+	for _, dataResult := range dataResults {
+		for _, data := range datas {
+			if data.IDOnClient == dataResult.IDOnClient && data.DataType == "card" {
+				cards = append(cards, map[string]interface{}{
+					"data_id": dataResult.ID,
+					"descr":   data.Card.Desc,
+					"number":  data.Card.Number,
+					"date":    data.Card.Date,
+					"name":    data.Card.Name,
+					"cvc2":    data.Card.CVC2,
+					"pin":     data.Card.PIN,
+					"bank":    data.Card.Bank,
+				})
+				break
+			}
+		}
+	}
+
+	if len(cards) > 0 {
+		_, err = tx.NamedExecContext(ctx, `
+		
+			INSERT INTO data_card
+				(data_id, descr, number, date, name, cvc2, pin, bank)
+			VALUES
+				(:data_id, :descr, :number, :date, :name, :cvc2, :pin, :bank);
+		
+		`, cards)
+		if err != nil {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+	return nil
+}
+
+func (rp *postgresData) batchInsertFiles(ctx context.Context, tx *sqlx.Tx, datas []model.Data, dataResults []model.DataResults) (err error) {
+	action := "batch insert files"
+
+	var files []map[string]interface{}
+
+	for _, dataResult := range dataResults {
+		for _, data := range datas {
+			if data.IDOnClient == dataResult.IDOnClient && data.DataType == "file" {
+				files = append(files, map[string]interface{}{
+					"data_id":  dataResult.ID,
+					"descr":    data.File.Desc,
+					"filename": data.File.Filename,
+					"filesize": data.File.Filesize,
+					"filedate": data.File.Filedate,
+				})
+				break
+			}
+		}
+	}
+
+	if len(files) > 0 {
+		_, err = tx.NamedExecContext(ctx, `
+		
+			INSERT INTO data_file
+				(data_id, descr, filename, filesize, filedate)
+			VALUES
+				(:data_id, :descr, :filename, :filesize, :filedate);
+		
+		`, files)
+		if err != nil {
+			return fmt.Errorf(
+				"%s: %s: %w: %w",
+				customerrors.DBErr,
+				action,
+				customerrors.ErrDBInternalError500,
+				err,
+			)
+		}
+	}
+	return nil
 }
 
 func (rp *postgresData) SaveDataFile(ctx context.Context, dataID int, file []byte) (err error) {
