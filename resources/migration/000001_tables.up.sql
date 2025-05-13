@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS refresh_token(
 
 CREATE TABLE IF NOT EXISTS groups(
     id SERIAL PRIMARY KEY,
+	id_on_client INT,
     title VARCHAR(250),
     account_id INT
 );

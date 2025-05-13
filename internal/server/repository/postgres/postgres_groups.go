@@ -245,24 +245,74 @@ func (rp *postgresGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGro
 	return mapGroupIDEmails, nil
 }
 
-func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (groupIDs map[int]int, err error) {
+func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (mapGroupIDOnClientGroupID map[int]int, err error) {
 	action := "add groups"
 
-	groupIDs = make(map[int]int)
+	mapGroupIDOnClientGroupID = make(map[int]int)
 
-	for _, group := range groups {
-		row := rp.db.QueryRowContext(ctx, `
+	if len(groups) == 0 {
+		return mapGroupIDOnClientGroupID, nil
+	}
+
+	tx, err := rp.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	groupQuery := `
 	
 		INSERT INTO groups
-			(title, account_id)
+			(id_on_client, title, account_id)
 		VALUES
-			($1, $2)
-		RETURNING id;
+			(:id_on_client, :title, :account_id)
+		RETURNING
+			id, id_on_client;
 	
-	`, group.Title, group.AccountID)
+	`
 
-		var groupID int
-		if err = row.Scan(&groupID); err != nil {
+	var groupResults []struct {
+		ID         int `db:"id"`
+		IDOnClient int `db:"id_on_client"`
+	}
+
+	groupArgs := make([]map[string]interface{}, len(groups))
+	for i, group := range groups {
+		groupArgs[i] = map[string]interface{}{
+			"id_on_client": group.IDOnClient,
+			"title":        group.Title,
+			"account_id":   group.AccountID,
+		}
+	}
+
+	stmt, err := tx.PrepareNamedContext(ctx, groupQuery)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer stmt.Close()
+
+	for _, arg := range groupArgs {
+		var res struct {
+			ID         int `db:"id"`
+			IDOnClient int `db:"id_on_client"`
+		}
+		if err = stmt.GetContext(ctx, &res, arg); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -271,32 +321,120 @@ func (rp *postgresGroups) AddGroups(ctx context.Context, groups []model.Group) (
 				err,
 			)
 		}
-
-		for _, email := range group.Emails {
-			_, err := rp.db.ExecContext(ctx, `
-		
-			INSERT INTO email_in_groups
-				(email, group_id)
-			VALUES
-				($1, $2);
-		
-		`, email, groupID)
-
-			if err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-		}
-
-		groupIDs[group.IDOnClient] = groupID
+		groupResults = append(groupResults, res)
 	}
 
-	return groupIDs, nil
+	if err = rp.batchInsertEmails(ctx, tx, groupResults, groups); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	for _, res := range groupResults {
+		mapGroupIDOnClientGroupID[res.IDOnClient] = res.ID
+	}
+
+	return mapGroupIDOnClientGroupID, nil
+
+	// for _, group := range groups {
+	// 	row := rp.db.QueryRowContext(ctx, `
+
+	// 	INSERT INTO groups
+	// 		(title, account_id)
+	// 	VALUES
+	// 		($1, $2)
+	// 	RETURNING id;
+
+	// `, group.Title, group.AccountID)
+
+	// 	var groupID int
+	// 	if err = row.Scan(&groupID); err != nil {
+	// 		return nil, fmt.Errorf(
+	// 			"%s: %s: %w: %w",
+	// 			customerrors.DBErr,
+	// 			action,
+	// 			customerrors.ErrDBInternalError500,
+	// 			err,
+	// 		)
+	// 	}
+
+	// 	for _, email := range group.Emails {
+	// 		_, err := rp.db.ExecContext(ctx, `
+
+	// 		INSERT INTO email_in_groups
+	// 			(email, group_id)
+	// 		VALUES
+	// 			($1, $2);
+
+	// 	`, email, groupID)
+
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf(
+	// 				"%s: %s: %w: %w",
+	// 				customerrors.DBErr,
+	// 				action,
+	// 				customerrors.ErrDBInternalError500,
+	// 				err,
+	// 			)
+	// 		}
+	// 	}
+
+	// 	groupIDs[group.IDOnClient] = groupID
+	// }
+
+	// return groupIDs, nil
+}
+
+func (rp *postgresGroups) batchInsertEmails(ctx context.Context, tx *sqlx.Tx, groupResults []struct {
+	ID         int `db:"id"`
+	IDOnClient int `db:"id_on_client"`
+}, groups []model.Group) (err error) {
+	action := "batch insert emails"
+	var emailArgs []map[string]interface{}
+	for _, res := range groupResults {
+		for _, group := range groups {
+			if group.IDOnClient == res.IDOnClient {
+				for _, email := range group.Emails {
+					emailArgs = append(emailArgs, map[string]interface{}{
+						"group_id": res.ID,
+						"email":    email,
+					})
+				}
+				break
+			}
+		}
+	}
+	if len(emailArgs) == 0 {
+		return nil
+	}
+
+	_, err = tx.NamedExecContext(ctx, `
+	
+		INSERT INTO email_in_groups
+			(group_id, email)
+		VALUES
+			(:group_id, :email);
+	
+	`, emailArgs)
+	if err != nil {
+		return fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	return nil
 }
 
 func (rp *postgresGroups) AddEmails(ctx context.Context, mapGroupIDEmails map[int][]string) (err error) {
