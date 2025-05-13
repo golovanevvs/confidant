@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/golovanevvs/confidant/internal/customerrors"
@@ -80,21 +81,57 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 func (rp *postgresGroups) GetGroups(ctx context.Context, accountID int, groupIDs []int) (groups []model.Group, err error) {
 	action := "get groups"
 
-	for _, groupID := range groupIDs {
+	if len(groupIDs) == 0 {
+		return []model.Group{}, nil
+	}
 
-		row := rp.db.QueryRowContext(ctx, `
+	query, args, err := sqlx.In(`
 	
 		SELECT
-			title, account_id
+			g.id, g.title, g.account_id, e.email
 		FROM
-			groups
+			groups g
+		LEFT JOIN
+			email_in_groups e
+		ON
+			g.id = e.group_id
 		WHERE
-			id = $1;
+			g.id IN (?)
+		ORDER BY
+			g.id;
 	
-	`, groupID)
+	`, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
 
-		var group model.Group
-		if err = row.Scan(&group.Title, &group.AccountID); err != nil {
+	rows, err := rp.db.QueryContext(ctx, rp.db.Rebind(query), args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	mapGroupIDGroup := make(map[int]*model.Group)
+	for rows.Next() {
+		var (
+			groupID   int
+			title     string
+			accountID int
+			email     sql.NullString
+		)
+		if err = rows.Scan(&groupID, &title, &accountID, &email); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -104,58 +141,34 @@ func (rp *postgresGroups) GetGroups(ctx context.Context, accountID int, groupIDs
 			)
 		}
 
-		rows, err := rp.db.QueryContext(ctx, `
-			
-				SELECT
-					email
-				FROM
-					email_in_groups
-				WHERE
-					group_id = $1;
-			
-			`, groupID)
-
-		if err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-		defer rows.Close()
-
-		emails := make([]string, 0)
-
-		for rows.Next() {
-			var email string
-			if err = rows.Scan(&email); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
+		group, inMap := mapGroupIDGroup[groupID]
+		if !inMap {
+			group = &model.Group{
+				ID:        groupID,
+				Title:     title,
+				AccountID: accountID,
+				Emails:    []string{},
 			}
-			emails = append(emails, email)
+			mapGroupIDGroup[groupID] = group
 		}
-
-		if err = rows.Err(); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
+		if email.Valid {
+			group.Emails = append(group.Emails, email.String)
 		}
+	}
 
-		group.ID = groupID
-		group.Emails = emails
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
 
-		groups = append(groups, group)
+	groups = make([]model.Group, 0, len(mapGroupIDGroup))
+	for _, group := range mapGroupIDGroup {
+		groups = append(groups, *group)
 	}
 
 	return groups, nil
