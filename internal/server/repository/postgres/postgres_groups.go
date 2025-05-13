@@ -24,38 +24,21 @@ func (rp *postgresGroups) GetGroupIDs(ctx context.Context, accountID int) (group
 
 	groupIDs = make([]int, 0)
 
-	row := rp.db.QueryRowContext(ctx, `
-	
-		SELECT
-			email
-		FROM
-			account
-		WHERE
-			id = $1;
-	
-	`, accountID)
-
-	var email string
-	if err = row.Scan(&email); err != nil {
-		return nil, fmt.Errorf(
-			"%s: %s: %w: %w",
-			customerrors.DBErr,
-			action,
-			customerrors.ErrDBInternalError500,
-			err,
-		)
-	}
-
 	rows, err := rp.db.QueryContext(ctx, `
 	
 		SELECT
-			group_id
+			email_in_groups.group_id
 		FROM
 			email_in_groups
+		JOIN
+			account
+		ON
+			email_in_groups.email = account.email
 		WHERE
-			email = $1;
+			account.id = $1;
 	
-	`, email)
+	`, accountID)
+
 	if err != nil {
 		return nil, fmt.Errorf(
 			"%s: %s: %w: %w",
