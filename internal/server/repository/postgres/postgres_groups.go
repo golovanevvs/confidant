@@ -179,19 +179,48 @@ func (rp *postgresGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGro
 
 	mapGroupIDEmails = make(map[int][]string, 0)
 
-	for _, groupID := range groupIDs {
-		rows, err := rp.db.QueryContext(ctx, `
-			
-			SELECT
-				email
-			FROM
-				email_in_groups
-			WHERE
-				group_id = $1;
-			
-		`, groupID)
+	if len(groupIDs) == 0 {
+		return mapGroupIDEmails, nil
+	}
 
-		if err != nil {
+	query, args, err := sqlx.In(`
+	
+		SELECT
+			email, group_id
+		FROM
+			email_in_groups
+		WHERE
+			group_id IN (?)
+		ORDER BY
+			group_id;
+	
+	`, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+
+	rows, err := rp.db.QueryContext(ctx, rp.db.Rebind(query), args...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var email string
+		var groupID int
+		if err = rows.Scan(&email, &groupID); err != nil {
 			return nil, fmt.Errorf(
 				"%s: %s: %w: %w",
 				customerrors.DBErr,
@@ -200,35 +229,17 @@ func (rp *postgresGroups) GetEmails(ctx context.Context, groupIDs []int) (mapGro
 				err,
 			)
 		}
-		defer rows.Close()
+		mapGroupIDEmails[groupID] = append(mapGroupIDEmails[groupID], email)
+	}
 
-		emails := make([]string, 0)
-
-		for rows.Next() {
-			var email string
-			if err = rows.Scan(&email); err != nil {
-				return nil, fmt.Errorf(
-					"%s: %s: %w: %w",
-					customerrors.DBErr,
-					action,
-					customerrors.ErrDBInternalError500,
-					err,
-				)
-			}
-			emails = append(emails, email)
-		}
-
-		if err = rows.Err(); err != nil {
-			return nil, fmt.Errorf(
-				"%s: %s: %w: %w",
-				customerrors.DBErr,
-				action,
-				customerrors.ErrDBInternalError500,
-				err,
-			)
-		}
-
-		mapGroupIDEmails[groupID] = emails
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf(
+			"%s: %s: %w: %w",
+			customerrors.DBErr,
+			action,
+			customerrors.ErrDBInternalError500,
+			err,
+		)
 	}
 
 	return mapGroupIDEmails, nil
