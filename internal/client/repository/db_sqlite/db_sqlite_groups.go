@@ -297,7 +297,7 @@ func (rp *sqliteGroups) GetGroupsByIDs(ctx context.Context, groupIDs []int) (gro
 		FROM
 			groups
 		WHERE
-			id = ?;
+			id IN (?);
 
 	`, groupIDs)
 	if err != nil {

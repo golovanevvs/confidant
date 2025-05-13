@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS refresh_token(
 
 CREATE TABLE IF NOT EXISTS groups(
     id SERIAL PRIMARY KEY,
+	id_on_client INT,
     title VARCHAR(250),
     account_id INT
 );
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS email_in_groups(
 
 CREATE TABLE IF NOT EXISTS data(
 	id SERIAL PRIMARY KEY,
+	id_on_client INT,
 	group_id INT,
 	data_type TEXT NOT NULL,
 	title TEXT NOT NULL,
@@ -44,6 +46,7 @@ CREATE TABLE IF NOT EXISTS data_note(
 	note BYTEA NOT NULL,
 	FOREIGN KEY (data_id) REFERENCES data (id) ON DELETE CASCADE
 );
+
 CREATE TABLE IF NOT EXISTS data_pass(
 	id SERIAL PRIMARY KEY,
 	data_id INT,
