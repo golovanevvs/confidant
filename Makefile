@@ -4,7 +4,7 @@ else
 HOSTNAME := $(shell hostname)
 endif
 
-PORT ?= 7542
+PORT ?= 3000
 
 ifeq ($(HOSTNAME),KKO11PC)
 	DATABASE_DSN ?= host=localhost port=5432 user=postgres password=password dbname=confidant sslmode=disable

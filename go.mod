@@ -1,6 +1,6 @@
 module github.com/golovanevvs/confidant
 
-go 1.24.0
+go 1.24.2
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
