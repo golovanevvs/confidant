@@ -1,6 +1,7 @@
 FROM golang:1.24.2
 ENV ADDRESS=":3000"
-ENV DATABASE_DSN="host=db port=5432 user=postgres password=password dbname=confidant sslmode=disable"
+ENV DATABASE_DSN="postgres://postgres:password@db:5432/confidant?sslmode=disable"
+#"host=db port=5432 user=postgres password=password dbname=confidant sslmode=disable"
 ENV POSTGRES_USER="postgres"
 ENV POSTGRES_PASSWORD="password"
 ENV POSTGRES_DB="confidant"
