@@ -12,7 +12,7 @@ type config struct {
 func NewConfig() *config {
 	var flagRunAddr string
 
-	flag.StringVar(&flagRunAddr, "a", "localhost:7541", "address and port of server")
+	flag.StringVar(&flagRunAddr, "a", "localhost:3000", "address and port of server")
 	flag.Parse()
 
 	if envRunAddr := os.Getenv("ADDRESS"); envRunAddr != "" {
