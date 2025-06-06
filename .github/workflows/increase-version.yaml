@@ -1,0 +1,50 @@
+name: Auto-Increase Version on Any Branch Push
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - 'v*.*.*'
+
+jobs:
+  increase-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get latest tag
+        id: get_latest_tag
+        shell: bash
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 --match='v*')
+          echo "::set-output name=LATEST_TAG::$LATEST_TAG"
+
+      - name: Increment version
+        id: increment_version
+        shell: bash
+        run: |
+          LATEST_TAG="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+          VERSION_PARTS=(${LATEST_TAG/v./ })
+          NEW_MAJOR_VERSION=$((${VERSION_PARTS[0]} + 1))
+          NEW_TAG="v${NEW_MAJOR_VERSION}.0.0"
+          echo "::set-output name=NEXT_TAG::$NEW_TAG"
+
+      - name: Create new tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEXT_TAG="${{ steps.increment_version.outputs.NEXT_TAG }}"
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git tag "$NEXT_TAG"
+          git push origin "$NEXT_TAG"
