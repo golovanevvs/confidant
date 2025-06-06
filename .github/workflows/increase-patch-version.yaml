@@ -18,7 +18,7 @@ jobs:
         id: get_latest_tag
         shell: bash
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 --match='v*')
+          LATEST_TAG=$(git describe --tags --abbrev=0 --match='v*' --always)
           echo "::set-output name=LATEST_TAG::$LATEST_TAG"
 
       - name: Increment Patch Version
