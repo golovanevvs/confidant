@@ -12,25 +12,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get Latest Tag
         id: get_latest_tag
         shell: bash
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0 --match='v*' --always)
-          echo "::set-output name=LATEST_TAG::$LATEST_TAG"
-
-      - name: Increment Patch Version
-        id: increment_version
-        shell: bash
-        run: |
-          LATEST_TAG="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
-          VERSION_PARTS=(${LATEST_TAG/v./ })
-          NEW_PATCH_VERSION=$((VERSION_PARTS[2] + 1)) # Увеличиваем только PATCH
-          NEW_MINOR_VERSION=${VERSION_PARTS[1]}
-          NEW_MAJOR_VERSION=${VERSION_PARTS[0]}
-
+          if [[ "$LATEST_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            NEW_MAJOR_VERSION=${BASH_REMATCH[1]}
+            NEW_MINOR_VERSION=${BASH_REMATCH[2]}
+            NEW_PATCH_VERSION=$((BASH_REMATCH[3] + 1))
+          else
+            PREVIOUS_COMMIT_HASH=$(git rev-list --max-count=1 HEAD~1)
+            LATEST_TAG="v0.0.0-${PREVIOUS_COMMIT_HASH}"
+            NEW_MAJOR_VERSION=0
+            NEW_MINOR_VERSION=0
+            NEW_PATCH_VERSION=1
+          fi
           NEW_TAG="v${NEW_MAJOR_VERSION}.${NEW_MINOR_VERSION}.${NEW_PATCH_VERSION}"
           echo "::set-output name=NEXT_TAG::$NEW_TAG"
 
@@ -38,7 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEXT_TAG="${{ steps.increment_version.outputs.NEXT_TAG }}"
+          NEXT_TAG="${{ steps.prev_commit_hash.outputs.NEXT_TAG }}"
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@users.noreply.github.com"
           git tag "$NEXT_TAG"
