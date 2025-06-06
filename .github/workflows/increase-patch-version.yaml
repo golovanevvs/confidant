@@ -18,17 +18,12 @@ jobs:
         id: get_latest_tag
         shell: bash
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 --match='v*' --always)
+          PREVIOUS_COMMIT_HASH=$(git rev-parse HEAD^)
+          LATEST_TAG=$(git tag --points-at $PREVIOUS_COMMIT_HASH)
           if [[ "$LATEST_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             NEW_MAJOR_VERSION=${BASH_REMATCH[1]}
             NEW_MINOR_VERSION=${BASH_REMATCH[2]}
             NEW_PATCH_VERSION=$((BASH_REMATCH[3] + 1))
-          else
-            PREVIOUS_COMMIT_HASH=$(git rev-list --max-count=1 HEAD~1)
-            LATEST_TAG="v0.0.0-${PREVIOUS_COMMIT_HASH}"
-            NEW_MAJOR_VERSION=0
-            NEW_MINOR_VERSION=0
-            NEW_PATCH_VERSION=1
           fi
           NEW_TAG="v${NEW_MAJOR_VERSION}.${NEW_MINOR_VERSION}.${NEW_PATCH_VERSION}"
           echo "::set-output name=NEXT_TAG::$NEW_TAG"
