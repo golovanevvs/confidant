@@ -34,5 +34,4 @@ require (
 	github.com/rivo/tview v0.0.0-20250625164341-a4a78f1e05cb
 	github.com/stretchr/testify v1.8.1
 	go.uber.org/zap v1.27.0
-	golang.org/x/net v0.41.0
 )
